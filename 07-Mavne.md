@@ -221,7 +221,7 @@ mvn -version
 
 **Option B: Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
 
-<img width="740" height="255" alt="Screenshot 2026-03-12 at 12 07 36 PM" src="https://github.com/user-attachments/assets/3916d0ea-63c0-4e58-ba3e-ea97eaf81692" />
+<img width="740" height="255" alt="Screenshot 2026-03-12 at 12 07 36 PM" src="Images/Output/Screenshot 2026-03-13 at 6.07.44 AM.png" />
 
 
 > Copy Link Address, and You Will find something like: https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
@@ -587,8 +587,7 @@ For quick local testing without setting up a full Tomcat server, you can use the
 ```bash
 mvn jetty:run                        # Then open http://localhost:8080/sample-app/ in your browser
 ```
-
-
+<img width="871" height="87" alt="Screenshot 2026-03-12 at 1 17 18 PM" src="./Images/Output/Screenshot 2026-03-13 at 7.18.16 AM.png"/>
 
 
 **Deploying the WAR to Tomcat**
