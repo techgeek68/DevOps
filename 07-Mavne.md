@@ -14,7 +14,7 @@ One of the things that makes Maven stand out is its philosophy of **"convention 
   
 - **Automatic dependency resolution**: You declare what libraries you need, and Maven figures out the rest, including transitive dependencies (the libraries your libraries depend on).
   
-- **Plugin-based architecture**: Compilation, testing, packaging, reporting, and even site generation are all handled by plugins. If Maven doesn't do something out of the box, there's likely a plugin for it.
+- **Plugin based architecture**: Compilation, testing, packaging, reporting, and even site generation are all handled by plugins. If Maven doesn't do something out of the box, there's likely a plugin for it.
   
 - **Smooth CI/CD integration**: Maven plays well with Jenkins, GitLab CI, GitHub Actions, and artifact repositories like Nexus and Artifactory. It also integrates with quality and security scanners without much fuss.
 
@@ -42,15 +42,15 @@ Before diving deeper, let's get comfortable with the vocabulary Maven uses. Thes
 
 **POM (pom.xml)**:
 
-This is the heart of every Maven project. The POM is an XML file that sits at the root of your project and tells Maven everything it needs to know — what your project is called, what it depends on, which plugins to use, and how to build it. Think of it as the single source of truth for your project's build configuration.
+This is the heart of every Maven project. The POM is an XML file that sits at the root of your project and tells Maven everything it needs to know: what your project is called, what it depends on, which plugins to use, and how to build it. Think of it as the single source of truth for your project's build configuration.
 
 **Coordinates (GAV)**:
 
 Three pieces of information identify every artifact in the Maven ecosystem, often referred to as GAV coordinates:
 
-- **GroupId** — Identifies the organization or group that created the project. It typically follows reverse domain naming, like `com.company.project`.
-- **ArtifactId** — The name of the specific project or module, such as `data-service`.
-- **Version** — The version number, like `1.0.0` or `1.0.0-SNAPSHOT` (where SNAPSHOT indicates a development version that's still in progress).
+- **GroupId**: Identifies the organization or group that created the project. It typically follows reverse domain naming, like `com.company.project`.
+- **ArtifactId**: The name of the specific project or module, such as `data-service`.
+- **Version**: The version number, like `1.0.0` or `1.0.0-SNAPSHOT` (where SNAPSHOT indicates a development version that's still in progress).
 
 Together, these three values uniquely identify any artifact in the Maven universe.
     
@@ -63,7 +63,7 @@ These are the external libraries your project needs. Instead of downloading JARs
 Maven uses a layered repository system:
 
 - **Local repository**: A folder on your machine, usually at `~/.m2/repository`. Every artifact Maven downloads gets cached here, so it doesn't have to fetch it again.
-- **Central repository**: The default public repository maintained by the Maven community. It hosts the vast majority of open-source Java libraries.
+- **Central repository**: The default public repository maintained by the Maven community. It hosts the vast majority of open source Java libraries.
 - **Remote repository**: A private or corporate repository, often running Sonatype Nexus or JFrog Artifactory. Companies use these to host proprietary artifacts and to proxy the central repository for better control and performance.
 
 **Build Lifecycle and Goals**:
@@ -121,7 +121,7 @@ mvn -Denv=prod package           # Pass a system property for property-based pro
 
 **Maven Wrapper:**
 
-The Maven wrapper lets you pin a specific Maven version to your project, so everyone on the team (and your CI server) uses the exact same version regardless of what's installed globally.
+The Maven wrapper lets you pin a specific Maven version to your project, so everyone on the team (and your CI server) uses the same version regardless of what's installed globally.
 
 ```bash
 mvn -N io.takari:maven:wrapper   # Generate the ./mvnw script and wrapper JAR
@@ -171,13 +171,14 @@ ls
 ```
 ```bash
 cd java-21-openjdk
-pwd                            # You should see something like: /usr/lib/jvm/java-21-openjdk
+pwd                            
 ```
+> You should see something like: /usr/lib/jvm/java-21-openjdk
 ```bash
 cd
 ```
 
-Now set it system-wide by editing `/etc/profile` (or use `~/.bashrc` if you only want it for your user):
+Now set it system wide by editing `/etc/profile` (or use `~/.bashrc` if you only want it for your user):
 
 ```bash
 sudo vi /etc/profile
@@ -208,7 +209,7 @@ which java
 
 You have two options here.
 
-**Option A — Use the package manager.** This is the simplest approach, though you may not get the latest version.
+**Option A: Use the package manager.** This is the simplest approach, though you may not get the latest version.
 
 ```bash
 sudo dnf info maven
@@ -218,20 +219,26 @@ sudo dnf -y install maven
 mvn -version
 ```
 
-**Option B — Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
+**Option B: Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
 
 <img width="740" height="255" alt="Screenshot 2026-03-12 at 12 07 36 PM" src="https://github.com/user-attachments/assets/3916d0ea-63c0-4e58-ba3e-ea97eaf81692" />
+
+Copy Link Address and You Will find something like: https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
 
 ```bash
 cd /tmp
 ```
 ```bash
-sudo wget https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.tar.gz
-sudo tar -zxvf apache-maven-3.9.11-bin.tar.gz
-sudo mv apache-maven-3.9.11 /opt/maven
+sudo wget https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
 ```
-<img width="827" height="138" alt="Screenshot 2026-03-12 at 12 11 05 PM" src="https://github.com/user-attachments/assets/eef57b9c-6b4c-4ef8-8ae7-1e75a90fb933" />
+```bash
+sudo tar -zxvf apache-maven-*-bin.tar.gz
+```
+```bash
+sudo mv apache-maven-3.9.* /opt/maven
+```
 
+<img width="827" height="138" alt="Screenshot 2026-03-12 at 12 11 05 PM" src="https://github.com/user-attachments/assets/eef57b9c-6b4c-4ef8-8ae7-1e75a90fb933" />
 
 ```
 cd
@@ -240,7 +247,11 @@ cd
 Optionally, you can create a dedicated system user to own the Maven installation. This is a good practice for shared servers:
 ```bash
 sudo groupadd maven
+```
+```bash
 sudo useradd -g maven -d /opt/maven -s /sbin/nologin maven
+```
+```bash
 sudo chown -R maven:maven /opt/maven
 ```
 
@@ -324,11 +335,12 @@ tree sample-app
 
 ```
 cd sample-app
+
 ls
-  # You'll see: pom.xml  src/
+                          # You'll see: pom.xml  src/
 
 ls src/main/webapp
-  # You'll see: index.jsp; feel free to edit this
+                          # You'll see: index.jsp; feel free to edit this
 ```
 
 <img width="865" height="214" alt="Screenshot 2026-03-12 at 12 23 57 PM" src="https://github.com/user-attachments/assets/75660823-54fd-443b-990c-17c0e4566d55" />
@@ -426,6 +438,10 @@ The `pom.xml` is the file that ties everything together. It's where you declare 
 
 Here's a clean, working POM for a simple web application. It's a good starting point that you can build on:
 
+```bash
+sudo vim pom.xml
+```
+
 ```xml
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -480,8 +496,8 @@ Here's a clean, working POM for a simple web application. It's a good starting p
 
       <!-- Jetty plugin lets you run the app locally without a full Tomcat install -->
       <plugin>
-        <groupId>org.eclipse.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
         <version>12.0.10</version>
       </plugin>
     </plugins>
