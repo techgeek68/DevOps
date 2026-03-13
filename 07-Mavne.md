@@ -223,7 +223,8 @@ mvn -version
 
 <img width="740" height="255" alt="Screenshot 2026-03-12 at 12 07 36 PM" src="https://github.com/user-attachments/assets/3916d0ea-63c0-4e58-ba3e-ea97eaf81692" />
 
-Copy Link Address and You Will find something like: https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
+
+> Copy Link Address, and You Will find something like: https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
 
 ```bash
 cd /tmp
@@ -499,6 +500,11 @@ sudo vim pom.xml
         <groupId>org.eclipse.jetty.ee10</groupId>
         <artifactId>jetty-ee10-maven-plugin</artifactId>
         <version>12.0.10</version>
+        <configuration>
+          <webApp>
+            <contextPath>/sample-app</contextPath>
+          </webApp>
+        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -581,6 +587,8 @@ For quick local testing without setting up a full Tomcat server, you can use the
 ```bash
 mvn jetty:run                        # Then open http://localhost:8080/sample-app/ in your browser
 ```
+
+
 
 
 **Deploying the WAR to Tomcat**
