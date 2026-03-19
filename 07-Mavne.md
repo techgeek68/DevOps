@@ -2,9 +2,12 @@
 
 ---
 
+> Prerequities:
+> Create a new Virtual Machine Named `Java Developer`
+
 **Introduction**
 
-Maven is an open source build automation and project management tool that was originally designed for Java projects, though it has since been adopted across many JVM based ecosystems. At its core, Maven revolves around something called the **Project Object Model**, or POM; an XML file that describes your project, its dependencies, and how it should be built.
+Maven is an open source build automation and project management tool originally designed for Java projects, though it has since been adopted across many JVM based ecosystems. At its core, Maven revolves around something called the **Project Object Model**, or POM; an XML file that describes your project, its dependencies, and how it should be built.
 
 One of the things that makes Maven stand out is its philosophy of **"convention over configuration."** Rather than forcing you to spell out every detail of your build, Maven assumes a standard project layout and provides sensible defaults. If you follow its conventions, you can get a working build with very little configuration. Here's what Maven brings to the table:
 
@@ -32,7 +35,7 @@ To appreciate what Maven does, it helps to think about what life looked like bef
 
 **There was no standardization.** Walk into a new project, and you'd find a completely different directory structure, a different build tool, and a different set of conventions. Onboarding took longer than it should have.
 
-Maven addressed all of this by providing Java developers with a common project structure, a declarative way to specify dependencies, and a single, consistent command-line interface for building any project. Once you learn Maven, you can walk into almost any Maven based project and know where things are and how to build it.
+Maven addressed all of this by providing Java developers with a common project structure, a declarative way to specify dependencies, and a single, consistent command line interface for building any project. Once you learn Maven, you can walk into almost any Maven based project and know where things are and how to build it.
 
 ---
 
@@ -56,7 +59,7 @@ Together, these three values uniquely identify any artifact in the Maven univers
     
 **Dependencies**:
 
-These are the external libraries your project needs. Instead of downloading JARs manually and dropping them into a `lib/` folder, you declare them in your POM. Maven takes care of downloading them, storing them locally, and making them available on your classpath. It even resolves transitive dependencies — if library A depends on library B, Maven will pull in both.
+These are the external libraries your project needs. Instead of downloading JARs manually and dropping them into a `lib/` folder, you declare them in your POM. Maven takes care of downloading them, storing them locally, and making them available on your classpath. It even resolves transitive dependencies; if library A depends on library B, Maven will pull in both.
    
 **Repositories:**
 
@@ -74,7 +77,7 @@ A lifecycle is a predefined sequence of phases that Maven executes in order. A g
 
 **Maven Build Lifecycle**
 
-Maven defines three built-in lifecycles, but the one you'll use most often is the default lifecycle. Here are its phases, in order:
+Maven defines three built in lifecycles, but the one you'll use most often is the default lifecycle. Here are its phases, in order:
 
 1. **validate**: Checks that the project is set up correctly and the POM is valid.
 2. **compile**: Compiles the project's source code into bytecode.
@@ -153,10 +156,12 @@ Maven requires a JDK (Java Development Kit) to run. Version 11 or higher is reco
 sudo dnf -y install java-*-openjdk java-*-openjdk-devel
 ```
 ```
-java -version
+java --version
 ```
 
 <img width="865" height="116" alt="Screenshot 2026-03-12 at 12 02 24 PM" src="https://github.com/user-attachments/assets/0dc63bb8-f596-4331-bae0-f6f59d23b818" />
+
+
 
 
 **Step 2: Find the JDK Path and Set JAVA_HOME**
@@ -171,17 +176,23 @@ ls
 ```
 ```bash
 cd java-21-openjdk
+```
+```bash
 pwd                            
 ```
-> You should see something like: /usr/lib/jvm/java-21-openjdk
+> You should see something like: `/usr/lib/jvm/java-21-openjdk`
+
+<img width="801" height="75" alt="Screenshot 2026-03-19 at 8 42 21 AM" src="https://github.com/user-attachments/assets/7d14aead-fdab-447d-8635-403bdd479454" />
+
+
 ```bash
 cd
 ```
 
-Now set it system wide by editing `/etc/profile` (or use `~/.bashrc` if you only want it for your user):
+- Now set it system wide by editing `/etc/profile` (or use `~/.bashrc` if you only want it for your user):
 
 ```bash
-sudo vi /etc/profile
+sudo vim /etc/profile
 ```
 
 Add these lines at the end:
@@ -216,7 +227,7 @@ sudo dnf info maven
 sudo dnf -y install maven
 ```
 ```bash
-mvn -version
+mvn --version
 ```
 
 **Option B: Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
