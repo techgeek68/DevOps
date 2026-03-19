@@ -220,6 +220,7 @@ which java
 
 You have two options here.
 
+
 **Option A: Use the package manager.** This is the simplest approach, though you may not get the latest version.
 
 ```bash
@@ -229,6 +230,22 @@ sudo dnf -y install maven
 ```bash
 mvn --version
 ```
+<img width="745" height="117" alt="Screenshot 2026-03-19 at 9 22 21 AM" src="https://github.com/user-attachments/assets/aebd5f13-283f-46f2-9ab1-8ced3e4c11dc" />
+
+Then set the environment variables by adding these lines to `/etc/profile`:
+```bash
+sudo vim /etc/profile
+```
+```bash
+export M2_HOME=/usr/share/maven
+export PATH="$PATH:$M2_HOME/bin"
+```
+```bash
+source /etc/profile
+```
+<img width="744" height="76" alt="Screenshot 2026-03-19 at 9 27 52 AM" src="https://github.com/user-attachments/assets/e1b8cfbd-98e6-4ecc-8b51-7e476e36b263" />
+
+
 
 **Option B: Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
 
@@ -286,7 +303,6 @@ If you see Maven's version info along with the Java version and OS details, you'
 
 <img width="860" height="156" alt="Screenshot 2026-03-12 at 12 14 01 PM" src="https://github.com/user-attachments/assets/7dfca661-9b75-4bb0-b55b-a91b4457771e" />
 
-
 > **Note:** The `mvn` file inside Maven's `bin/` directory isn't a compiled binary; it's a shell script. It sets up the necessary environment variables and classpath, then launches Maven's core Java class. This is why `JAVA_HOME` needs to be set correctly.
 
 
@@ -300,22 +316,22 @@ One of Maven's biggest advantages is its standardized directory structure. Every
 
 ```
 project-root/
-├── pom.xml                  # The project's build configuration
+├── pom.xml                              # The project's build configuration
 ├── src/
 │   ├── main/
-│   │   ├── java/            # Your production source code goes here
-│   │   ├── resources/       # Configuration files, properties, etc.
-│   │   └── webapp/          # Web assets (JSPs, HTML, WEB-INF): for WAR projects
+│   │   ├── java/                        # Your production source code goes here
+│   │   ├── resources/                   # Configuration files, properties, etc.
+│   │   └── webapp/                      # Web assets (JSPs, HTML, WEB-INF): for WAR projects
 │   └── test/
-│       ├── java/            # Your test source code goes here
-│       └── resources/       # Test specific configuration files
-└── target/                  # Maven's output directory (generated, not checked in)
+│       ├── java/                        # Your test source code goes here
+│       └── resources/                   # Test specific configuration files
+└── target/                              # Maven's output directory (generated, not checked in)
     ├── classes/
     ├── test-classes/
     └── <artifact>.jar or <artifact>.war
 ```
 
-The `target/` directory is where Maven puts everything it generates: compiled classes, test results, and the final artifact. You should never check this directory into version control.
+The `target/` directory is where Maven puts everything it generates: **compiled classes**, **test results**, and the f**inal artifact**. You should never check this directory into version control.
 
 ---
 
@@ -325,8 +341,9 @@ Maven provides archetypes: essentially project templates, to scaffold new projec
 
 **Creating a Web Application**
 
+**Example 1:**
   - Web Application
-```
+```bash
 mkdir -p ~/sampleapp
 cd ~/sampleapp
 ```
@@ -339,26 +356,47 @@ mvn archetype:generate \
 ```
 
 This creates a basic web application structure with a `pom.xml` configured for WAR packaging. You can inspect what was generated:
-```
+```bash
 tree sample-app
 ```
 
 <img width="856" height="238" alt="Screenshot 2026-03-12 at 12 22 26 PM" src="https://github.com/user-attachments/assets/91d09a6b-70ba-41e7-abf1-103cc9f170dd" />
 
-```
+```bash
 cd sample-app
-
-ls
-                          # You'll see: pom.xml  src/
-
-ls src/main/webapp
-                          # You'll see: index.jsp; feel free to edit this
 ```
+```bash
+ls
+```
+> You'll see: pom.xml  src/
 
-<img width="865" height="214" alt="Screenshot 2026-03-12 at 12 23 57 PM" src="https://github.com/user-attachments/assets/75660823-54fd-443b-990c-17c0e4566d55" />
-
+```bash
+ls src/main/webapp
+```
+> You'll see: index.jsp; your code is located in this file.
+```bash
+sudo vim index.jsp 
+```
+```html
+<html>
+<body>
+<h2>DevOps: Breaking Down Silos!</h2>
+</body>
+</html>
+```
 ```
 cd
+```
+> We will compile, package, and test this code locally later.
+
+---
+
+```bash
+mvn archetype:generate \
+  -DgroupId=com.devopsclass \
+  -DartifactId=sample-app \
+  -DarchetypeArtifactId=maven-archetype-webapp \
+  -DinteractiveMode=false
 ```
 
 Let's break down what each parameter does:
@@ -366,28 +404,38 @@ Let's break down what each parameter does:
   - `-DartifactId=sample-app`: Names the project and creates the root directory
   - `-DarchetypeArtifactId=maven-archetype-webapp`: Tells Maven to use the web application template
   - `-DinteractiveMode=false`: Skips the interactive prompts and uses the provided values directly
+    
+---
+
 
 The two most common archetypes are:
   - `maven-archetype-quickstart`: A simple Java project that produces a JAR
   - `maven-archetype-webapp`: A web application that produces a WAR
 
 
+---
+
+
+
 **Creating a Spring Boot Application**
 
-Spring Boot projects aren't typically created through Maven archetypes. Instead, the community uses **Spring Initializr**, which you can access through a web browser or the command line:
+Spring Boot projects aren't typically created through Maven archetypes. Instead, the community uses **Spring Initializr**, which you can access through a web browser or the command line: 
 
+**Example 2:**
+
+- Create a project directory
 ```
 mkdir -p ~/myproject
 cd ~/myproject
 ```
 
+- Download a Spring Boot starter project from the Spring Initializr web service
 ```bash
 curl -sSL --fail \
   "https://start.spring.io/starter.zip?type=maven-project&language=java&groupId=com.example&artifactId=demo&name=demo&packaging=jar&javaVersion=21&dependencies=web" \
   -o demo.zip
 ```
-
-> The `-sSL --fail` flags tell `curl` to run in silent mode, follow redirects, and return an error if something goes wrong — rather than silently downloading an error page.
+> The `-sSL --fail` flags tell `curl` to run in silent mode, follow redirects, and return an error if something goes wrong; rather than silently downloading an error page.
 
 ```
 unzip demo.zip -d .
@@ -401,28 +449,49 @@ tree myproject
 ```
 <img width="802" height="486" alt="Screenshot 2026-03-12 at 12 37 11 PM" src="https://github.com/user-attachments/assets/5c8163bd-fdc9-437d-bdeb-04f239353736" />
 
----
 
-**Framework Specific Tips:**
-  - Spring Boot: Typically generated via Spring Initializr rather than Maven archetypes.
-```
+
+**Example 3:** Downloads a pre-configured Spring Boot project as a ZIP file from Spring Initializr
+```bash
 curl https://start.spring.io/starter.zip -d type=maven-project \
   -d language=java -d bootVersion=3.3.4 -d groupId=com.example \
   -d artifactId=demo -d name=demo -d packaging=jar -d javaVersion=21 \
   -d dependencies=web -o demo.zip
+```
+```bash
 unzip demo.zip -d .
 ```
 
----
 
+**Differences:**
+
+| Aspect | Command 1 (GET) | Command 2 (POST) |
+|--------|-----------------|------------------|
+| **HTTP Method** | GET | POST |
+| **Parameters** | URL query string | Form data (-d flags) |
+| **Flags** | `-sSL --fail` | None |
+| **Spring Boot Version** | Default/latest | **Specific: 3.3.4** |
+| **URL Length** | Very long | Short and clean |
+| **Error Handling** | `--fail` (fail on HTTP errors) | Default behavior |
+| **Silent Mode** | `-s` (silent) | Shows progress |
+| **Redirects** | `-L` (follow redirects) | Default behavior |
+
+
+**Which is the better method:**?
+  - **Example 1**: When you want the latest Spring Boot version
+  - **Example 2**: When you need a specific Spring Boot version (better for reproducible builds in DevOps)
+
+> Both produce the same project structure, just potentially different Spring Boot versions!
+
+---
 
 **Creating a Quarkus Application**
 
 Quarkus has its own Maven plugin for project generation:
 
 ```
-mkdir -p ~/example1
-cd ~/example1
+mkdir -p ~/NewProject
+cd ~/NewProject
 ```
 ```
 mvn io.quarkus:quarkus-maven-plugin:3.15.0:create \
