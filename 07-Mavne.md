@@ -243,16 +243,22 @@ export PATH="$PATH:$M2_HOME/bin"
 ```bash
 source /etc/profile
 ```
+```bash
+echo $M2_HOME
+```
 <img width="744" height="76" alt="Screenshot 2026-03-19 at 9 27 52 AM" src="https://github.com/user-attachments/assets/e1b8cfbd-98e6-4ecc-8b51-7e476e36b263" />
+
+
+
+
 
 
 
 **Option B: Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
 
-![Download Maven](Images/Output/DownloadMaven.png)
+<img width="1137" height="383" alt="Screenshot 2026-03-20 at 11 35 32 AM" src="https://github.com/user-attachments/assets/9a667597-f632-481c-af1f-16c7d55809b3" />
 
-
-> Copy Link Address, and You Will find something like: https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.tar.gz
+> Copy Link Address
 
 ```bash
 cd /tmp
@@ -271,17 +277,6 @@ sudo mv apache-maven-3.9.* /opt/maven
 
 ```
 cd
-```
-
-Optionally, you can create a dedicated system user to own the Maven installation. This is a good practice for shared servers:
-```bash
-sudo groupadd maven
-```
-```bash
-sudo useradd -g maven -d /opt/maven -s /sbin/nologin maven
-```
-```bash
-sudo chown -R maven:maven /opt/maven
 ```
 
 Then set the environment variables by adding these lines to `/etc/profile`:
@@ -303,8 +298,20 @@ If you see Maven's version info along with the Java version and OS details, you'
 
 <img width="860" height="156" alt="Screenshot 2026-03-12 at 12 14 01 PM" src="https://github.com/user-attachments/assets/7dfca661-9b75-4bb0-b55b-a91b4457771e" />
 
-> **Note:** The `mvn` file inside Maven's `bin/` directory isn't a compiled binary; it's a shell script. It sets up the necessary environment variables and classpath, then launches Maven's core Java class. This is why `JAVA_HOME` needs to be set correctly.
 
+**Optionally**, you can create a dedicated system user to own the Maven installation. This is a good practice for shared servers:
+```bash
+sudo groupadd maven
+```
+```bash
+sudo useradd -g maven -d /opt/maven -s /sbin/nologin maven
+```
+```bash
+sudo chown -R maven:maven /opt/maven
+```
+
+
+> **Note:** The `mvn` file inside Maven's `bin/` directory isn't a compiled binary; it's a shell script. It sets up the necessary environment variables and classpath, then launches Maven's core Java class. This is why `JAVA_HOME` needs to be set correctly.
 
 ---
 
@@ -354,6 +361,12 @@ mvn archetype:generate \
   -DarchetypeArtifactId=maven-archetype-webapp \
   -DinteractiveMode=false
 ```
+Let's break down what each parameter does:
+  - `-DgroupId=com.devopsclass`: Sets the base package name using reverse domain notation
+  - `-DartifactId=sample-app`: Names the project and creates the root directory
+  - `-DarchetypeArtifactId=maven-archetype-webapp`: Tells Maven to use the web application template
+  - `-DinteractiveMode=false`: Skips the interactive prompts and uses the provided values directly
+
 
 This creates a basic web application structure with a `pom.xml` configured for WAR packaging. You can inspect what was generated:
 ```bash
@@ -389,22 +402,7 @@ cd
 ```
 > We will compile, package, and test this code locally later.
 
----
-
-```bash
-mvn archetype:generate \
-  -DgroupId=com.devopsclass \
-  -DartifactId=sample-app \
-  -DarchetypeArtifactId=maven-archetype-webapp \
-  -DinteractiveMode=false
-```
-
-Let's break down what each parameter does:
-  - `-DgroupId=com.devopsclass`: Sets the base package name using reverse-domain notation
-  - `-DartifactId=sample-app`: Names the project and creates the root directory
-  - `-DarchetypeArtifactId=maven-archetype-webapp`: Tells Maven to use the web application template
-  - `-DinteractiveMode=false`: Skips the interactive prompts and uses the provided values directly
-    
+ 
 ---
 
 
@@ -414,7 +412,6 @@ The two most common archetypes are:
 
 
 ---
-
 
 
 **Creating a Spring Boot Application**
@@ -437,14 +434,16 @@ curl -sSL --fail \
 ```
 > The `-sSL --fail` flags tell `curl` to run in silent mode, follow redirects, and return an error if something goes wrong; rather than silently downloading an error page.
 
-```
+```bash
 unzip demo.zip -d .
 ```
-```
+```bash
 rm demo.zip
+```
+```bash
 cd
 ```
-```
+```bash
 tree myproject
 ```
 <img width="802" height="486" alt="Screenshot 2026-03-12 at 12 37 11 PM" src="https://github.com/user-attachments/assets/5c8163bd-fdc9-437d-bdeb-04f239353736" />
@@ -465,12 +464,12 @@ unzip demo.zip -d .
 
 **Differences:**
 
-| Aspect | Command 1 (GET) | Command 2 (POST) |
+| Aspect | Example 1 (GET) | Example 2 (POST) |
 |--------|-----------------|------------------|
 | **HTTP Method** | GET | POST |
 | **Parameters** | URL query string | Form data (-d flags) |
 | **Flags** | `-sSL --fail` | None |
-| **Spring Boot Version** | Default/latest | **Specific: 3.3.4** |
+| **Spring Boot Version** | Default/latest | Specific: 3.3.4 |
 | **URL Length** | Very long | Short and clean |
 | **Error Handling** | `--fail` (fail on HTTP errors) | Default behavior |
 | **Silent Mode** | `-s` (silent) | Shows progress |
@@ -478,8 +477,8 @@ unzip demo.zip -d .
 
 
 **Which is the better method:**?
-  - **Example 1**: When you want the latest Spring Boot version
-  - **Example 2**: When you need a specific Spring Boot version (better for reproducible builds in DevOps)
+  - Example 1: When you want the latest Spring Boot version
+  - Example 2: When you need a specific Spring Boot version (better for reproducible builds in DevOps)
 
 > Both produce the same project structure, just potentially different Spring Boot versions!
 
@@ -495,17 +494,19 @@ cd ~/NewProject
 ```
 ```
 mvn io.quarkus:quarkus-maven-plugin:3.15.0:create \
-  -DprojectGroupId=com.example1 \
+  -DprojectGroupId=com.NewProject \
   -DprojectArtifactId=quarkus-app \
-  -DclassName="com.example1.GreetingResource" \
+  -DclassName="com.NewProject.GreetingResource" \
   -Dpath="/hello"
 ```
 This generates a ready to run Quarkus project with a sample REST endpoint at `/hello`.
-```
+```bash
 cd
-tree example1
 ```
-<img width="881" height="511" alt="Screenshot 2026-03-12 at 1 03 08 PM" src="https://github.com/user-attachments/assets/913a8ef8-1628-49ad-aee2-d8416d58f04b" />
+```bash
+tree NewProject
+```
+<img width="776" height="610" alt="Screenshot 2026-03-20 at 11 51 01 AM" src="https://github.com/user-attachments/assets/ecf30072-9493-42bc-86d5-c82dbc35c9bb" />
 
 
 ---
@@ -632,7 +633,9 @@ Profiles let you customize the build for different environments — development,
 
 You'd activate this profile by running `mvn -Denv=prod package` or `mvn -Pprod package`.
 
+
 ---
+
 
 **Build & Deployment Workflow**
 
@@ -645,17 +648,22 @@ If you think about the typical SDLC requirements, design, implementation, testin
 
 All Maven commands should be run from the directory containing your `pom.xml`. The first time you build a project, Maven will download any plugins and dependencies it needs and cache them in `~/.m2/repository`. Subsequent builds are much faster.
 
-```
+```bash
 cd ~/sampleapp/sample-app
+```
 
-# Compile the source code
+- Compile the source code
+```bash
 mvn compile
-
-# Run tests and produce the packaged artifact
+```
+- Run tests and produce the packaged artifact
+```bash
 mvn package
+```
 
-# Check what was generated
-ls target/                                # You should see: sample-app-1.0.0.war
+- Check what was generated
+```bash
+ls target/                                
 ```
 
 <img width="871" height="87" alt="Screenshot 2026-03-12 at 1 17 18 PM" src="https://github.com/user-attachments/assets/12b4620c-ec2a-4f7c-9847-938f9c44334e" />
