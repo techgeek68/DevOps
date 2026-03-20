@@ -338,7 +338,7 @@ project-root/
     └── <artifact>.jar or <artifact>.war
 ```
 
-The `target/` directory is where Maven puts everything it generates: **compiled classes**, **test results**, and the f**inal artifact**. You should never check this directory into version control.
+The `target/` directory is where Maven puts everything it generates: **compiled classes**, **test results**, and the **final artifact**. You should never check this directory into version control.
 
 ---
 
@@ -520,6 +520,11 @@ The `pom.xml` is the file that ties everything together. It's where you declare 
 
 Here's a clean, working POM for a simple web application. It's a good starting point that you can build on:
 
+**Example 1 Continue:**
+```bash
+cd ~/sampleapp/sample-app
+```
+
 ```bash
 sudo vim pom.xml
 ```
@@ -648,6 +653,7 @@ If you think about the typical SDLC requirements, design, implementation, testin
 
 All Maven commands should be run from the directory containing your `pom.xml`. The first time you build a project, Maven will download any plugins and dependencies it needs and cache them in `~/.m2/repository`. Subsequent builds are much faster.
 
+**Example 1 Continue:**
 ```bash
 cd ~/sampleapp/sample-app
 ```
@@ -673,12 +679,16 @@ ls target/
 For quick local testing without setting up a full Tomcat server, you can use the Jetty plugin (if it's configured in your POM):
 
 ```bash
-mvn jetty:run                        # Then open http://localhost:8080/sample-app/ in your browser
+mvn jetty:run                        
 ```
-![Output Of Sample App](Images/Output/OutPutMaven.png)
+- Then open http://localhost:8080/sample-app/ in your browser
+  
+<img width="799" height="243" alt="Screenshot 2026-03-20 at 1 03 08 PM" src="https://github.com/user-attachments/assets/0dc9583a-418d-43bf-8221-8d761040c600" />
+
 
 
 ---
+
 
 **Deploying the WAR to Tomcat**
 
