@@ -1,84 +1,90 @@
 # Nginx HTTPS Configuration: SSL/TLS Security & Performance Optimization
 
-- HTTPS encrypts communication between web browsers and servers using SSL/TLS certificates, protecting data from interception and ensuring authenticity.
-- SSL/TLS encrypts data between the client and server.
-- TLS 1.2+ provides modern security. 
+- HTTPS encrypts communication between web browsers and servers using SSL/TLS certificates, protecting data from interception and verifying server identity.
+- SSL/TLS encrypts data in transit between client and server.
+- TLS 1.2+ is required for modern, secure deployments (TLS 1.0 and 1.1 are deprecated and disabled by most browsers and servers).
 
-- Session caching reuses SSL handshake data, reducing CPU overhead by 80/90%.
-- HTTP/2 multiplexes multiple requests over one connection.
-- Online Certificate Status Protocol (OCSP) stapling allows Nginx to provide certificate validity status, eliminating client OCSP lookups.
-- Proper cipher selection strikes a balance between security and performance.
+- Session caching reuses negotiated SSL session parameters, avoiding a full handshake on subsequent connections and reducing CPU overhead significantly (commonly cited at 80–90%, though actual savings vary by traffic pattern and hardware).
+- HTTP/2 multiplexes multiple requests over a single connection, reducing latency and improving throughput.
+- Online Certificate Status Protocol (OCSP) stapling allows Nginx to fetch and cache the certificate's revocation status from the CA, attaching it to the TLS handshake so clients don't need to perform a separate OCSP lookup.
+- Proper cipher selection balances security strength against performance and compatibility.
 
 **SSL/TLS:**
- - Cryptographic protocols for secure communication (SSL is outdated; TLS is current)
+- Cryptographic protocols for secure communication. SSL (versions 2.0 and 3.0) is fully deprecated and insecure; TLS (currently 1.2 and 1.3) is the modern standard.
 
 **Certificate:**
- - A digital document that proves your site's identity
+- A digital document that binds a public key to a server's identity, enabling clients to verify they're talking to the right server.
 
 **Certificate Authority (CA):**
-  - Trusted organization that issues certificates (e.g., Let's Encrypt, DigiCert)
+- A trusted organization that issues and signs certificates (e.g., Let's Encrypt, DigiCert, Sectigo).
 
 **SSL/TLS Certificate:**
- - **Let's Encrypt:**
-   - Free, automated certificates (90 day validity, auto renewal)
- - **Commercial CAs:**
-   - Paid certificates with extended validation options
- - **Self signed:**
-   - For testing only (browsers show warnings)
+- **Let's Encrypt:**
+  - Free, automated certificates (90-day validity, designed for automated renewal via Certbot or ACME clients)
+- **Commercial CAs:**
+  - Paid certificates with extended validation (EV) and organization validation (OV) options; some offer longer validity periods
+- **Self-signed:**
+  - For testing/development only — browsers will display security warnings since no trusted CA has signed them
 
 ---
 
 **Basic Nginx SSL Configuration**
 
-```Nginx
+```nginx
 server {                                                                                    # Begin server block for HTTPS
     # Enable SSL and HTTP/2
     listen 443 ssl http2;                                                                   # Listen on port 443 with SSL/TLS and HTTP/2 protocol enabled
     server_name example.com;                                                                # Domain name this server block responds to
-    
+
     # Configure certificates
-    ssl_certificate /etc/nginx/ssl/cert.pem;                                                 # Path to SSL certificate file (public key + full certificate chain)
-    ssl_certificate_key /etc/nginx/ssl/key.pem;                                              # Path to SSL private key file (keep this secure)
-    
+    ssl_certificate /etc/nginx/ssl/cert.pem;                                                # Path to SSL certificate file (public key + full certificate chain)
+    ssl_certificate_key /etc/nginx/ssl/key.pem;                                             # Path to SSL private key file (keep this secure and restrict permissions)
+
     # Set protocols and ciphers
-    ssl_protocols TLSv1.2 TLSv1.3;                                                           # Only allow TLS 1.2 and 1.3 (disables older insecure versions)
-    ssl_ciphers HIGH:!aNULL:!MD5:!3DES;                                                      # Use strong cipher suites, exclude weak/null/old ciphers
-    ssl_prefer_server_ciphers on;                                                            # Server chooses cipher (not client) to prevent downgrade attacks
-    
+    ssl_protocols TLSv1.2 TLSv1.3;                                                          # Only allow TLS 1.2 and 1.3 (disables older, insecure versions)
+    ssl_ciphers HIGH:!aNULL:!MD5:!3DES;                                                     # Use strong cipher suites; exclude null, weak, and legacy ciphers
+    ssl_prefer_server_ciphers on;                                                            # Server selects cipher order for TLS 1.2; has no effect on TLS 1.3 (which manages its own cipher selection)
+
     # Enable session cache
-    ssl_session_cache shared:SSL:10m;                                                         # Shared memory cache for SSL sessions (10MB stores ~40,000 sessions)
-    ssl_session_timeout 10m;                                                                  # SSL session remains valid for 10 minutes before requiring new handshake
-    ssl_session_tickets off;                                                                  # Disable session tickets to ensure Perfect Forward Secrecy (PFS)
-    
+    ssl_session_cache shared:SSL:10m;                                                        # Shared memory cache for SSL sessions (10 MB stores approximately 40,000 sessions at ~256 bytes each)
+    ssl_session_timeout 10m;                                                                 # SSL session remains valid for 10 minutes before requiring a new handshake
+    ssl_session_tickets off;                                                                 # Disable session tickets to preserve Perfect Forward Secrecy (PFS); compromised ticket keys can otherwise decrypt past sessions
+
     # Configure OCSP stapling
-    ssl_stapling on;                                                                           # Enable OCSP stapling (server fetches certificate revocation status)
-    ssl_stapling_verify on;                                                                    # Verify OCSP responses from certificate authority
-    ssl_trusted_certificate /etc/nginx/ssl/chain.pem;                                          # CA certificate chain for verifying OCSP responses
-    resolver 8.8.8.8 8.8.4.4 valid=300s;                                                       # DNS servers for OCSP lookups (Google DNS), cache results for 300 seconds
-    resolver_timeout 5s;                                                                       # Timeout for DNS resolution attempts (5 seconds max)
-    
+    ssl_stapling on;                                                                          # Enable OCSP stapling (server proactively fetches and caches certificate revocation status)
+    ssl_stapling_verify on;                                                                   # Verify OCSP responses are signed by a trusted CA
+    ssl_trusted_certificate /etc/nginx/ssl/chain.pem;                                         # CA certificate chain used to verify OCSP responses (must include intermediate + root)
+    resolver 8.8.8.8 8.8.4.4 valid=300s;                                                      # DNS resolvers for OCSP lookups (Google Public DNS); cache results for 300 seconds
+    resolver_timeout 5s;                                                                      # Timeout for DNS resolution (5 seconds max)
+
     # Add HSTS header
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;         # Force HTTPS for 1 year on domain and all subdomains
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;        # Instruct browsers to use HTTPS only for 1 year (31,536,000 seconds) on this domain and all subdomains
 }
 
 # Redirect HTTP to HTTPS
-server {                                                                                        # Begin server block for HTTP redirects
-    listen 80;                                                                                  # Listen on port 80 (unencrypted HTTP)
-    server_name www.example.com;                                                                # Domain name to redirect
-    return 301 https://www.example.com$request_uri;                                             # Permanent redirect (301) to HTTPS with same URI path
-}                                                                                               # End server block
+server {                                                                                       # Begin server block for HTTP redirects
+    listen 80;                                                                                 # Listen on port 80 (unencrypted HTTP)
+    server_name example.com www.example.com;                                                   # Match both apex and www subdomain (should align with your HTTPS server_name)
+    return 301 https://example.com$request_uri;                                                # Permanent redirect (301) to HTTPS, preserving the original URI path
+}
 ```
+
+> **Note:** The original HTTP redirect block used only `www.example.com` as `server_name` while the HTTPS block used `example.com`. Both variants should be handled to avoid redirect loops or missed traffic.
 
 **Security Headers**
 ```nginx
-server {                                                                                                 # Begin server block for security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;                                                        # Prevent clickjacking by only allowing this site to frame itself
-    add_header X-XSS-Protection "1; mode=block" always;                                                     # Enable browser XSS filter and block page if attack detected
-    add_header X-Content-Type-Options "nosniff" always;                                                      # Prevent MIME-type sniffing, force browser to use declared content-type
-    add_header Referrer-Policy "no-referrer-when-downtrade" always;                                           # Send referrer only when protocol security level stays the same (typo: should be "downgrade")
-    add_header Content-Security-Policy "default-src 'self' http: https: data: blob: 'unsafe-inline'" always;   # CSP: Allow resources from same origin, HTTP/HTTPS, data URIs, blobs, inline scripts/styles
-}                                                                                                              # End server block
+server {                                                                                                  # Begin server block for security headers
+    add_header X-Frame-Options "SAMEORIGIN" always;                                                        # Prevent clickjacking by only allowing this site to be framed by itself
+    add_header X-XSS-Protection "1; mode=block" always;                                                    # Legacy XSS filter for older browsers; note: deprecated and ignored by modern browsers (Chrome, Firefox) — rely on CSP instead
+    add_header X-Content-Type-Options "nosniff" always;                                                     # Prevent MIME-type sniffing; forces browser to use the declared Content-Type
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;                                         # Send Referer header only when protocol security level stays the same (e.g., HTTPS → HTTPS); omit on HTTPS → HTTP
+    add_header Content-Security-Policy "default-src 'self' https: data: blob: 'unsafe-inline'" always;     # CSP: restrict resources to same origin and HTTPS; note: 'unsafe-inline' weakens XSS protection — consider using nonces or hashes for inline scripts in production
+}
 ```
+
+> **Note:** The original CSP included the `http:` scheme, which allows loading resources over unencrypted HTTP. This is removed above-use `https:` only on an HTTPS site. Additionally, `'unsafe-inline'` significantly weakens XSS protection; in production, replace it with CSP nonces or hashes.
+
+---
 
 **Let's Encrypt with Certbot**
 
@@ -92,62 +98,66 @@ sudo dnf install epel-release -y
 sudo dnf -y install certbot python3-certbot-nginx
 ```
 
- - Obtain and install the certificate automatically
+- Obtain and install the certificate automatically
 ```bash
 sudo certbot --nginx -d example.com -d www.example.com
 ```
->Prerequities:
->
->A registered domain name (e.g., mywebsite.com, myproject.net, etc.)
 
->DNS records pointing to your server:
+> **Prerequisites:**
 >
-  >An A record pointing yourdomain.com to your server's IP address
->
-  >An A record pointing www.yourdomain.com to your server's IP address (if you want the www subdomain)
+> - A registered domain name (e.g., `mywebsite.com`, `myproject.net`)
+> - DNS records pointing to your server:
+>   - An `A` record for `yourdomain.com` → your server's public IP
+>   - An `A` record for `www.yourdomain.com` → your server's public IP (if using the `www` subdomain)
+> - Port 80 must be open and reachable — Certbot uses it for the HTTP-01 ACME challenge to verify domain ownership
 
+---
 
 - Don't have a domain yet?
-  - If you're just testing/learning, then Generate self signed certificate.
-   - Create the SSL directory
+  - If you're testing or learning, generate a self-signed certificate instead.
+  - Create the SSL directory
 ```bash
 sudo mkdir -p /etc/nginx/ssl/sslkey
 sudo mkdir -p /etc/nginx/ssl/sslcert
 ```
+
   - Generate certificate
 ```bash
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout /etc/nginx/ssl/sslkey/key.pem \
   -out /etc/nginx/ssl/sslcert/cert.pem
 ```
+
 Parameters:
-  * -x509: Create self signed certificate
-  * -nodes: No password protection on key
-  * -days 365: Valid for 365 days
-  * -newkey rsa:2048: Generate 2048-bit RSA key
-  * -keyout: Private key file path
-  * -out: Certificate file path
-  * -subj: Certificate subject (CN=localhost for local testing)
-    * Example: `-subj "/C=US/ST=California/L=San Francisco/O=MyOrg/CN=localhost"` 
+  * `-x509`: Output a self-signed certificate instead of a certificate signing request (CSR)
+  * `-nodes`: Do not encrypt the private key with a passphrase (stands for "no DES"; allows Nginx to load the key without a password prompt)
+  * `-days 365`: Certificate validity period (365 days)
+  * `-newkey rsa:2048`: Generate a new 2048-bit RSA key pair. RSA 2048 is still considered acceptable, though 3072 or 4096 bits is recommended for higher-security or longer-lived certificates
+  * `-keyout`: Output path for the private key file
+  * `-out`: Output path for the certificate file
+  * `-subj`: Set certificate subject fields directly (bypasses interactive prompts)
+    * Example: `-subj "/C=US/ST=California/L=San Francisco/O=MyOrg/CN=localhost"`
 
-<img width="792" height="183" alt="Screenshot 2026-02-03 at 8 28 43 AM" src="https://github.com/user-attachments/assets/a9528727-6503-4741-81c1-2d91c527cd63" />
+<img width="792" height="183" alt="Screenshot 2026-02-03 at 8 28 43 AM" src="https://github.com/user-attachments/assets/a9528727-6503-4741-81c1-2d91c527cd63" />
 
-<img width="781" height="66" alt="Screenshot 2026-02-03 at 8 29 13 AM" src="https://github.com/user-attachments/assets/422f2448-d35a-406b-9cc5-b7fc0da001bb" />
+<img width="781" height="66" alt="Screenshot 2026-02-03 at 8 29 13 AM" src="https://github.com/user-attachments/assets/422f2448-d35a-406b-9cc5-b7fc0da001bb" />
 
- - Set permissions
+- Set permissions
 ```bash
-sudo chmod 600 /etc/nginx/ssl/key.pem
+sudo chmod 600 /etc/nginx/ssl/sslkey/key.pem
 ```
 
- - Auto renewal (usually configured automatically)
+> **Note:** `chmod 600` restricts the private key to owner read/write only. Nginx typically runs as `root` during startup to bind privileged ports, so this is sufficient. Ensure the key is owned by `root`.
+
+- Auto renewal (usually configured automatically by Certbot)
 ```bash
-# Enable automatic renewal
+# Enable automatic renewal timer
 sudo systemctl enable certbot-renew.timer --now
 
 # Check timer status
 sudo systemctl status certbot-renew.timer
 
-# Test renewal process
+# Test the renewal process without making changes
 sudo certbot renew --dry-run
 ```
 
@@ -166,19 +176,23 @@ sudo systemctl enable nginx --now
 ```
 
 - Firewall configuration
-```
+```bash
 sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
 ```
 
+> **Note:** HTTP (port 80) should also be permitted if you intend to redirect HTTP → HTTPS or use Certbot's HTTP-01 challenge.
+
 - Generate Self-Signed Certificate
- - Create a certificate directory:
+  - Create the certificate directory:
 ```bash
 sudo mkdir -p /etc/pki/tls/private
 sudo mkdir -p /etc/pki/tls/certs
 ```
- - Generate a self signed certificate
+
+  - Generate the self-signed certificate:
 ```bash
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/pki/tls/private/localhost.key \
@@ -187,11 +201,11 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 ```
 
 - Configure Nginx for SSL
- - Create a Nginx configuration file:
+  - Create the Nginx configuration file:
 ```bash
 sudo vim /etc/nginx/conf.d/ssl-website.conf
 ```
-```bash
+```nginx
 server {
     listen 443 ssl;
     server_name 127.0.0.1;
@@ -226,7 +240,9 @@ server {
 }
 ```
 
-- Test SSL configuration
+> **Note:** `max-age=63072000` in the HSTS header equals 2 years (63,072,000 seconds). The `preload` directive nominates the domain for browser HSTS preload lists — only use it with a real domain, not `127.0.0.1` or `localhost`, as preload is not applicable to IP addresses or loopback addresses.
+
+- Test the SSL configuration
 ```bash
 sudo nginx -t
 ```
@@ -234,24 +250,28 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
- - Verify SSL
+- Verify SSL
 ```bash
-openssl s_client -connect example.com:443 -tls1_3
+openssl s_client -connect localhost:443 -tls1_3
 ```
 ```bash
-curl -Iv https://example.com
+curl -Ivk https://localhost
 ```
 
+> **Note:** The `-k` flag tells `curl` to skip certificate verification, which is necessary when testing with a self-signed certificate. The original example used `example.com` — use `localhost` or `127.0.0.1` to match the self-signed cert's CN.
+
 - Create Web Content & Set Permissions
- - Create a project directory:
+  - Create the project directory:
 ```bash
 sudo mkdir -p /usr/share/nginx/html
 ```
- - Create the index.html file:
+
+  - Create the `index.html` file:
 ```bash
 sudo vim /usr/share/nginx/html/index.html
 ```
-```bash
+
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -913,12 +933,13 @@ sudo vim /usr/share/nginx/html/index.html
 </html>
 ```
 
-  - Set permission
+- Set permissions
 ```bash
 sudo chown -R nginx:nginx /usr/share/nginx/html
 sudo chmod -R 755 /usr/share/nginx/html
 ```
-  - Test Configuration & Reload Nginx
+
+- Test configuration & reload Nginx
 ```bash
 sudo nginx -t
 ```
@@ -927,19 +948,21 @@ sudo systemctl reload nginx
 ```
 
 - Sample output:
-  
- - Open browser and type: `https://localhost`
 
-<img width="958" height="741" alt="Screenshot 2026-02-03 at 9 11 56 AM" src="https://github.com/user-attachments/assets/a495363e-a5bf-4e48-a9fe-d02a8e4f2c26" />
+  Open your browser and go to: `https://localhost`
 
-<img width="1470" height="796" alt="Screenshot 2026-02-02 at 7 51 40 AM" src="https://github.com/user-attachments/assets/c5544746-9a64-468e-8e25-b35e75a04804" />
+<img width="958" height="741" alt="Screenshot 2026-02-03 at 9 11 56 AM" src="https://github.com/user-attachments/assets/a495363e-a5bf-4e48-a9fe-d02a8e4f2c26" />
 
-<img width="550" height="525" alt="Screenshot 2026-02-02 at 7 51 51 AM" src="https://github.com/user-attachments/assets/f8c27e21-2acc-4fec-8882-b8eb541649d3" />
+<img width="1470" height="796" alt="Screenshot 2026-02-02 at 7 51 40 AM" src="https://github.com/user-attachments/assets/c5544746-9a64-468e-8e25-b35e75a04804" />
+
+<img width="550" height="525" alt="Screenshot 2026-02-02 at 7 51 51 AM" src="https://github.com/user-attachments/assets/f8c27e21-2acc-4fec-8882-b8eb541649d3" />
 
 ---
 
 **- Observe**
-- Please try opening: `http://localhost`
- - What result do you get, and why does this happen?
+- Try opening: `http://localhost`
+  - **What happens?** The browser is automatically redirected to `https://localhost` with a `301 Moved Permanently` response. This occurs because the HTTP server block in the configuration matches port 80 requests and issues a `return 301` redirect to the HTTPS equivalent URI.
+  - **Why?** The `return 301 https://$host$request_uri;` directive tells Nginx to permanently redirect any unencrypted HTTP request to the HTTPS version. After the first redirect, browsers that support HSTS will also refuse to connect over HTTP for the duration of the `max-age` period — issuing the redirect internally without even contacting the server.
+  - **Note:** Because this uses a self-signed certificate, the browser will still show a certificate warning (`NET::ERR_CERT_AUTHORITY_INVALID` or similar). This is expected — the certificate is not signed by a trusted CA. You can bypass this in a browser during testing, but it confirms the redirect and TLS termination are working correctly.
 
 ---
