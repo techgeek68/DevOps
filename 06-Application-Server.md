@@ -142,6 +142,8 @@ export PATH=$PATH:$CATALINA_HOME/bin
 source ~/.bashrc
 ```
 
+<img width="940" height="123" alt="Screenshot 2026-05-06 at 8 39 42 AM" src="https://github.com/user-attachments/assets/60b59544-58ae-434f-8edc-d0eb29d5e043" />
+
 ---
 
 **Install Tomcat**
@@ -243,6 +245,8 @@ netstat -tnlp | grep 8080
 ```bash
 sudo -u tomcat /opt/tomcat/bin/shutdown.sh
 ```
+
+---
 
 **Making this process persistent**
 
@@ -379,7 +383,7 @@ sudo systemctl status tomcat
 
 ---
 
-**Changing the Default Tomcat Port**
+**Changing the Default Tomcat Port [Optional]**
 
 - Check whether the desired port (e.g., 5080) is already in use:
   
@@ -403,53 +407,111 @@ sudo vim $CATALINA_HOME/conf/server.xml
 
 ---
 
+**Set Firewall Rules:**
+
+```bash
+sudo firewall-cmd --list-all
+```
+```bash
+sudo firewall-cmd --permanent --add-port=8080/tcp
+```
+```bash
+sudo firewall-cmd --add-port=5080/tcp --permanent
+```
+```bash
+sudo firewall-cmd --permanent --add-port=80/tcp
+```
+```bash
+sudo firewall-cmd --reload
+```
+
+---
+
 <img width="753" height="146" alt="Screenshot 2025-11-21 at 8 08 02 AM" src="https://github.com/user-attachments/assets/f92dfb60-49f3-459f-b837-7fc5e9afbebe" />
 
 ---
 
-**Secure Remote Access to Manager / Host Manager**
+<img width="801" height="557" alt="Screenshot 2026-05-06 at 7 14 12 AM" src="https://github.com/user-attachments/assets/893ca882-ffc6-4f2d-9d7d-561d4eaf9f98" />
 
-- By default, access is restricted to localhost via `RemoteAddrValve`.
-  
-- Allow specific IP addresses (example: `10.10.5.162` and `10.10.5.157`):
-  
-```
-allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.5\.162|10\.10\.5\.157"
-```
+---
 
-- Allow an entire subnet (e.g., `192.168.1.x` and `10.10.5.x`):
-  
+**Secure Remote Access to Manager/Host Manager**
+
+Tomcat's Manager and Host Manager are locked to localhost by default. Accessing `http://server:8080/manager` from another machine returns **403 Forbidden**. Fix this by editing `context.xml` for both apps and adding your IP to `RemoteAddrValve`.
+
+**Allow specific IPs:**
 ```
-allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|192\.168\.1\.\d+|10\.10\.5\.\d+"
+allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|192\.168\.1\.10|10\.10\.5\.157"
 ```
 
-- Update Host Manager `context.xml`:
-  
+**Allow entire subnet:**
+```
+allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|192\.168\.1\.\d+|10\.10\.1\.\d+"
+```
+
+**Host Manager** - manages virtual hosts:
 ```bash
 sudo vim $CATALINA_HOME/webapps/host-manager/META-INF/context.xml
 ```
 ```xml
 <Context antiResourceLocking="false" privileged="true" >
   <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.5\.\d+" />
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.1\.\d+" />
 </Context>
 ```
 
-- Update Manager App `context.xml`:
-  
+**Verify**:
+  - Restart tomacat
+```
+sudo systemctl restart tomcat
+```
+  - Check from the terminal
+```
+sudo grep -i "allow" $CATALINA_HOME/webapps/host-manager/META-INF/context.xml
+```
+
+  - From your host machine, open in a browser:
+```
+http://<server-ip>:5080/host-manager/html
+```
+
+<img width="1327" height="266" alt="Screenshot 2026-05-06 at 8 23 59 AM" src="https://github.com/user-attachments/assets/cf6019c8-9ba9-43d3-9e5d-38207ad466c2" />
+
+---
+
+**Manager App** - deploys/undeploys apps:
 ```bash
 sudo vim $CATALINA_HOME/webapps/manager/META-INF/context.xml
 ```
-
-> **Note:** Removing or commenting out the `RemoteAddrValve` eliminates the IP restriction entirely   do not do this in production.
-
 ```xml
 <Context antiResourceLocking="false" privileged="true" >
   <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.5\.\d+" />
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.1\.\d+" />
   <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
 </Context>
 ```
+> **Note:** Never remove or comment out `RemoteAddrValve` in production; it removes all IP restrictions.
+
+**Verify**:
+  - Restart tomacat
+```
+sudo systemctl restart tomcat
+```
+  - Check from the terminal
+```
+sudo grep -i "allow" $CATALINA_HOME/webapps/manager/META-INF/context.xml
+```
+---
+<img width="937" height="68" alt="Screenshot 2026-05-06 at 7 45 02 AM" src="https://github.com/user-attachments/assets/3250ea10-7bbb-49d1-9395-56f2666d5a93" />
+
+---
+  - From your machine, open in a browser:
+```
+http://<server-ip>:5080/manager/html
+```
+  - Should prompt for login. If still, 403 means IP not matching the allow rule, or the app does not exist, or the user is not configured
+
+<img width="1325" height="248" alt="Screenshot 2026-05-06 at 8 24 22 AM" src="https://github.com/user-attachments/assets/2300b79d-459e-4958-ac99-43b7cdbf1d43" />
 
 ---
 
@@ -474,11 +536,13 @@ sudo vim $CATALINA_HOME/conf/tomcat-users.xml
       roles="manager-gui,manager-script,manager-jmx,manager-status"/>
 ```
 
-> **Security note:** The password `devops` is used here for demonstration only. In production, use a strong, unique password. Prefer restricting the `manager-gui` role to the internal network only and avoid assigning all roles to a single account.
+> **Note:** The password `devops` is used here for demonstration only. In production, use a strong, unique password. Prefer restricting the `manager-gui` role to the internal network only and avoid assigning all roles to a single account.
 
 ---
-
 <img width="839" height="181" alt="Screenshot 2025-11-24 at 8 46 00 AM" src="https://github.com/user-attachments/assets/e2e1d15d-aa1e-44a7-904b-0e808f489ec2" />
+
+---
+<img width="957" height="595" alt="Screenshot 2026-05-06 at 8 33 49 AM" src="https://github.com/user-attachments/assets/f41e24ed-5125-413a-861d-3de8591df46d" />
 
 ---
 
@@ -490,39 +554,22 @@ sudo systemctl restart tomcat
 
 ---
 
-**Set Firewall Rules:**
-
-```bash
-sudo firewall-cmd --list-all
-```
-```bash
-sudo firewall-cmd --permanent --add-port=8080/tcp
-```
-```bash
-sudo firewall-cmd --permanent --add-port=80/tcp
-```
-```bash
-sudo firewall-cmd --reload
-```
-
----
-
 **Verify:**
 
-- Access remotely using your server IP and port:
+- Access using your host computer and a web browser
   
 ```
 http://<server_ip>:8080
 ```
+- Example
+```
+http://10.10.1.135:5080
+```
 
 - Expected landing page text:
-```
-If you're seeing this, you've successfully installed Tomcat. Congratulations!
-```
 
----
+<img width="1464" height="883" alt="Screenshot 2026-05-06 at 9 04 48 AM" src="https://github.com/user-attachments/assets/9f86b090-90dd-46ad-b1ea-748ddce0ad74" />
 
-<img width="984" height="862" alt="Screenshot 2025-11-24 at 8 28 40 AM" src="https://github.com/user-attachments/assets/e7851142-8c9b-4ccf-917d-737b3368e160" />
 
 ---
 
@@ -550,7 +597,7 @@ http://10.10.5.157:5080/manager/html
 
 ---
 
-**Host Manager vs Manager context.xml**
+**Host Manager vs Manager**
 
 - **host manager/META-INF/context.xml**
   - Purpose: Configures the Host Manager application (manage virtual hosts).
