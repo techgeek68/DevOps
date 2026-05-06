@@ -9,7 +9,7 @@
   - Standard APIs (Servlet, JSP, WebSocket, Expression Language; in full Jakarta EE servers: JPA, JMS, CDI, JTA)
   - Deployment model (WAR, EAR, exploded or packaged)
 
-Examples (lightweight vs. full profile):
+Examples:
 - Lightweight/Servlet containers: Apache Tomcat, Jetty, Undertow
 - Full Jakarta EE/Enterprise: WildFly, Payara, WebLogic, WebSphere
 
@@ -50,15 +50,15 @@ Client > Connector (Coyote) > Catalina Mapping > Filter Chain > Servlet/JSP > Re
 
 - Tomcat Request Handling:
 ```
-+-------------------------------+      +-------------------------------+      +--------------------------------+
-|      Client (Browser)         |<---->|  Coyote (HTTP connector)      |<---->|   Servlet engine (Catalina)    |
-|  HTTP request                 |      |  Acceptor threads             |      |  Servlets/JSP processing       |
-|  HTTP response                |      |  Worker threads               |      |                                |
-|                               |      |  SSL/TLS encryption (if HTTPS)|      |                                |
-+-------------------------------+      +-------------------------------+      +--------------------------------+
-                                                                                 |                           |
-                                                                                 |                           |
-                                                                                 v                           v
++-------------------------------+      +-------------------------------+      +---------------------------------+
+|      Client (Browser)         |<---->|  Coyote (HTTP connector)      |<---->|   Servlet engine (Catalina)     |
+|  HTTP request                 |      |  Acceptor threads             |      |  Servlets/JSP processing        |
+|  HTTP response                |      |  Worker threads               |      |                                 |
+|                               |      |  SSL/TLS encryption (if HTTPS)|      |                                 |
++-------------------------------+      +-------------------------------+      +---------------------------------+
+                                                                                 |                            |
+                                                                                 |                            |
+                                                                                 v                            v
                                                                                 +-------------------------------+
                                                                                 | Jasper                        |
                                                                                 | (JSP engine, if JSP)          |
@@ -164,9 +164,7 @@ scp <apache-tomcat.tar.gz> user_name@<IP_Addr>:/opt
 
 - Visit [Apache Tomcat](https://tomcat.apache.org/) to find the latest download link.
 
----
-
-<img width="1446" height="567" alt="Screenshot 2025-11-20 at 12 48 16 PM" src="https://github.com/user-attachments/assets/8fc7e1c4-c8fb-4904-bc85-36db28486fa5" />
+<img width="1470" height="828" alt="Screenshot 2026-05-06 at 9 35 05 AM" src="https://github.com/user-attachments/assets/3c5014c4-e2a9-48d0-bcc6-cb378a10c5a6" />
 
 ---
 
@@ -174,8 +172,10 @@ scp <apache-tomcat.tar.gz> user_name@<IP_Addr>:/opt
 ```bash
 cd /tmp
 ```
+> Paste the copied link address above together with the `wget` command.
+
 ```bash
-https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.21/bin/apache-tomcat-11.0.21.tar.gz
+wget https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.22/bin/apache-tomcat-11.0.22.tar.gz
 ```
 
 - Extract
@@ -183,7 +183,7 @@ https://dlcdn.apache.org/tomcat/tomcat-11/v11.0.21/bin/apache-tomcat-11.0.21.tar
 sudo tar -xzf apache-tomcat-*.gz
 ```
 
-- Remove the unwanted file now
+- Remove the unwanted zip file
 ```bash
 sudo rm -r apache-tomcat-*.gz
 ```
@@ -197,12 +197,18 @@ sudo mv apache-tomcat-* /opt/tomcat
 ```bash
 cd
 ```
+
+- Create a `tomcat` group
 ```bash
 sudo groupadd tomcat
 ```
+
+- Create a `tomcat` user with no login and set the home directory
 ```bash
 sudo useradd -g tomcat -d /opt/tomcat -s /sbin/nologin tomcat
 ```
+
+- Assign ownership of `/opt/tomcat` to the `tomcat` user and group
 ```bash
 sudo chown -R tomcat:tomcat /opt/tomcat
 ```
@@ -211,21 +217,17 @@ sudo chown -R tomcat:tomcat /opt/tomcat
 ```bash
 sudo tree /opt/tomcat
 ```
-```
-/opt/tomcat            (CATALINA_HOME)
-/opt/tomcat/conf       (server.xml, web.xml)
-/opt/tomcat/logs
-/opt/tomcat/webapps    (deployed WARs)
-/opt/tomcat/temp
-/opt/tomcat/work       (JSP compilation output)
-/opt/tomcat/lib        (shared libraries)
-```
+
+<img width="797" height="448" alt="Screenshot 2026-05-06 at 9 43 27 AM" src="https://github.com/user-attachments/assets/f59cdc71-4888-4f1e-856f-063e76daa62d" />
 
 > In production, avoid modifying the default `webapps` directory directly. Deploy only required WARs. Remove unused default applications (`docs`, `examples`, `manager`, `host-manager`) to reduce the attack surface.
 
 ---
 
 **Running Tomcat**
+
+**Handled Manually**
+
 - Start Tomcat:
 ```bash
 sudo -u tomcat /opt/tomcat/bin/startup.sh
@@ -235,11 +237,8 @@ sudo -u tomcat /opt/tomcat/bin/startup.sh
 ```bash
 netstat -tnlp | grep 8080
 ```
----
 
 <img width="988" height="237" alt="Screenshot 2025-11-20 at 1 20 56 PM" src="https://github.com/user-attachments/assets/00ac68c2-cdb5-40ba-bfa6-d45e125839ab" />
-
----
 
 - Stop Tomcat:
 ```bash
@@ -248,11 +247,11 @@ sudo -u tomcat /opt/tomcat/bin/shutdown.sh
 
 ---
 
-**Making this process persistent**
+**Automated Process: Making this process persistent**
 
-1. **rc.local**
+**Method 1: `rc.local`**
    
-   `rc.local` is a traditional Linux init script that runs at the end of the boot sequence. It is a simple way to add startup tasks, but on modern systemd based systems it is largely superseded by systemd services and should be treated as a legacy fallback.
+   `rc.local` is a traditional Linux init script that runs at the end of the boot sequence. It is a simple way to add startup tasks, but on modern systemd based systems, it is largely superseded by systemd services and should be treated as a legacy fallback.
 
 > Note: `/etc/rc.d/rc.local` must exist and be executable for this to work.
 
@@ -265,7 +264,6 @@ sudo vim /etc/rc.d/rc.local
 ```bash
 sudo -u tomcat /opt/tomcat/bin/startup.sh
 ```
----
 
 <img width="743" height="268" alt="Screenshot 2025-11-21 at 7 47 33 AM" src="https://github.com/user-attachments/assets/836b8ea6-aada-463b-9f03-f8ffb05331ab" />
 
@@ -276,7 +274,9 @@ sudo -u tomcat /opt/tomcat/bin/startup.sh
 sudo chmod u+x /etc/rc.d/rc.local
 ```
 
-2. **Systemd Service (Preferred over rc.local)**
+---
+
+**Method 2: Systemd Service (Preferred over rc.local)**
 
 - Stop any manually started Tomcat instance:
   
@@ -312,7 +312,7 @@ sudo semanage fcontext -a -t usr_t "/opt/tomcat/(conf|lib|webapps|logs|temp|work
 sudo restorecon -Rv /opt/tomcat
 ```
 
-> **Note:** These are generic SELinux type assignments for a manual install where no Tomcat nspecific SELinux policy module is present. If your distribution ships a `tomcat_t` policy (e.g., via the `tomcat selinux` package), use that instead for tighter confinement.
+> **Note:** These are generic SELinux type assignments for a manual install where no Tomcat specific SELinux policy module is present. If your distribution ships a `tomcat_t` policy (e.g., via the `tomcat selinux` package), use that instead for tighter confinement.
 
 - Create an environment file:
 ```bash
@@ -405,7 +405,15 @@ sudo vim $CATALINA_HOME/conf/server.xml
            redirectPort="8443" />
 ```
 
+
+<img width="753" height="146" alt="Screenshot 2025-11-21 at 8 08 02 AM" src="https://github.com/user-attachments/assets/f92dfb60-49f3-459f-b837-7fc5e9afbebe" />
+
 ---
+
+<img width="801" height="557" alt="Screenshot 2026-05-06 at 7 14 12 AM" src="https://github.com/user-attachments/assets/893ca882-ffc6-4f2d-9d7d-561d4eaf9f98" />
+
+---
+
 
 **Set Firewall Rules:**
 
@@ -427,13 +435,6 @@ sudo firewall-cmd --reload
 
 ---
 
-<img width="753" height="146" alt="Screenshot 2025-11-21 at 8 08 02 AM" src="https://github.com/user-attachments/assets/f92dfb60-49f3-459f-b837-7fc5e9afbebe" />
-
----
-
-<img width="801" height="557" alt="Screenshot 2026-05-06 at 7 14 12 AM" src="https://github.com/user-attachments/assets/893ca882-ffc6-4f2d-9d7d-561d4eaf9f98" />
-
----
 
 **Secure Remote Access to Manager/Host Manager**
 
@@ -446,103 +447,121 @@ allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|192\.168\.1\.10|10\.10\.5\.157"
 
 **Allow entire subnet:**
 ```
-allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|192\.168\.1\.\d+|10\.10\.1\.\d+"
+allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|192\.168\.1\.\d+|10\.10\.0\.\d+"
 ```
 
-**Host Manager** - manages virtual hosts:
+**Host Manager**
+
+- **host manager/META-INF/context.xml**
+  - Purpose: Configures the Host Manager application (manage virtual hosts).
+  - Scope: Server wide host administration.
+
 ```bash
 sudo vim $CATALINA_HOME/webapps/host-manager/META-INF/context.xml
 ```
+
+**Option A-Regex (RemoteAddrValve):**
 ```xml
-<Context antiResourceLocking="false" privileged="true" >
   <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.1\.\d+" />
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.0\.\d+" />
+```
+
+> **Note:** Never remove or comment out `RemoteAddrValve` in production; it removes all IP restrictions.
+
+**Option B-CIDR (RemoteCIDRValve):**
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiResourceLocking="false" privileged="true" ignoreAnnotations="true">
+  <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+                   sameSiteCookies="strict" />
+  <Valve className="org.apache.catalina.valves.RemoteCIDRValve"
+         allow="127.0.0.0/8,::1/128,10.10.0.0/16" />
+  <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
 </Context>
 ```
+---
 
-**Verify**:
-  - Restart tomacat
-```
-sudo systemctl restart tomcat
-```
-  - Check from the terminal
-```
-sudo grep -i "allow" $CATALINA_HOME/webapps/host-manager/META-INF/context.xml
-```
-
-  - From your host machine, open in a browser:
-```
-http://<server-ip>:5080/host-manager/html
-```
-
-<img width="1327" height="266" alt="Screenshot 2026-05-06 at 8 23 59 AM" src="https://github.com/user-attachments/assets/cf6019c8-9ba9-43d3-9e5d-38207ad466c2" />
+<img width="907" height="300" alt="Screenshot 2026-05-06 at 1 06 50 PM" src="https://github.com/user-attachments/assets/748caf76-0507-44b7-a10b-3a977ee05acf" />
 
 ---
 
-**Manager App** - deploys/undeploys apps:
+**Manager App**:
+
+- **manager/META-INF/context.xml**
+  - Purpose: Configures the Manager application (manage web applications).
+  - Scope: Deploy, undeploy, start, and stop applications; view runtime status.
+
 ```bash
 sudo vim $CATALINA_HOME/webapps/manager/META-INF/context.xml
 ```
 ```xml
-<Context antiResourceLocking="false" privileged="true" >
-  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
-         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.10\.1\.\d+" />
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiResourceLocking="false" privileged="true" ignoreAnnotations="true">
+  <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+                   sameSiteCookies="strict" />
+  <Valve className="org.apache.catalina.valves.RemoteCIDRValve"
+         allow="127.0.0.0/8,::1/128,10.10.0.0/16" />
   <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
 </Context>
 ```
-> **Note:** Never remove or comment out `RemoteAddrValve` in production; it removes all IP restrictions.
+
+<img width="912" height="299" alt="Screenshot 2026-05-06 at 1 07 32 PM" src="https://github.com/user-attachments/assets/a115dd45-78c8-44d5-8830-ff33a47df312" />
+
+---
 
 **Verify**:
   - Restart tomacat
 ```
 sudo systemctl restart tomcat
 ```
+
   - Check from the terminal
+```
+sudo grep -i "allow" $CATALINA_HOME/webapps/host-manager/META-INF/context.xml
+```
 ```
 sudo grep -i "allow" $CATALINA_HOME/webapps/manager/META-INF/context.xml
 ```
----
-<img width="937" height="68" alt="Screenshot 2026-05-06 at 7 45 02 AM" src="https://github.com/user-attachments/assets/3250ea10-7bbb-49d1-9395-56f2666d5a93" />
+
+<img width="906" height="188" alt="Screenshot 2026-05-06 at 1 08 29 PM" src="https://github.com/user-attachments/assets/c2e0a14a-d409-4b08-a9a5-0a360f4089d0" />
+
 
 ---
-  - From your machine, open in a browser:
-```
-http://<server-ip>:5080/manager/html
-```
-  - Should prompt for login. If still, 403 means IP not matching the allow rule, or the app does not exist, or the user is not configured
 
-<img width="1325" height="248" alt="Screenshot 2026-05-06 at 8 24 22 AM" src="https://github.com/user-attachments/assets/2300b79d-459e-4958-ac99-43b7cdbf1d43" />
-
----
 
 **Create Roles and Users (tomcat users.xml)**
 
-- Edit:
 ```bash
 sudo vim $CATALINA_HOME/conf/tomcat-users.xml
 ```
-
-- Add roles:
 ```xml
-<role rolename="manager-gui"/>
-<role rolename="manager-script"/>
-<role rolename="manager-jmx"/>
-<role rolename="manager-status"/>
-```
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
 
-- Add a user and assign roles:
-```xml
-<user username="admin" password="devops"
-      roles="manager-gui,manager-script,manager-jmx,manager-status"/>
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <role rolename="manager-jmx"/>
+  <role rolename="manager-status"/>
+  <role rolename="admin-gui"/>
+  <role rolename="admin-script"/>
+
+  <user username="admin"
+        password="devops"
+        roles="manager-gui,manager-status,admin-gui"/>
+
+  <user username="deployer"
+        password="devops"
+        roles="manager-script,manager-jmx,manager-status,admin-script"/>
+
+</tomcat-users>
 ```
 
 > **Note:** The password `devops` is used here for demonstration only. In production, use a strong, unique password. Prefer restricting the `manager-gui` role to the internal network only and avoid assigning all roles to a single account.
 
----
-<img width="839" height="181" alt="Screenshot 2025-11-24 at 8 46 00 AM" src="https://github.com/user-attachments/assets/e2e1d15d-aa1e-44a7-904b-0e808f489ec2" />
-
----
-<img width="957" height="595" alt="Screenshot 2026-05-06 at 8 33 49 AM" src="https://github.com/user-attachments/assets/f41e24ed-5125-413a-861d-3de8591df46d" />
+<img width="906" height="524" alt="Screenshot 2026-05-06 at 1 09 17 PM" src="https://github.com/user-attachments/assets/7e6783fa-b6f8-47b5-822d-4486fc153475" />
 
 ---
 
@@ -555,61 +574,43 @@ sudo systemctl restart tomcat
 ---
 
 **Verify:**
-
-- Access using your host computer and a web browser
+  - Access using your host computer and a web browser
   
 ```
 http://<server_ip>:8080
 ```
 - Example
 ```
-http://10.10.1.135:5080
+http://10.10.4.5:8080
 ```
 
 - Expected landing page text:
 
-<img width="1464" height="883" alt="Screenshot 2026-05-06 at 9 04 48 AM" src="https://github.com/user-attachments/assets/9f86b090-90dd-46ad-b1ea-748ddce0ad74" />
+<img width="1470" height="924" alt="Screenshot 2026-05-06 at 1 10 23 PM" src="https://github.com/user-attachments/assets/accca0a9-2082-40b7-8995-6fc6f398add5" />
 
 
 ---
 
-- Open the Manager App and log in with the configured credentials (a server with a GUI browser is preferred):
-  
----
+- http://10.10.0.132:8080/host-manager/html
 
-<img width="1052" height="256" alt="Screenshot 2025-11-24 at 9 43 58 AM" src="https://github.com/user-attachments/assets/16ba0da2-d895-4535-af77-701d9fbf9bfc" />
+<img width="1470" height="928" alt="Screenshot 2026-05-06 at 1 12 23 PM" src="https://github.com/user-attachments/assets/87c33402-9a98-4ecb-8f21-cdf88ed8bb56" />
 
 ---
 
----
-
-<img width="829" height="335" alt="Screenshot 2025-11-24 at 11 00 45 AM" src="https://github.com/user-attachments/assets/af2e74d5-3031-45cc-999c-9b19fcaef27a" />
+<img width="1470" height="911" alt="Screenshot 2026-05-06 at 1 16 59 PM" src="https://github.com/user-attachments/assets/de7b6214-b42a-466d-89ef-66f7073d0eef" />
 
 ---
 
-```
-http://10.10.5.157:5080/manager/html
-```
+- http://10.10.0.132:8080/manager/html
+
+<img width="1470" height="927" alt="Screenshot 2026-05-06 at 1 10 55 PM" src="https://github.com/user-attachments/assets/0c05aaae-2a7a-4f61-95ea-6cff9ebe49db" />
+
+---
+<img width="1468" height="929" alt="Screenshot 2026-05-06 at 1 16 22 PM" src="https://github.com/user-attachments/assets/33cc9ba8-06b3-45a9-9e5b-49608dd25a05" />
 
 ---
 
-<img width="1469" height="918" alt="Screenshot 2025-11-24 at 11 01 15 AM" src="https://github.com/user-attachments/assets/b8de7e63-f4af-4f8d-9e37-5610cd21fd70" />
-
----
-
-**Host Manager vs Manager**
-
-- **host manager/META-INF/context.xml**
-  - Purpose: Configures the Host Manager application (manage virtual hosts).
-  - Scope: Server wide host administration.
-
-- **manager/META-INF/context.xml**
-  - Purpose: Configures the Manager application (manage web applications).
-  - Scope: Deploy, undeploy, start, and stop applications; view runtime status.
-
----
-
-**Security Hardening**
+**Security Recommendations**
 
 | Area             | Action |
 |------------------|--------|
@@ -626,7 +627,7 @@ http://10.10.5.157:5080/manager/html
 | Shutdown Port    | The default `server.xml` uses port 8005 with the plain-text command `SHUTDOWN`. Change the command to a random string or set `port="-1"` to disable the shutdown port entirely if you manage lifecycle through systemd |
 | Session Security | Set session cookies with `HttpOnly` and `Secure` flags; configure an appropriate session timeout |
 
-Example minimal `tomcat-users.xml` entry:
+- Example minimal `tomcat-users.xml` entry:
 ```xml
 <role rolename="manager-status"/>
 <user username="statususer" password="StrongPass123!" roles="manager-status"/>
@@ -776,67 +777,4 @@ For horizontal scaling, prefer an external session store or a fully stateless de
 | Embedded Mode    | Yes (native `tomcat-embed-core` API; also via Spring Boot) | Native | Native | Not typical |
 | Startup Speed    | Fast   | Faster | Very fast | Moderate |
 
----
-
-**Examples**
-
-- Enhanced `setenv.sh`   `$CATALINA_HOME/bin/setenv.sh`:
-```bash
-#!/bin/bash
-export JAVA_HOME=/usr/lib/jvm/java-21-openjdk
-export CATALINA_PID="$CATALINA_HOME/temp/tomcat.pid"
-export JAVA_OPTS="-Xms1024m -Xmx1536m \
-  -XX:+UseG1GC -XX:MaxGCPauseMillis=200 \
-  -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=$CATALINA_HOME/logs \
-  -Dfile.encoding=UTF-8 \
-  -Djava.security.egd=file:/dev/urandom \
-  -Dcom.sun.management.jmxremote \
-  -Dcom.sun.management.jmxremote.local.only=true \
-  -Dlog4j2.formatMsgNoLookups=true"
-```
-
-> **Note:** `-Dlog4j2.formatMsgNoLookups=true` is a mitigation for CVE-2021-44228 (Log4Shell) and only takes effect if the application includes Log4j2 on its classpath. It has no effect otherwise. If your application does not use Log4j2, this flag is harmless but unnecessary.
-
-Make executable:
-```bash
-chmod +x $CATALINA_HOME/bin/setenv.sh
-```
-
-**Hardened `server.xml` Snippet**
-```xml
-<Server port="-1" shutdown="DISABLED">
-  <Service name="Catalina">
-    <Executor name="tomcatThreadPool" namePrefix="catalina-exec-" maxThreads="300" minSpareThreads="50"/>
-
-    <Connector port="5080" protocol="HTTP/1.1"
-               connectionTimeout="15000"
-               executor="tomcatThreadPool"
-               maxKeepAliveRequests="1000"
-               compression="on"
-               compressibleMimeType="text/html,text/xml,text/plain,text/css,application/json,application/javascript"
-               redirectPort="8443" />
-
-    <!-- HTTPS via reverse proxy preferred; direct connector shown for reference only -->
-    <!--
-    <Connector port="8443" protocol="org.apache.coyote.http11.Http11NioProtocol"
-               SSLEnabled="true" maxThreads="200"
-               keystoreFile="/opt/tomcat/ssl/keystore.jks"
-               keystorePass="changeit" scheme="https" secure="true"
-               clientAuth="false" sslProtocol="TLSv1.3" />
-    -->
-
-    <Engine name="Catalina" defaultHost="localhost">
-      <Valve className="org.apache.catalina.valves.RemoteIpValve"
-             internalProxies="127\.0\.0\.1"
-             protocolHeader="X-Forwarded-Proto"
-             remoteIpHeader="X-Forwarded-For" />
-
-      <Host name="localhost" appBase="webapps" unpackWARs="true" autoDeploy="false">
-        <!-- Harden session cookies -->
-        <Context useHttpOnly="true" />
-      </Host>
-    </Engine>
-  </Service>
-</Server>
-```
 ---
