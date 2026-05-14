@@ -335,14 +335,34 @@ sudo mkdir -p /opt/tomcat/temp
 sudo chown tomcat:tomcat /opt/tomcat/temp
 ```
 
-Apply SELinux context to the Tomcat installation (RHEL-based systems):
+**SELinux:**
+
+Apply SELinux context to the Tomcat installation:
+>(RHEL based systems)
+- Label Tomcat bin/ as executable (bin_t) in SELinux policy
 ```bash
 sudo semanage fcontext -a -t bin_t "/opt/tomcat/bin(/.*)?"
+```
+- Label Tomcat config, lib, and runtime dirs with appropriate (usr_t) SELinux context
+```bash
 sudo semanage fcontext -a -t usr_t "/opt/tomcat/(conf|lib|webapps|logs|temp|work)(/.*)?"
+```
+- Apply the newly defined SELinux context rules recursively to `/opt/tomcat`
+```bash
 sudo restorecon -Rv /opt/tomcat
 ```
 
-> These are generic SELinux type assignments for a manual install where no Tomcat-specific SELinux policy module is present. If your distribution ships a `tomcat_t` policy (e.g., via the `tomcat-selinux` package), use that instead for tighter confinement.
+Allow Tomcat to bind to non standard ports if needed. If you change Tomcat to port 9090
+```
+sudo semanage port -a -t http_port_t -p tcp 9090
+```
+
+Check the current Tomcat, related SELinux contexts
+```
+sudo semanage port -l | grep tomcat
+```
+
+> These are generic SELinux type assignments for a manual install when no Tomcat specific SELinux policy module is present. If your distribution ships a `tomcat_t` policy (e.g., via the `tomcat-selinux` package), use that instead for tighter confinement.
 
 Create an environment file:
 ```bash
@@ -526,11 +546,6 @@ Check from the terminal:
 sudo grep -i "allow" $CATALINA_HOME/webapps/host-manager/META-INF/context.xml
 sudo grep -i "allow" $CATALINA_HOME/webapps/manager/META-INF/context.xml
 ```
-
-Restart Tomcat:
-```bash
-sudo systemctl restart tomcat
-```
 ---
 <img width="906" height="188" alt="Screenshot 2026-05-06 at 1 08 29 PM" src="https://github.com/user-attachments/assets/c2e0a14a-d409-4b08-a9a5-0a360f4089d0" />
 
@@ -573,11 +588,24 @@ sudo vim $CATALINA_HOME/conf/tomcat-users.xml
 
 ---
 
+**Minimal `tomcat-users.xml` entry example:**
+
+```xml
+<role rolename="manager-status"/>
+<user username="statususer" password="StrongPass123!" roles="manager-status"/>
+```
+
+Restrict full GUI admin access to the internal network only.
+
+---
+
 Reload Tomcat to apply changes:
 
 ```bash
 sudo systemctl restart tomcat
 ```
+
+---
 
 ### Verify
 
@@ -629,13 +657,6 @@ http://<server_ip>:8080/manager/html
 | Shutdown Port | The default `server.xml` uses port 8005 with the plain text command `SHUTDOWN`. Change the command to a random string or set `port="-1"` to disable the shutdown port entirely if you manage lifecycle through systemd |
 | Session Security | Set session cookies with `HttpOnly` and `Secure` flags; configure an appropriate session timeout |
 
-Minimal `tomcat-users.xml` entry example:
-```xml
-<role rolename="manager-status"/>
-<user username="statususer" password="StrongPass123!" roles="manager-status"/>
-```
-
-Restrict full GUI admin access to the internal network only.
 
 ---
 
@@ -663,16 +684,22 @@ export JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+
 
 ## Monitoring
 
-- JMX (local access + Prometheus JMX exporter for metrics collection)
-- Access logs (latency patterns, error rate trends)
-- Heap and GC metrics (VisualVM, Java Mission Control, `jstat`)
-- Thread dumps for diagnosing hangs and stalls (`jstack <pid>`)
-- APM integration (e.g., OpenTelemetry Java agent)
+  - JMX (local access + Prometheus JMX exporter for metrics collection)
+  - Access logs (latency patterns, error rate trends)
+  - Heap and GC metrics (VisualVM, Java Mission Control, `jstat`)
+  - Thread dumps for diagnosing hangs and stalls (`jstack <pid>`)
+  - APM integration (e.g., OpenTelemetry Java agent)
 
 Prometheus JMX exporter config example snippet:
+
 ```yaml
 rules:
   - pattern: 'java.lang<type=Memory><HeapMemoryUsage>(.*)'
+```
+
+- Follow live Tomcat logs via journald
+```
+sudo journalctl -u tomcat -f
 ```
 
 ---
@@ -709,9 +736,9 @@ Default log files:
 
 | File | Purpose |
 |------|---------|
-| `catalina.out` | JVM stdout/stderr; does not self-rotate — handle externally with logrotate |
+| `catalina.out` | JVM stdout/stderr; does not self rotate; handle externally with logrotate |
 | `localhost_access_log*.txt` | Access log |
-| `localhost.yyyy-MM-dd.log` | Per-host application log |
+| `localhost.yyyy-MM-dd.log` | Per host application log |
 | `manager.yyyy-MM-dd.log` | Manager App activity |
 
 Rotation via logrotate (`/etc/logrotate.d/tomcat`):
@@ -766,7 +793,7 @@ For Tomcat to trust forwarded headers and issue correct redirects and secure coo
 
 ## Session Management & Scalability
 
-| Strategy | Description | Trade-offs |
+| Strategy | Description | Trade offs |
 |----------|-------------|------------|
 | Sticky Sessions | Load balancer always routes a user to the same node | Simple; session is lost if that node fails |
 | Session Replication | Delta or full session replication between cluster nodes | Higher memory and network overhead; built into Tomcat clustering |
@@ -783,25 +810,36 @@ For horizontal scaling, prefer an external session store or a fully stateless de
 Understanding how to package and deploy a Java web application is foundational.
 
 **Build a sample WAR with Maven:**
+
+- Debian/Ubuntu
 ```bash
-sudo apt install -y maven          # Debian/Ubuntu
-sudo dnf install maven             # RHEL/Rocky
+sudo apt install -y maven          
+```
+- RHEL/Rocky/Fedora
+```bash
+sudo dnf install maven            
 ```
 
 Create a minimal Maven project:
+
 ```bash
 mvn archetype:generate \
   -DgroupId=com.example \
   -DartifactId=myapp \
   -DarchetypeArtifactId=maven-archetype-webapp \
   -DinteractiveMode=false
+```
+``bash
 cd myapp
 mvn package
 ```
 
 This produces `target/myapp.war`. Deploy it:
+
 ```bash
 sudo cp target/myapp.war /opt/tomcat/webapps/
+```
+```bash
 sudo systemctl restart tomcat
 ```
 
@@ -811,6 +849,7 @@ http://<server_ip>:8080/myapp
 ```
 
 Undeploy (remove the WAR and the expanded directory):
+
 ```bash
 sudo rm -rf /opt/tomcat/webapps/myapp.war /opt/tomcat/webapps/myapp
 ```
@@ -856,6 +895,8 @@ keytool -genkey -alias tomcat \
   -validity 365 \
   -storepass changeit -keypass changeit \
   -dname "CN=localhost, OU=Dev, O=Example, L=City, S=State, C=US"
+```
+```bash
 sudo chown tomcat:tomcat /opt/tomcat/conf/keystore.jks
 sudo chmod 640 /opt/tomcat/conf/keystore.jks
 ```
@@ -873,12 +914,16 @@ Add an HTTPS connector in `server.xml`:
 ```
 
 Restart and verify:
+
 ```bash
 sudo systemctl restart tomcat
+```
+```bash
 curl -k https://<server_ip>:8443/
 ```
 
 Allow the port through the firewall:
+
 ```bash
 sudo firewall-cmd --permanent --add-port=8443/tcp
 sudo firewall-cmd --reload
@@ -893,12 +938,14 @@ sudo firewall-cmd --reload
 Applications often need database connections. Rather than hardcoding connection strings, Tomcat supports JNDI DataSources so the container manages the connection pool.
 
 Add a JDBC driver JAR to `/opt/tomcat/lib/` (example: MySQL):
+
 ```bash
 sudo cp mysql-connector-j-*.jar /opt/tomcat/lib/
 sudo chown tomcat:tomcat /opt/tomcat/lib/mysql-connector-j-*.jar
 ```
 
 Define the DataSource in `$CATALINA_HOME/conf/context.xml` (global) or in your application's `META-INF/context.xml`:
+
 ```xml
 <Resource name="jdbc/mydb"
           auth="Container"
@@ -913,6 +960,7 @@ Define the DataSource in `$CATALINA_HOME/conf/context.xml` (global) or in your a
 ```
 
 Reference it in your application's `web.xml`:
+
 ```xml
 <resource-ref>
   <description>DB Connection</description>
