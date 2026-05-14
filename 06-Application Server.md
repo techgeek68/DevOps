@@ -50,9 +50,23 @@ Tomcat is not a full Jakarta EE stack. It does not include built-in EJB, JPA, JM
 
 ---
 
-### Core Internal Components
+## Comparison: Tomcat vs Alternatives
 
-- **Coyote:** Protocol handler (HTTP/1.1, HTTP/2 via upgrade, AJP if enabled)
+| Feature | Tomcat | Jetty | Undertow | Full EE (WildFly) |
+|---------|--------|-------|----------|-------------------|
+| Footprint | Small | Smaller | Very small | Larger |
+| Async Support | Yes (Servlet 3.1+) | Strong | Strong | Yes |
+| WebSocket | Yes | Yes | Yes | Yes |
+| HTTP/2 | Yes (config required) | Yes | Yes | Yes |
+| Jakarta EE Full | No | No | No | Yes |
+| Embedded Mode | Yes (native `tomcat-embed-core` API; also via Spring Boot) | Native | Native | Not typical |
+| Startup Speed | Fast | Faster | Very fast | Moderate |
+
+---
+
+### Tomcat Core Internal Components
+
+- **Coyote:** Protocol handler (HTTP/1.1, HTTP/2 via upgrade, AJP (Apache JServ Protocol) if enabled)
 - **Catalina:** Servlet container (deployment, lifecycle management, URL mapping, filter chains)
 - **Jasper:** JSP compiler; converts `.jsp` files to Java servlet source, then compiles to bytecode
 - **Realm:** Authentication and authorisation integration (MemoryRealm, JDBCRealm, JNDIRealm, etc.)
@@ -560,6 +574,7 @@ sudo vim $CATALINA_HOME/conf/tomcat-users.xml
 ---
 
 Reload Tomcat to apply changes:
+
 ```bash
 sudo systemctl restart tomcat
 ```
@@ -567,6 +582,7 @@ sudo systemctl restart tomcat
 ### Verify
 
 Access from a browser on your host machine:
+
 ```
 http://<server_ip>:8080
 ```
@@ -666,7 +682,7 @@ rules:
 | Step | Action |
 |------|--------|
 | Build | Produce a WAR via Maven or Gradle |
-| Scan | Run SAST/DAST and dependency vulnerability checks (e.g., OWASP Dependency-Check) |
+| Scan | Run SAST/DAST and dependency vulnerability checks (e.g., OWASP Dependency Check) |
 | Stage | Copy WAR to `webapps/` or use the `/manager/text/deploy` endpoint |
 | Validate | Check a health endpoint (`/health` or a custom servlet) after deployment |
 | Traffic Shift | Use a reverse proxy or load balancer to drain the old instance before cutting over |
@@ -738,6 +754,7 @@ server {
 ```
 
 For Tomcat to trust forwarded headers and issue correct redirects and secure cookie flags, add `RemoteIpValve` inside `<Engine>` or `<Host>` in `server.xml`:
+
 ```xml
 <Valve className="org.apache.catalina.valves.RemoteIpValve"
        internalProxies="127\.0\.0\.1"
@@ -759,23 +776,9 @@ For Tomcat to trust forwarded headers and issue correct redirects and secure coo
 For horizontal scaling, prefer an external session store or a fully stateless design.
 
 ---
-
-## Comparison: Tomcat vs Alternatives
-
-| Feature | Tomcat | Jetty | Undertow | Full EE (WildFly) |
-|---------|--------|-------|----------|-------------------|
-| Footprint | Small | Smaller | Very small | Larger |
-| Async Support | Yes (Servlet 3.1+) | Strong | Strong | Yes |
-| WebSocket | Yes | Yes | Yes | Yes |
-| HTTP/2 | Yes (config required) | Yes | Yes | Yes |
-| Jakarta EE Full | No | No | No | Yes |
-| Embedded Mode | Yes (native `tomcat-embed-core` API; also via Spring Boot) | Native | Native | Not typical |
-| Startup Speed | Fast | Faster | Very fast | Moderate |
-
----
 ---
 
-### WAR Deployment Lab
+### WAR Deployment to the Tomcat Server
 
 Understanding how to package and deploy a Java web application is foundational.
 
@@ -937,514 +940,11 @@ Tomcat ships with the `AccessLogValve` but it needs to be explicitly configured.
 The `%D` pattern field records request processing time in milliseconds — useful for detecting slow requests.
 
 ---
----
-## Complete Example:
 
-**Prerequisites: Java & OS setup**
-
-Install Java 21 (LTS) and confirm the version. Tomcat 10.x requires Java 11+.
-```bash
-sudo dnf install -y java-21-openjdk java-21-openjdk-devel wget tar
-```
-
-Verify Java
-```bash
-java -version
-```
-- Expected: openjdk version "21.x.x"
-  
-```bash
-echo $JAVA_HOME
-```
-
-- If empty, set it:
-```
-readlink -f $(which java)
-```
-```bash
-sudo echo 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk' | sudo tee /etc/profile.d/java.sh > /dev/null
-```
-```
-source /etc/profile.d/java.sh
-```
-
-Create a dedicated Tomcat user (no login shell)
-```bash
-sudo useradd -m -U -d /opt/tomcat -s /bin/false tomcat
-```
-
-Download & extract Tomcat 10
-```bash
-TOMCAT_VER="10.1.55"
-```
-```bash
-cd /tmp
-wget https://downloads.apache.org/tomcat/tomcat-10/v${TOMCAT_VER}/bin/apache-tomcat-${TOMCAT_VER}.tar.gz
-```
-```bash
-sudo tar -xzf apache-tomcat-${TOMCAT_VER}.tar.gz -C /opt/tomcat --strip-components=1
-```
-```bash
-cd
-```
-```bash
-sudo chown -R tomcat:tomcat /opt/tomcat
-sudo chmod -R 750 /opt/tomcat
-```
-
-Create a systemd service unit
-```
-sudo vim /etc/systemd/system/tomcat.service
-```
-```
-[Unit]
-Description=Apache Tomcat 10 Web Application Server
-After=network.target
-
-[Service]
-Type=forking
-User=tomcat
-Group=tomcat
-
-Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk"
-Environment="CATALINA_HOME=/opt/tomcat"
-Environment="CATALINA_BASE=/opt/tomcat"
-Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
-Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
-
-ExecStart=/opt/tomcat/bin/startup.sh
-ExecStop=/opt/tomcat/bin/shutdown.sh
-
-UMask=0007
-RestartSec=10
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Enable & start the service
-```
-sudo systemctl daemon-reload
-sudo systemctl enable --now tomcat
-sudo systemctl status tomcat
-```
-
-Open firewall port 8080
-```
-sudo firewall-cmd --permanent --add-port=8080/tcp
-sudo firewall-cmd --reload
-```
-
-**Build & deploy a WAR with Maven**
-
-Install Maven on the build machine (or the same server)
-```bash
-sudo dnf install -y maven
-```
-```bash
-mvn -version
-```
-
-Generate a sample webapp skeleton & build
-```bash
-mvn archetype:generate \
-  -DgroupId=com.example \
-  -DartifactId=myapp \
-  -DarchetypeArtifactId=maven-archetype-webapp \
-  -DinteractiveMode=false
-```
-```bash
-cd myapp
-```
-```bash
-mvn package      # Produces: target/myapp.war
-```
-
-Deploy the WAR to Tomcat
-```bash
-sudo cp target/myapp.war /opt/tomcat/webapps/
-```
-```bash
-sudo systemctl restart tomcat
-```
-- Verify in browser:
-```bash
-curl http://localhost:8080/myapp/
-```
----
-<img width="1470" height="277" alt="Screenshot 2026-05-13 at 1 13 14 PM" src="https://github.com/user-attachments/assets/b6dde3ea-d378-4503-a7aa-fda2557bb272" />
-
-
----
-# Change the content of App
-
-```bash
-cd myapp
-```
-```
-tree
-```
-```
-sudo vim src/main/webapp/index.jsp 
-```
-```
-<html>
-<body>
-  <h2>Tip Calculator App</h2>
-  <input type="number" id="bill" placeholder="Bill Amount">
-  <button onclick="calc()">Calculate 15% Tip</button>
-  <h3 id="result"></h3>
-
-  <script>
-    function calc() {
-      const amount = document.getElementById('bill').value;
-      const tip = (amount * 0.15).toFixed(2);
-      document.getElementById('result').innerText = `Total Tip: $${tip}`;
-    }
-  </script>
-</body>
-</html>
-```
-```
-mvn package
-```
-```
-sudo cp target/myapp.war /opt/tomcat/webapps/
-```
-```
-sudo systemctl restart tomcat
-```
----
-<img width="1470" height="293" alt="Screenshot 2026-05-13 at 1 27 52 PM" src="https://github.com/user-attachments/assets/90bd0340-4c70-4356-af49-0e608d75c242" />
-
-
----
-
-**Undeploy cleanly**
-
-```bash
-sudo rm -rf /opt/tomcat/webapps/myapp.war \
-             /opt/tomcat/webapps/myapp
-sudo systemctl restart tomcat
-```
-
----
----
-
-**Virtual hosts: multiple apps on one server**
-
-Edit `/opt/tomcat/conf/server.xml`. Each <Host> element maps a domain to its own webapps directory.
-
-Create app directories & set ownership
-```bash
-sudo mkdir -p /opt/apps/app1 /opt/apps/app2
-sudo chown -R tomcat:tomcat /opt/apps
-```
-```bash
-# Set SELinux context so Tomcat can read the dirs
-sudo semanage fcontext -a -t tomcat_var_lib_t "/opt/apps(/.*)?"
-sudo restorecon -Rv /opt/apps
-```
-
-Virtual host block inside <Engine> in server.xml
-`vim /opt/tomcat/conf/server.xml`
-```xml
-<Engine name="Catalina" defaultHost="localhost">
-
-  <!-- Default localhost host (keep as-is) -->
-  <Host name="localhost" appBase="webapps"
-        unpackWARs="true" autoDeploy="true">
-  </Host>
-
-  <Host name="app1.example.com" appBase="/opt/apps/app1"
-        unpackWARs="true" autoDeploy="true">
-    <Valve className="org.apache.catalina.valves.AccessLogValve"
-           directory="logs" prefix="app1_access_log" suffix=".txt"
-           pattern="%h %l %u %t &quot;%r&quot; %s %b %D"
-           resolveHosts="false" />
-  </Host>
-
-  <Host name="app2.example.com" appBase="/opt/apps/app2"
-        unpackWARs="true" autoDeploy="true">
-    <Valve className="org.apache.catalina.valves.AccessLogValve"
-           directory="logs" prefix="app2_access_log" suffix=".txt"
-           pattern="%h %l %u %t &quot;%r&quot; %s %b %D"
-           resolveHosts="false" />
-  </Host>
-
-</Engine>
-```
-
-Deploy a WAR to a virtual host
-```bash
-# The ROOT.war becomes the root context for that vhost
-sudo cp myapp.war /opt/apps/app1/ROOT.war
-sudo chown tomcat:tomcat /opt/apps/app1/ROOT.war
-sudo systemctl restart tomcat
-```
-
-> For local testing, add app1.example.com to /etc/hosts, pointing to your server IP.
-
----
-
-**HTTPS / TLS configuration**
-
-Two approaches are shown: direct Tomcat TLS (testing) and Nginx reverse proxy with Let's Encrypt (production recommended).
-
-**Option A: Self-signed certificate (dev/testing only)**
-
-```bash
-# Generate a JKS keystore
-sudo -u tomcat keytool -genkey -alias tomcat \
-  -keyalg RSA -keysize 2048 \
-  -keystore /opt/tomcat/conf/keystore.jks \
-  -validity 365 \
-  -storepass changeit -keypass changeit \
-  -dname "CN=localhost, OU=Dev, O=Example, L=Kathmandu, S=Bagmati, C=NP"
-
-sudo chmod 640 /opt/tomcat/conf/keystore.jks
-```
-
-Add HTTPS connector to server.xml (after the existing 8080 connector)
-
-`sudo vim /opt/tomcat/conf/server.xml`
-
-```bash
-<Connector port="8443"
-           protocol="org.apache.coyote.http11.Http11NioProtocol"
-           maxThreads="150" SSLEnabled="true">
-  <SSLHostConfig>
-    <Certificate
-      certificateKeystoreFile="conf/keystore.jks"
-      certificateKeystorePassword="changeit"
-      type="RSA" />
-  </SSLHostConfig>
-</Connector>
-```
-
-Open port & test
-```bash
-sudo firewall-cmd --permanent --add-port=8443/tcp
-sudo firewall-cmd --reload
-sudo systemctl restart tomcat
-```
-```bash
-curl -k https://localhost:8443/
-```
-
-**Option B: Nginx TLS termination (production recommended)**
-
-```bash
-sudo dnf install -y nginx certbot python3-certbot-nginx
-```
-```bash
-# Obtain a cert (replace with your domain)
-sudo certbot --nginx -d app1.example.com
-```
-
-Nginx reverse proxy config
-
-`sudo vim /etc/nginx/conf.d/app1.conf`
-
-```nginx
-server {
-    listen 443 ssl;
-    server_name app1.example.com;
-
-    ssl_certificate     /etc/letsencrypt/live/app1.example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/app1.example.com/privkey.pem;
-
-    location / {
-        proxy_pass         http://127.0.0.1:8080;
-        proxy_set_header   Host              $host;
-        proxy_set_header   X-Real-IP         $remote_addr;
-        proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
-        proxy_set_header   X-Forwarded-Proto $scheme;
-    }
-}
-
-server {
-    listen 80;
-    server_name app1.example.com;
-    return 301 https://$host$request_uri;
-}
-```
-
->With Nginx in front, keep Tomcat bound to 127.0.0.1 (not 0.0.0.0) by setting address="127.0.0.1" on the Connector to prevent direct public access on port 8080.
-
-
-**JNDI DataSource: MySQL connection pool**
-
-Install MySQL & create the database
-
-```bash
-sudo dnf install -y mysql-server
-sudo systemctl enable --now mysqld
-```
-```sql
-sudo mysql -u root -p <<'SQL'
-CREATE DATABASE mydb CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'dbuser'@'localhost' IDENTIFIED BY 'StrongPass1!';
-GRANT ALL PRIVILEGES ON mydb.* TO 'dbuser'@'localhost';
-FLUSH PRIVILEGES;
-SQL
-```
-
-Download MySQL JDBC driver & place in Tomcat lib
-```bash
-# Download from Maven Central (adjust version as needed)
-JDBC_VER="9.1.0"
-wget https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/${JDBC_VER}/mysql-connector-j-${JDBC_VER}.jar \
-     -O /tmp/mysql-connector-j.jar
-
-sudo cp /tmp/mysql-connector-j.jar /opt/tomcat/lib/
-sudo chown tomcat:tomcat /opt/tomcat/lib/mysql-connector-j.jar
-```
-
-Define the DataSource resource
-
-`sudo vim /opt/tomcat/conf/context.xml`
-
-```
-<Context>
-
-  <!-- Disable session persistence across restarts (optional) -->
-  <Manager pathname="" />
-
-  <Resource name="jdbc/mydb"
-            auth="Container"
-            type="javax.sql.DataSource"
-            driverClassName="com.mysql.cj.jdbc.Driver"
-            url="jdbc:mysql://localhost:3306/mydb?serverTimezone=UTC&useSSL=false"
-            username="dbuser"
-            password="StrongPass1!"
-            maxTotal="20"
-            maxIdle="10"
-            minIdle="5"
-            maxWaitMillis="10000"
-            validationQuery="SELECT 1"
-            testOnBorrow="true" />
-
-</Context>
-```
-
-Reference it in your webapp's WEB-INF/web.xml
-
-`sudo vim src/main/webapp/WEB-INF/web.xml`
-
-```
-<resource-ref>
-  <description>MySQL DB Connection Pool</description>
-  <res-ref-name>jdbc/mydb</res-ref-name>
-  <res-type>javax.sql.DataSource</res-type>
-  <res-auth>Container</res-auth>
-</resource-ref>
-```
-
-Lookup the DataSource in your Java servlet
-```
-Context initCtx = new InitialContext();
-Context envCtx  = (Context) initCtx.lookup("java:comp/env");
-DataSource ds   = (DataSource) envCtx.lookup("jdbc/mydb");
-
-try (Connection conn = ds.getConnection()) {
-    // use conn...
-}
-```
-
->Never commit database passwords to source control. Consider externalising them via environment variables or Vault and referencing with ${DB_PASS} in context.xml.
-
-
-**Access log configuration**
-
-Add the AccessLogValve inside each <Host> block in server.xml. The %D field records request time in ms, useful for spotting slow requests.
-
-Valve configuration with extended pattern
-
-`sudo vim /opt/tomcat/conf/server.xml` (inside <Host>)
-```
-<Valve className="org.apache.catalina.valves.AccessLogValve"
-       directory="logs"
-       prefix="localhost_access_log"
-       suffix=".txt"
-       pattern="%h %l %u %t &quot;%r&quot; %s %b %D"
-       resolveHosts="false"
-       rotatable="true" />
-```
-
-Pattern field reference
-
-|token	|meaning
-|%h	remote host
-|%l	remote logical username
-|%u	authenticated user
-|%t	request timestamp
-|%r	first line of request
-|%s	HTTP status code
-|%b	bytes sent
-|%D	processing time (ms) < slow request detection 
-
-Tail the access log live
-```
-tail -f /opt/tomcat/logs/localhost_access_log.$(date +%Y-%m-%d).txt
-```
-
-**Systemd management & firewall**
-```
-sudo systemctl start tomcat       # start
-sudo systemctl stop tomcat        # stop
-sudo systemctl restart tomcat     # restart (config changes)
-sudo systemctl reload tomcat      # graceful reload (if supported)
-sudo systemctl status tomcat      # service status + recent log lines
-sudo journalctl -u tomcat -f      # follow live logs via journald
-```
-```
-# HTTP (Tomcat direct)
-sudo firewall-cmd --permanent --add-port=8080/tcp
-```
-```
-# HTTPS (Tomcat direct / testing)
-sudo firewall-cmd --permanent --add-port=8443/tcp
-```
-```
-# Standard HTTPS (when using Nginx in front)
-sudo firewall-cmd --permanent --add-service=https
-sudo firewall-cmd --permanent --add-service=http
-```
-```
-sudo firewall-cmd --reload
-sudo firewall-cmd --list-all     # verify
-```
-
-SELinux — allow Tomcat to bind to non-standard ports if needed
-```
-# e.g. if you change Tomcat to port 9090
-sudo semanage port -a -t http_port_t -p tcp 9090
-
-# Check current Tomcat-related SELinux contexts
-sudo semanage port -l | grep tomcat
-```
----
----
-
-### Tomcat Cluster and Session Replication (Concepts)
+### Tomcat Cluster and Session Replication
 
 For high availability, Tomcat supports in-memory session replication between cluster nodes using multicast or static member configuration. The key elements in `server.xml` are `<Cluster>`, `<Manager className="org.apache.catalina.ha.session.DeltaManager">`, and `<Channel>`.
 
-In practice, most teams at mid-level use an external session store (Redis via a session manager library) or design stateless applications instead of relying on Tomcat's built-in clustering. Understanding the concept and the trade-offs is more important than memorising the full cluster XML.
-
----
-
-### Tomcat Version and Java Compatibility Quick Reference
-
-| Tomcat Version | Min Java | Jakarta EE / Java EE | Status |
-|----------------|----------|-----------------------|--------|
-| 11.0.x | Java 17 | Jakarta EE 11 | Current (stable as of April 2025) |
-| 10.1.x | Java 11 | Jakarta EE 10 | Supported |
-| 9.0.x | Java 8 | Java EE 8 | Supported (extended until at least March 2027) |
-| 8.5.x | Java 7 | Java EE 7 (subset) | End of Life |
-
-Source: [Apache Tomcat: Which Version?](https://tomcat.apache.org/whichversion.html)
+In practice, most teams at mid level use an external session store (Redis via a session manager library) or design stateless applications instead of relying on Tomcat's built-in clustering. Understanding the concept and the trade-offs is more important than memorising the full cluster XML.
 
 ---
