@@ -1012,8 +1012,6 @@ Ctrl + C
 
 > Note: Unlike Spring Boot, which packages into a single fat JAR, Quarkus outputs a `quarkus-app/` directory containing `quarkus-run.jar` and supporting libraries.
 
----
----
 
 **Spring Boot vs Quarkus:**
 
@@ -1029,51 +1027,50 @@ Ctrl + C
 
 **Multi Module Projects**
 
-In real enterprise environments, applications aren't built as a single module. You'll typically encounter a multi module Maven project, where a parent POM coordinates several sub-projects (modules) that may depend on each other.
+In real enterprise environments, applications aren't built as a single module. You'll typically encounter a multi module Maven project, where a parent POM coordinates several sub projects (modules) that may depend on each other.
 
 This is an important DevOps concept because your CI/CD pipeline must understand the module structure to build and deploy components independently or together.
 
 **Typical structure:**
 ```
 my-app/
-├── pom.xml                   # Parent POM
-├── my-app-api/               # Shared interfaces/models
-│   └── pom.xml
-├── my-app-service/           # Business logic (depends on api)
-│   └── pom.xml
-└── my-app-web/               # Web layer (depends on service)
-    └── pom.xml
+├── pom.xml                   # Parent POM: defines shared dependencies, versions, and plugins inherited by all child modules
+├── my-app-api/               # Shared interfaces/models: contracts and data structures used across all modules
+│   └── pom.xml               # Module POM: declares this as a child of the parent and defines API specific dependencies
+├── my-app-service/           # Business logic: core application logic, depends on my-app-api for interfaces and models
+│   └── pom.xml               # Module POM: declares this as a child of the parent and defines service-specific dependencies
+└── my-app-web/               # Web layer: handles HTTP requests and responses, depends on my-app-service for business logic
+    └── pom.xml               # Module POM: declares this as a child of the parent and defines web-specific dependencies
 ```
 
 **Parent POM** (at the root):
+
 ```xml
 <project>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>com.devopsclass</groupId>
-  <artifactId>my-app</artifactId>
-  <version>1.0.0</version>
-  <packaging>pom</packaging>   <!-- Must be 'pom' for parent -->
+  <modelVersion>4.0.0</modelVersion>                        <!-- Maven POM schema version, always 4.0.0 -->
+  <groupId>com.devopsclass</groupId>                        <!-- Organization namespace in reverse domain notation -->
+  <artifactId>my-app</artifactId>                           <!-- Root project name, becomes the parent identifier -->
+  <version>1.0.0</version>                                  <!-- Project version, inherited by all child modules -->
+  <packaging>pom</packaging>                                <!-- Must be 'pom' for parent: no JAR/WAR is built here -->
 
-  <modules>
-    <module>my-app-api</module>
-    <module>my-app-service</module>
-    <module>my-app-web</module>
+  <modules>                                                 <!-- Declares all child modules Maven will build -->
+    <module>my-app-api</module>                             <!-- Shared interfaces/models module -->
+    <module>my-app-service</module>                         <!-- Business logic module -->
+    <module>my-app-web</module>                             <!-- Web layer module -->
   </modules>
 
-  <!-- Versions defined here are inherited by all child modules -->
-  <properties>
-    <maven.compiler.release>21</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <properties>                                              <!-- Shared properties inherited by all child modules -->
+    <maven.compiler.release>21</maven.compiler.release>                          <!-- Compile all modules targeting Java 21 -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>           <!-- Ensures consistent file encoding across all modules -->
   </properties>
 
-  <!-- dependencyManagement locks versions without pulling them in -->
-  <dependencyManagement>
+  <dependencyManagement>                                    <!-- Locks dependency versions centrally without pulling them in -->
     <dependencies>
       <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <version>5.12.1</version>
-        <scope>test</scope>
+        <groupId>org.junit.jupiter</groupId>                <!-- JUnit Jupiter: the standard Java testing framework -->
+        <artifactId>junit-jupiter</artifactId>              <!-- Child modules declare this without specifying a version -->
+        <version>5.12.1</version>                           <!-- Version defined once here, enforced across all modules -->
+        <scope>test</scope>                                 <!-- Only available during testing, excluded from final artifact -->
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -1081,42 +1078,69 @@ my-app/
 ```
 
 **Child POM** (e.g., my-app-service/pom.xml):
+
 ```xml
 <project>
-  <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>                       <!-- Maven POM schema version, always 4.0.0 -->
 
-  <parent>
-    <groupId>com.devopsclass</groupId>
-    <artifactId>my-app</artifactId>
-    <version>1.0.0</version>
+  <parent>                                                  <!-- Declares this module as a child of the parent POM -->
+    <groupId>com.devopsclass</groupId>                      <!-- Must match the parent's groupId exactly -->
+    <artifactId>my-app</artifactId>                         <!-- Must match the parent's artifactId exactly -->
+    <version>1.0.0</version>                                <!-- Must match the parent's version exactly -->
   </parent>
 
-  <artifactId>my-app-service</artifactId>
+  <artifactId>my-app-service</artifactId>                  <!-- This module's name: inherits groupId and version from parent -->
 
-  <dependencies>
+  <dependencies>                                            <!-- Dependencies specific to this module -->
     <dependency>
-      <groupId>com.devopsclass</groupId>
-      <artifactId>my-app-api</artifactId>
-      <version>${project.version}</version>
+      <groupId>com.devopsclass</groupId>                    <!-- Same organization: this is an internal module dependency -->
+      <artifactId>my-app-api</artifactId>                   <!-- Depends on the api module for shared interfaces and models -->
+      <version>${project.version}</version>                 <!-- Reuses parent's version: keeps all modules in sync automatically -->
     </dependency>
   </dependencies>
 </project>
 ```
 
-To build everything from the root:
+**Build everything from the root:**
+
+Runs the full build across all modules in the correct order: `my-app-api` first, then `my-app-service`, then `my-app-web`. Maven resolves the dependency chain automatically, so each module is built only after what it depends on is ready.
+
+```bash
+cd my-app
+```
+```bash
+mvn clean package
+```
+
+**Build a single module and its dependencies:**
+
+
+
+```bash
+mvn clean package -pl my-app-service -am
+```
+**Build everything from the root:**
 ```bash
 cd my-app
 mvn clean package
 ```
+Runs the full build across all modules in the correct order — `my-app-api` first, then `my-app-service`, then `my-app-web`. Maven resolves the dependency chain automatically so each module is built only after what it depends on is ready.
 
-To build a single module and its dependencies:
+
+**Build a single module and its dependencies:**
 ```bash
 mvn clean package -pl my-app-service -am
 ```
+  - `-pl my-app-service`-Project List: tells Maven to build only this specific module
+    
+  - `-am`-Also Make: automatically builds any modules that `my-app-service` depends on (in this case `my-app-api`) before building it
+
+> So instead of rebuilding the entire project, you're saying: *"Build only `my-app-service`, but first build anything it needs."* Useful during development when you're working on a specific module and don't want to wait for the full build.
 
 ---
+---
 
-**The pom.xml**
+## The pom.xml
 
 The `pom.xml` is the file that ties everything together. It's where you declare your project's identity, list its dependencies, configure plugins, and define how the project should be built. Every Maven project has one, and understanding it is essential.
 
@@ -1125,6 +1149,7 @@ The `pom.xml` is the file that ties everything together. It's where you declare 
 Here's a clean, working POM for a simple web application:
 
 **Example 1 Continue:**
+
 ```bash
 cd ~/sampleapp/sample-app
 ```
@@ -1137,62 +1162,62 @@ sudo vim pom.xml
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+                             http://maven.apache.org/xsd/maven-4.0.0.xsd">  <!-- XML schema: validates POM structure -->
+  <modelVersion>4.0.0</modelVersion>                        <!-- Maven POM schema version, always 4.0.0 -->
 
-  <!-- Project coordinates -->
-  <groupId>com.devopsclass</groupId>
-  <artifactId>sample-app</artifactId>
-  <version>1.0.0</version>
-  <packaging>war</packaging>
+  <!-- Project coordinates: uniquely identify this project in any Maven repository -->
+  <groupId>com.devopsclass</groupId>                        <!-- Organization namespace in reverse domain notation -->
+  <artifactId>sample-app</artifactId>                       <!-- Project name, becomes the final artifact filename -->
+  <version>1.0.0</version>                                  <!-- Project version, appended to the artifact filename -->
+  <packaging>war</packaging>                                <!-- Output format: WAR for web applications deployed to a server -->
 
-  <name>sample-app</name>
-  <description>Sample web application built with Maven</description>
+  <name>sample-app</name>                                   <!-- Human readable display name -->
+  <description>Sample web application built with Maven</description>  <!-- Brief project description -->
 
-  <!-- Build settings -->
+  <!-- Build settings: compiler and encoding applied to all source files -->
   <properties>
-    <maven.compiler.release>21</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>21</maven.compiler.release>                        <!-- Compile source code targeting Java 21 -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>         <!-- Ensures consistent file encoding across all source files -->
   </properties>
 
   <dependencies>
-    <!-- The Servlet API — provided by Tomcat at runtime, so we don't package it -->
+    <!-- Servlet API: provided by Tomcat at runtime, excluded from the WAR to avoid conflicts -->
     <dependency>
-      <groupId>jakarta.servlet</groupId>
-      <artifactId>jakarta.servlet-api</artifactId>
-      <version>6.1.0</version>
-      <scope>provided</scope>
+      <groupId>jakarta.servlet</groupId>                    <!-- Jakarta namespace: the modern replacement for javax.servlet -->
+      <artifactId>jakarta.servlet-api</artifactId>          <!-- Provides HttpServlet, HttpRequest, HttpResponse interfaces -->
+      <version>6.1.0</version>                              <!-- Compatible with Tomcat 11 and Jakarta EE 11 -->
+      <scope>provided</scope>                               <!-- Available at compile time but excluded from final WAR -->
     </dependency>
 
-    <!-- JUnit 5 for testing — only needed during the test phase -->
+    <!-- JUnit 5: unit testing framework, only needed during the test phase -->
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter</artifactId>
-      <version>5.12.1</version>
-      <scope>test</scope>
+      <groupId>org.junit.jupiter</groupId>                  <!-- JUnit Jupiter: modern JUnit 5 testing engine -->
+      <artifactId>junit-jupiter</artifactId>                <!-- All-in-one JUnit 5 dependency: API, engine, and params -->
+      <version>5.12.1</version>                             <!-- Latest stable JUnit 5 version -->
+      <scope>test</scope>                                   <!-- Only available during testing, excluded from final WAR -->
     </dependency>
   </dependencies>
 
   <build>
     <plugins>
-      <!-- Surefire runs unit tests and supports JUnit 5 -->
+      <!-- Surefire: runs unit tests during the test phase -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>3.5.5</version>
+        <artifactId>maven-surefire-plugin</artifactId>      <!-- Default Maven test runner, requires explicit JUnit 5 support -->
+        <version>3.5.5</version>                            <!-- Latest stable version with full JUnit 5 compatibility -->
         <configuration>
-          <useModulePath>false</useModulePath>
+          <useModulePath>false</useModulePath>              <!-- Disables Java module path to avoid classpath conflicts with JUnit 5 -->
         </configuration>
       </plugin>
 
-      <!-- Jetty plugin lets you run the app locally without a full Tomcat install -->
+      <!-- Jetty: runs the app locally without a full Tomcat install -->
       <plugin>
-        <groupId>org.eclipse.jetty.ee10</groupId>
-        <artifactId>jetty-ee10-maven-plugin</artifactId>
-        <version>12.1.8</version>
+        <groupId>org.eclipse.jetty.ee10</groupId>           <!-- ee10 namespace: targets Jakarta EE 10 spec -->
+        <artifactId>jetty-ee10-maven-plugin</artifactId>    <!-- Embeds Jetty server directly into the Maven build -->
+        <version>12.1.8</version>                           <!-- Latest stable Jetty 12 version -->
         <configuration>
           <webApp>
-            <contextPath>/sample-app</contextPath>
+            <contextPath>/sample-app</contextPath>          <!-- URL path to access the app: http://localhost:8080/sample-app -->
           </webApp>
         </configuration>
       </plugin>
