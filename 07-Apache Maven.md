@@ -62,11 +62,17 @@ This is the heart of every Maven project. The POM is an XML file that sits at th
 
 Three pieces of information identify every artifact in the Maven ecosystem, often referred to as GAV coordinates:
 
-- **GroupId**: Identifies the organization or group that created the project. It typically follows reverse domain naming, like `com.company.project`.
+- **GroupId**:
   
-- **ArtifactId**: The name of the specific project or module, such as `data-service`.
+    Identifies the organization or group that created the project. It typically follows reverse domain naming, like `com.company.project`.
   
-- **Version**: The version number, like `1.0.0` or `1.0.0-SNAPSHOT` (where SNAPSHOT indicates a development version that's still in progress).
+- **ArtifactId**:
+  
+    The name of the specific project or module, such as `data-service`.
+  
+- **Version**:
+  
+    The version number, like `1.0.0` or `1.0.0-SNAPSHOT` (where SNAPSHOT indicates a development version that's still in progress).
 
 Together, these three values uniquely identify any artifact in the Maven universe.
 
@@ -146,7 +152,7 @@ One thing that catches newcomers off guard: running a later phase automatically 
 ---
 
 
-**Common Maven Commands**
+### Fundamental Maven Commands
 
 Here are the commands you'll reach for most often.
 
@@ -172,18 +178,19 @@ mvn -Denv=prod package           # Pass a system property for property-based pro
 ```
 
 
-
 **Maven Wrapper**:
 
 The Maven Wrapper lets you pin a specific Maven version to your project, so everyone on the team (and your CI server) uses the same version regardless of what's installed globally. The official command to add it to your project is:
 
 ```bash
 mvn wrapper:wrapper              # Generate the ./mvnw script using the current Maven version
+```
+```bash
 ./mvnw clean package             # Build using the project pinned Maven version
 ```
 
 
-> **Note**: The older `mvn -N io.takari:maven:wrapper` command was from the Takari wrapper plugin, which is no longer actively maintained. The `mvn wrapper:wrapper` command from the official Apache Maven Wrapper Plugin is the current approach.
+> The older `mvn -N io.takari:maven:wrapper` command was from the Takari wrapper plugin, which is no longer actively maintained. The `mvn wrapper:wrapper` command from the official Apache Maven Wrapper Plugin is the current approach.
 
 
 
@@ -197,12 +204,11 @@ mvn versions:display-plugin-updates       # Check if any plugins have newer vers
 
 ---
 
-> Prerequisites:
-> Create a new Virtual Machine named `Java Developer`
+> Prerequisites: Create a new Virtual Machine named `Java Developer`
 
 ---
 
-**Installation & Configuration**
+### Installation & Configuration
 
 These instructions are written for **Fedora, RHEL, or CentOS** using the `dnf` package manager. If you're on a different distribution, the package names and commands may vary slightly, but the overall process is the same.
 
@@ -224,7 +230,7 @@ java --version
 
 ---
 
-**Step 2: Find the JDK Path and Set `JAVA_HOME`**
+### Step 2: Find the JDK Path and Set `JAVA_HOME`
 
 After installation, you need to figure out where the JDK was installed so you can set the `JAVA_HOME` environment variable. Maven (and many other tools) rely on this variable to locate the JDK.
 
@@ -280,11 +286,13 @@ which java
 
 ---
 
-**Step 3: Install Maven**
+### Step 3: Install Maven
 
 You have two options here.
 
-**Option A: Use the package manager.** This is the simplest approach, though you may not get the latest version.
+**Option A: Use the package manager.** 
+
+This is the simplest approach, though you may not get the latest version.
 
 ```bash
 sudo dnf info maven
@@ -301,16 +309,20 @@ mvn --version
 ---
 
 Then set the environment variables by adding these lines to `/etc/profile`:
+
 ```bash
 sudo vim /etc/profile
 ```
+
 ```bash
 export M2_HOME=/usr/share/maven
 export PATH="$PATH:$M2_HOME/bin"
 ```
+
 ```bash
 source /etc/profile
 ```
+
 ```bash
 echo $M2_HOME
 ```
@@ -319,7 +331,9 @@ echo $M2_HOME
 
 ---
 
-**Option B: Download the latest binary directly.** This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
+**Option B: Download the latest binary directly.** 
+
+This is the recommended approach if you want a specific or the most recent version. Check [Maven's download page](https://maven.apache.org/download.cgi) for the latest link.
 
 ---
 <img width="1137" height="383" alt="Screenshot 2026-03-20 at 11 35 32 AM" src="https://github.com/user-attachments/assets/9a667597-f632-481c-af1f-16c7d55809b3" />
@@ -349,7 +363,9 @@ sudo mv apache-maven-3.9.* /opt/maven
 cd
 ```
 
-Then set the environment variables by adding these lines to `/etc/profile`:
+Then set the environment variables by adding these lines to 
+
+`sudo vim /etc/profile`
 
 ```bash
 export M2_HOME=/opt/maven
@@ -388,18 +404,24 @@ sudo chown -R maven:maven /opt/maven
 
 ---
 
-**Global Configuration: settings.xml**
+### Configuring Maven's Global Settings: `settings.xml` for Enterprise and CI/CD Environments
 
-While `pom.xml` is project specific, `settings.xml` is where you configure Maven's global behavior; things that apply to all projects on a machine. There are two locations:
+`settings.xml` is Maven's machine wide preferences file, it controls how Maven behaves across every project on that machine, unlike `pom.xml` which travels with a specific project.
 
-- **User level**: `~/.m2/settings.xml` (applies only to you)
-  
+Its most common enterprise use is redirecting dependency downloads away from the public Maven Central to an internal Nexus or Artifactory server, giving you faster downloads, security vetted libraries, and protection against dependencies disappearing upstream.
+
+It lives in two places: user level at `~/.m2/settings.xml` and global at `${M2_HOME}/conf/settings.xml`. The user level file takes precedence, and you simply create it if it doesn't exist.
+
+In CI/CD pipelines, each build server gets its own `settings.xml` with its own credentials and routing rules,  completely separate from a developer's local setup.
+
+- **User Specific**: `~/.m2/settings.xml` (applies only to you)
+```
+sudo cat ~/.m2/settings.xml
+```
 - **Global**: `${M2_HOME}/conf/settings.xml` (applies to all users on the machine)
-
-The user level file takes precedence. You'll create it if it doesn't already exist.
-
-
-**Why this matters for DevOps**: In enterprise environments, you almost always need to point Maven at an internal Nexus or Artifactory instance instead of Maven Central. This is where you do that.
+```
+sudo cat ${M2_HOME}/conf/settings.xml
+```
 
 
 Here's a practical `settings.xml` that covers the most common DevOps needs:
@@ -410,10 +432,10 @@ Here's a practical `settings.xml` that covers the most common DevOps needs:
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0
                               https://maven.apache.org/xsd/settings-1.2.0.xsd">
 
-  <!-- Where Maven stores downloaded artifacts -->
+  <!-- Where Maven stores downloaded artifacts locally -->
   <localRepository>/opt/maven-repo</localRepository>
 
-  <!-- Mirror: redirect all Central requests to your internal Nexus -->
+  <!-- Mirror: intercepts ALL repository requests and routes to internal Nexus -->
   <mirrors>
     <mirror>
       <id>nexus</id>
@@ -423,20 +445,23 @@ Here's a practical `settings.xml` that covers the most common DevOps needs:
   </mirrors>
 
   <!-- Server credentials for deploying to private repositories -->
+  <!-- BEST PRACTICE: Never store plaintext passwords here.    -->
+  <!-- Use Maven password encryption (`mvn --encrypt-password`)-->
+  <!-- or inject via CI/CD environment variables at build time -->
   <servers>
     <server>
       <id>nexus-releases</id>
       <username>deployer</username>
-      <password>your-password</password>
+      <password>${env.NEXUS_PASSWORD}</password>  <!-- injected at runtime -->
     </server>
     <server>
       <id>nexus-snapshots</id>
       <username>deployer</username>
-      <password>your-password</password>
+      <password>${env.NEXUS_PASSWORD}</password>  <!-- injected at runtime -->
     </server>
   </servers>
 
-  <!-- Profile to activate your internal repository -->
+  <!-- Profile defining your internal release and snapshot repositories -->
   <profiles>
     <profile>
       <id>nexus</id>
@@ -457,6 +482,7 @@ Here's a practical `settings.xml` that covers the most common DevOps needs:
     </profile>
   </profiles>
 
+  <!-- Automatically activate the nexus profile for all builds -->
   <activeProfiles>
     <activeProfile>nexus</activeProfile>
   </activeProfiles>
@@ -468,7 +494,7 @@ Here's a practical `settings.xml` that covers the most common DevOps needs:
 
 ---
 
-**Project Structure & Creation**
+### Project Structure & Creation
 
 **The Default Directory Layout**
 
@@ -476,28 +502,49 @@ One of Maven's biggest advantages is its standardized directory structure. Every
 
 ```
 project-root/
-├── pom.xml                              # The project's build configuration
+├── pom.xml                                # The project's build configuration: dependencies, plugins, and metadata
 ├── src/
 │   ├── main/
-│   │   ├── java/                        # Your production source code goes here
-│   │   ├── resources/                   # Configuration files, properties, etc.
-│   │   └── webapp/                      # Web assets (JSPs, HTML, WEB-INF): for WAR projects
+│   │   ├── java/                          # Your production source code goes here: compiled into the final artifact
+│   │   ├── resources/                     # Configuration files, properties, etc.: copied as-is to the classpath
+│   │   └── webapp/                        # Web assets (JSPs, HTML, WEB-INF): for WAR projects only, not in JARs
 │   └── test/
-│       ├── java/                        # Your test source code goes here
-│       └── resources/                   # Test-specific configuration files
-└── target/                              # Maven's output directory (generated, not checked in)
-    ├── classes/
-    ├── test-classes/
-    └── <artifact>.jar or <artifact>.war
+│       ├── java/                          # Your test source code goes here: compiled and run by Maven's test phase, excluded from final artifact
+│       └── resources/                     # Test specific configuration files: available on classpath during testing only
+└── target/                                # Maven's output directory: generated at build time, never committed to source control
+    ├── classes/                           # Compiled .class files from src/main/java and copied resources from src/main/resources
+    ├── test-classes/                      # Compiled .class files from src/test/java and copied resources from src/test/resources
+    └── <artifact>.jar or <artifact>.war   # The final packaged artifact: ready for deployment or distribution
 ```
 
 The `target/` directory is where Maven puts everything it generates: compiled classes, test results, and the final artifact. You should never check this directory into version control.
 
 ---
 
-**Creating a New Project**
+## Maven Archetypes
 
-Maven provides archetypes — essentially project templates — to scaffold new projects quickly.
+A Maven archetype is a project template that generates a ready to use project structure so you don't have to create folders and boilerplate files manually. It enforces a consistent project structure across teams, saves setup time, and one command gives you a working skeleton
+
+- Basic usage
+```bash
+mvn archetype:generate
+```
+
+Maven will prompt you to pick a template and fill in your project details (groupId, artifactId, version).
+
+- Common archetypes:
+
+| Archetype | What it generates |
+|---|---|
+| `maven-archetype-quickstart` | Basic Java project with `src/main` and `src/test` |
+| `maven-archetype-webapp` | Java web application with `WEB-INF` and `web.xml` |
+| `maven-archetype-site` | Project documentation site |
+
+---
+
+### Creating a New Project
+
+Maven provides archetypes, essentially project templates, to framework new projects quickly.
 
 **Creating a Web Application**
 
@@ -505,6 +552,8 @@ Maven provides archetypes — essentially project templates — to scaffold new 
 
 ```bash
 mkdir -p ~/sampleapp
+```
+```bash
 cd ~/sampleapp
 ```
 ```
@@ -535,6 +584,10 @@ ls
 ```
 > You'll see: pom.xml  src/
 
+> **`pom.xml`**: The project's brain. It tells Maven what dependencies to download, what plugins to use, and how to build the project
+
+> **`src/`**: The project's source. It holds all your production code under `main/` and test code under `test/`
+
 ```bash
 ls src/main/webapp
 ```
@@ -552,60 +605,276 @@ sudo vim index.jsp
 ```
 cd
 ```
-> We will compile, package, and test this code locally later.
 
-
-The two most common archetypes are:
-- `maven-archetype-quickstart`: A simple Java project that produces a JAR
-- `maven-archetype-webapp`: A web application that produces a WAR
+We will compile, package, and test this code locally later.
 
 ---
 
+**Traditional Spring vs Spring Boot**
+
+| Feature              | Traditional Spring Framework | Spring Boot                       |
+| -------------------- | ---------------------------- | --------------------------------- |
+| Configuration        | Manual XML/Java config       | Auto configured                   |
+| Server setup         | External (Tomcat, JBoss)     | Embedded (Tomcat, Jetty)          |
+| Startup complexity   | High                         | Minimal                           |
+| Production readiness | Manual setup                 | Built in (metrics, health checks) |
+
+
+---
+**Spring Boot**
+
+Spring Boot is a Java framework that simplifies building production ready applications, designed to eliminate the complex XML configuration and boilerplate setup that traditional Spring required.
+
+Plain Spring requires manual configuration for everything: beans, servers, and data sources. Spring Boot uses auto configuration and sensible defaults, so you get a working application with minimal setup. It embeds the server (Tomcat by default) directly into the JAR, so there's nothing extra to deploy.
+
+**Why it matters for DevOps?**
+
+It packages as a single runnable JAR, includes built in health and metrics endpoints, supports Docker and Kubernetes well, and benefits from a large enterprise ecosystem.
+
 **Creating a Spring Boot Application**
 
-Spring Boot projects aren't typically created through Maven archetypes. Instead, the community uses **Spring Initializr**, which you can access through a web browser or the command line:
+Spring Boot projects aren't typically created through Maven archetypes. Instead, the community uses Spring Initializr, which you can access through a web browser or the command line:
 
 **Example 2:**
 
 ```
 mkdir -p ~/myproject
+```
+
+```
 cd ~/myproject
 ```
 
 Download a Spring Boot starter project from the Spring Initializr web service:
-```bash
+
+```
 curl -sSL --fail \
   "https://start.spring.io/starter.zip?type=maven-project&language=java&groupId=com.example&artifactId=demo&name=demo&packaging=jar&javaVersion=21&dependencies=web" \
   -o demo.zip
 ```
-> The `-sSL --fail` flags tell `curl` to run in silent mode, follow redirects, and return an error if something goes wrong — rather than silently downloading an error page.
+
+The `-sSL --fail` flags tell `curl` to run in silent mode, follow redirects, and return an error if something goes wrong, rather than silently downloading an error page.
+
+```
+unzip demo.zip -d .
+```
+
+```
+rm demo.zip
+```
+
+```
+cd
+```
+
+```
+tree myproject
+```
+---
+<img width="802" height="486" alt="Screenshot 2026-03-12 at 12 37 11 PM" src="https://github.com/user-attachments/assets/5c8163bd-fdc9-437d-bdeb-04f239353736" />
+
+---
+
+>`pom.xml`: The project's brain. It tells Maven what dependencies to download, what plugins to use, and how to build the project.
+
+>`src/`: The project's source. It holds all your production code under `main/` and test code under `test/`.
+
+```
+ls myproject/src/main/java/com/example/demo
+```
+
+> You'll see: `DemoApplication.java`, your application's entry point. This is where Spring Boot starts.
+
+```
+cat myproject/src/main/java/com/example/demo/DemoApplication.java
+```
+
+```java
+package com.example.demo;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class DemoApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(DemoApplication.class, args);
+    }
+}
+```
+
+`@SpringBootApplication`: Marks this as the entry point and enables Spring Boot's auto-configuration.
+
+`SpringApplication.run()`: Bootstraps the application, starts the embedded Tomcat server, and begins listening for requests.
+
+
+**Add a simple REST controller:**
+
+```bash
+cd myproject
+```
+
+```bash
+vim src/main/java/com/example/demo/HelloController.java
+```
+
+```java
+package com.example.demo;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    @GetMapping("/")
+    public String home() {
+        return "<h2>Example 2: DevOps-Breaking Down Silos!</h2>";
+    }
+}
+```
+
+>`@RestController`: Marks this class as a web controller that returns data directly to the browser.
+
+>`@GetMapping("/")`: Maps HTTP GET requests on `/` to this method.
+
+
+```
+cd ~/myproject
+```
+
+- Compile and package:
+```
+./mvnw clean package -DskipTests
+```
+
+- Run
+```
+java -jar target/demo-0.0.1-SNAPSHOT.jar
+```
+
+Now open the browser and visiting `http://localhost:8080` will return:
+
+---
+<img width="1017" height="296" alt="Screenshot 2026-05-15 at 12 18 17 PM" src="https://github.com/user-attachments/assets/2861906a-2dd6-4f93-b6db-b73758403c37" />
+
+---
+
+- Stop
+```
+Ctrl + C
+```
+
+---
+
+**Example 3:** 
+
+Downloads a preconfigured Spring Boot project as a ZIP file from Spring Initializr, specifying a particular Spring Boot version:
+
+```bash
+mkdir -p ~/myproject3
+```
+
+```bash
+cd ~/myproject3
+```
+
+```bash
+curl -sSL \
+  "https://start.spring.io/starter.zip?type=maven-project&language=java&bootVersion=3.5.0&groupId=com.example&artifactId=demo&name=demo&packaging=jar&javaVersion=21&dependencies=web" \
+  -o demo.zip
+```
+
+>Explanation:
+>
+>curl https://start.spring.io/starter.zip   # Spring Initializr API: generates and downloads a zipped project
+>
+>  -d type=maven-project                    # Build tool: use Maven (alternatively: gradle-project)
+>
+>  -d language=java                         # Language: Java (alternatively: kotlin, groovy)
+>
+>  -d bootVersion=3.5.0                     # Spring Boot version to use
+>
+>  -d groupId=com.example                   # Your organization's namespace (reverse domain)
+>
+>  -d artifactId=demo                       # Your project's name and folder name
+>
+>  -d name=demo                             # Display name of the application
+>
+>  -d packaging=jar                         # Output format: jar (runnable) or war (for app servers)
+>
+>  -d javaVersion=21                        # Java version to compile against
+>
+>  -d dependencies=web                      # Starter dependencies: web adds Spring MVC + embedded Tomcat
+>
+>  -o demo.zip                              # Save the downloaded zip as demo.zip locally
+
 
 ```bash
 unzip demo.zip -d .
 ```
+
 ```bash
 rm demo.zip
 ```
-```bash
-cd
-```
-```bash
-tree myproject
-```
-<img width="802" height="486" alt="Screenshot 2026-03-12 at 12 37 11 PM" src="https://github.com/user-attachments/assets/5c8163bd-fdc9-437d-bdeb-04f239353736" />
 
-
-**Example 3:** Downloads a pre-configured Spring Boot project as a ZIP file from Spring Initializr, specifying a particular Spring Boot version:
 ```bash
-curl https://start.spring.io/starter.zip -d type=maven-project \
-  -d language=java -d bootVersion=3.3.4 -d groupId=com.example \
-  -d artifactId=demo -d name=demo -d packaging=jar -d javaVersion=21 \
-  -d dependencies=web -o demo.zip
-```
-```bash
-unzip demo.zip -d .
+tree .
 ```
 
+You'll see:
+
+---
+<img width="798" height="521" alt="Screenshot 2026-05-15 at 12 39 28 PM" src="https://github.com/user-attachments/assets/f98d61e5-4777-4b88-979d-11ea6867bf3e" />
+
+
+---
+
+**Add a REST controller:**
+
+```bash
+vim src/main/java/com/example/demo/HelloController.java
+```
+
+```java
+package com.example.demo;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class HelloController {
+
+    @GetMapping("/")
+    public String home() {
+        return "<h2>Example 3: DevOps - Breaking Down Silos!</h2>";
+    }
+}
+```
+
+- Build and run
+
+```bash
+./mvnw clean package -DskipTests
+```
+
+```bash
+java -jar target/demo-0.0.1-SNAPSHOT.jar
+```
+
+Now open the browser and visiting `http://localhost:8080` will return:
+
+---
+<img width="770" height="276" alt="Screenshot 2026-05-15 at 12 41 06 PM" src="https://github.com/user-attachments/assets/bbec38ef-f937-433a-9039-ad09b4413449" />
+
+---
+
+- Stop:
+```
+Ctrl + C
+```
+
+---
 
 **Differences:**
 
@@ -621,43 +890,146 @@ unzip demo.zip -d .
 | **Redirects** | `-L` (follow redirects) | Default behavior |
 
 
-Which to use:
-- Example 2: When you want the latest Spring Boot version
-- Example 3: When you need a specific Spring Boot version (better for reproducible builds in DevOps)
+**Which to use:**
 
-> Both produce the same project structure — just potentially different Spring Boot versions.
+Example 2: When you want the latest Spring Boot version
+  
+Example 3: When you need a specific Spring Boot version (better for reproducible builds in DevOps)
+
+> Both produce the same project structure, just potentially different Spring Boot versions.
 
 ---
+
+**Quarkus**
+
+Quarkus is a Java framework built for containers and cloud native environments, designed to solve Java's two biggest pain points in modern infrastructure: slow startup times and high memory consumption.
+
+Traditional frameworks like Spring Boot do heavy lifting at runtime (classpath scanning, bean wiring, config loading). Quarkus shifts most of that work to build time, so apps start in milliseconds and use far less memory.
+
+**Why it matters for DevOps?**
+
+Run Java apps more efficiently with smaller containers, near instant pod startup, lower cloud spend, and familiar enterprise standards.
 
 **Creating a Quarkus Application**
 
 Quarkus has its own Maven plugin for project generation:
 
-```
+```bash
 mkdir -p ~/NewProject
+```
+
+```bash
 cd ~/NewProject
 ```
-```
+
+```bash
 mvn io.quarkus:quarkus-maven-plugin:3.15.0:create \
   -DprojectGroupId=com.NewProject \
   -DprojectArtifactId=quarkus-app \
   -DclassName="com.NewProject.GreetingResource" \
   -Dpath="/hello"
 ```
+
+Let's break down what each parameter does:
+
+- `io.quarkus:quarkus-maven-plugin:3.15.0:create`: Runs Quarkus's project generation plugin at version 3.15.0
+- `-DprojectGroupId=com.NewProject`: Your organization's namespace
+- `-DprojectArtifactId=quarkus-app`: Project name and root directory
+- `-DclassName="com.NewProject.GreetingResource"`: Generates a sample REST resource class at this fully qualified name
+- `-Dpath="/hello"`: Maps the generated REST endpoint to `/hello`
+
 This generates a ready-to-run Quarkus project with a sample REST endpoint at `/hello`.
+
 ```bash
 cd
 ```
+
 ```bash
 tree NewProject
 ```
-<img width="776" height="610" alt="Screenshot 2026-03-20 at 11 51 01 AM" src="https://github.com/user-attachments/assets/ecf30072-9493-42bc-86d5-c82dbc35c9bb" />
+---
+<img width="801" height="420" alt="Screenshot 2026-05-15 at 12 51 06 PM" src="https://github.com/user-attachments/assets/80554c01-2116-464c-af52-33991104107e" />
 
 ---
 
-**Multi-Module Projects**
+```bash
+cat NewProject/quarkus-app/src/main/java/com/NewProject/GreetingResource.java
+```
 
-In real enterprise environments, applications aren't built as a single module. You'll typically encounter a multi-module Maven project, where a parent POM coordinates several sub-projects (modules) that may depend on each other.
+You'll see:
+
+```java
+package com.NewProject;
+
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+
+@Path("/hello")
+public class GreetingResource {
+
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    public String hello() {
+        return "Hello from Quarkus REST";
+    }
+}
+```
+
+>`@Path("/hello")`: Maps this class to the `/hello` endpoint.
+
+>`@GET`: Handles HTTP GET requests.
+
+>`@Produces(MediaType.TEXT_PLAIN)`: Returns plain text response.
+
+**Build and run:**
+
+```bash
+cd NewProject/quarkus-app
+```
+```bash
+./mvnw clean package -DskipTests
+```
+```bash
+java -jar target/quarkus-app/quarkus-run.jar
+```
+
+**Test:**
+
+Now open the browser and visiting `http://localhost:8080/hello` will return:
+
+---
+<img width="772" height="227" alt="Screenshot 2026-05-15 at 12 55 35 PM" src="https://github.com/user-attachments/assets/ddbca718-b35c-421d-9659-95ee77ee1d5a" />
+
+---
+
+- Stop:
+
+```
+Ctrl + C
+```
+
+> Note: Unlike Spring Boot, which packages into a single fat JAR, Quarkus outputs a `quarkus-app/` directory containing `quarkus-run.jar` and supporting libraries.
+
+---
+---
+
+**Spring Boot vs Quarkus:**
+
+| | Spring Boot | Quarkus |
+|---|---|---|
+| Startup time | Seconds | Milliseconds |
+| Memory usage | Higher | Significantly lower |
+| Native compilation | Limited | First-class via GraalVM |
+| Best for | Enterprise & monoliths | Microservices & serverless |
+
+---
+---
+
+**Multi Module Projects**
+
+In real enterprise environments, applications aren't built as a single module. You'll typically encounter a multi module Maven project, where a parent POM coordinates several sub-projects (modules) that may depend on each other.
 
 This is an important DevOps concept because your CI/CD pipeline must understand the module structure to build and deploy components independently or together.
 
@@ -1212,7 +1584,7 @@ Use `<exclusion>` to drop the unwanted version and declare the correct version d
 
 **Tests fail only in CI**
 
-The most common cause is environment-specific configuration — file paths, environment variables, or ports that are available locally but not in the CI container. Check `target/surefire-reports/` for the full test output, and run the exact same Maven command locally with the same environment variables your CI uses.
+The most common cause is environment-specific configuration — file paths, environment variables, or ports that are available locally but not in the CI container. Check `target/surefire-reports/` for the full test output, and run the same Maven command locally with the same environment variables your CI uses.
 
 **"Repository is blocked" in Nexus/Artifactory**
 
