@@ -1,786 +1,507 @@
 # DevOps Engineering
 
----
+### Course Syllabus
 
-This course provides a comprehensive, hands on introduction to DevOps engineering practices, tools, and culture. Students progress from foundational Linux and networking skills through version control, CI/CD pipelines, configuration management, containerization, cloud infrastructure, and production observability. The curriculum is structured to prepare students for entry level to mid level DevOps roles in modern software organizations.
-
-The course integrates theory with practical laboratory exercises throughout. Every major concept is reinforced by a corresponding lab that students implement in a real environment. The capstone project in the final module requires students to design, build, and operate a complete application delivery pipeline that demonstrates all course competencies end to end.
-
-|   |   |
+| Field | Details |
 |---|---|
-| **Course Title** | DevOps |
-| **Level** | Undergraduate/Professional Certificate |
-| **Target Audience** | Entry Level to Mid Level |
-| **Prerequisites** | Basic Linux familiarity; fundamental networking concepts; any programming experience (PHP, Python, or Java) |
-
----
-
-## Instructor Information
-
-|   |   |
-|---|---|
+| **Course Code** | DVP 401 |
+| **Credits** | 4 |
+| **Level** | Undergraduate / Professional Certificate |
+| **Target** | Entry Level to Mid Level Engineers |
+| **Prerequisites** | Basic Linux; fundamental networking; any scripting experience |
 | **Instructor** | Anup Pyakurel |
 | **Contact** | +977 9851124956 |
 
----
-
-## Course Objectives
-
-Upon successful completion of this course, students will be able to:
-
-1. Explain the DevOps philosophy, its relationship to Agile and SDLC, and its distinction from Site Reliability Engineering (SRE).
-2. Set up and administer Linux virtual machines for use as servers, build agents, and lab environments.
-3. Configure web servers (Apache, Nginx, Tomcat) and deploy applications to them.
-4. Use Git for version control and apply branching strategies used in professional teams.
-5. Design and implement CI/CD pipelines using Jenkins and GitHub Actions.
-6. Automate server configuration and application deployments using Ansible.
-7. Build, run, and manage containers using both Docker and Podman; articulate the architectural differences and use cases for each.
-8. Deploy and manage applications on Kubernetes clusters using manifests, Helm charts, and GitOps principles.
-9. Provision cloud infrastructure on AWS using Terraform.
-10. Implement production observability using Prometheus, Grafana, and the Elastic Stack.
-11. Apply DevSecOps practices, including secrets management, image vulnerability scanning, and least-privilege access control.
-12. Deliver a complete, automated application delivery pipeline as a capstone project.
-
----
-
+ 
+## Course Overview
+ 
+This course takes an engineer from hands on Linux and networking fundamentals to the full modern cloud native delivery stack: version control, CI/CD, containers, Kubernetes, infrastructure as code, observability, and security. Every concept is anchored to a lab or mini project, so students leave with a working portfolio, not just notes.
+ 
 ## Required Tools and Accounts
-
-Students must have the following available before the course begins:
-
+ 
 | Requirement | Notes |
 |---|---|
-| A computer with at least 8/16 GB RAM and 100 GB free disk | Required for running multiple VMs locally |
-| VMware Workstation or VirtualBox | VirtualBox is free; VMware Workstation Pro is free for personal use as of 2024 |
-| AWS Free Tier account | Required for Module 6; credit card required for account creation |
+| Workstation: 16 GB RAM, 100 GB free disk | Minimum for running a local Kubernetes cluster alongside VMs |
+| VirtualBox or VMware Workstation | VirtualBox is free; VMware Workstation Pro is free for personal use |
+| AWS Free Tier account | Required for Module 6; credit card needed for signup |
 | GitHub account | Free at github.com |
 | Docker Hub account | Free at hub.docker.com |
-| Red Hat Developer account | Free at developers.redhat.com; required for OpenShift sandbox and RHEL downloads |
-| Jira account | Free tier available at atlassian.com |
+| Red Hat Developer account | Free at developers.redhat.com: OpenShift sandbox and RHEL downloads |
+ 
+## Course Objectives
+ 
+Upon completion, students will be able to:
+ 
+1. Explain the DevOps philosophy, Agile alignment, and the distinction between DevOps and SRE.
+2. Administer Linux VMs confidently: users, permissions, services, networking, and scripting.
+3. Deploy and configure web servers (Apache, Nginx, Tomcat) and proxy traffic between services.
+4. Apply professional Git workflows: branching strategies, pull requests, and protected branches.
+5. Design and operate CI/CD pipelines in Jenkins and GitHub Actions with quality gates baked in.
+6. Automate configuration and deployments using Ansible roles and playbooks.
+7. Build, run, and manage containers with Docker and Podman; understand their architectural differences.
+8. Deploy and operate applications on Kubernetes using manifests, Helm, and GitOps via ArgoCD.
+9. Provision repeatable cloud infrastructure on AWS using Terraform modules and remote state.
+10. Implement production observability: Prometheus metrics, Grafana dashboards, and structured log pipelines.
+11. Apply DevSecOps practices: secrets management with Vault, image scanning with Trivy, and least privilege access.
+12. Deliver a complete, automated, observable application delivery pipeline as a solo capstone project.
 
 ---
----
 
-# Course Syllabus
-
----
-
-# Module 1: Introduction to DevOps and SDLC
-
-## Section 1.1: DevOps Fundamentals
-
+# Module 1: DevOps Foundations
+ 
+## Section 1.1 Core Concepts
+ 
 ### Theory
+ 
+- The DevOps Lifecycle: plan, code, build, test, release, deploy, operate, monitor
+- Agile vs. DevOps: what each solves, how they complement each other
+- SRE vs. DevOps: error budgets, SLIs, SLOs, SLAs and when each model applies
+- Infrastructure as Code: the shift from click ops to declarative provisioning
+- Microservices vs. monoliths: tradeoffs engineers see daily, not just theory
+- The DORA four metrics: deployment frequency, lead time, change failure rate, MTTR
 
-- Software Development Lifecycle (SDLC)
-- Development Models
-  - Waterfall
-  - Agile
-- DevOps
-    - The DevOps Lifecycle
-- Infrastructure as Code (IaC)
-- Microservices Architecture
-- SRE vs. DevOps
-
-
-#### Laboratory Exercises
-
-- Lab 1.1.A: SDLC Mapping
-    - Map the SDLC phases to a simple web application lifecycle. For each phase, identify at least one DevOps tool or practice that applies. Present as a diagram or table.
-
-- Lab 1.1.B: Model Comparison Research
-    - Research one real world Waterfall project failure and one Agile case study. Write a one page comparison identifying what went wrong in the Waterfall case and what practices in the Agile case prevented similar issues.
-
-- Lab 1.1.C: DevOps Infinity Loop
-    - Draw the DevOps infinity loop by hand or digitally. Label each stage and annotate it with the tools introduced in the Course Schedule Overview table. Submit as an image or PDF.
+### Labs
+ 
+- **Lab 1.A DORA Baseline:** Pick any open source project on GitHub. Measure its approximate DORA metrics from public commit history and release tags. Document findings in a one page markdown report committed to your own repo.
+- **Lab 1.B Architecture Diagram:** Draw the DevOps infinity loop, annotate each stage with the specific tools used in this course, and map one DORA metric to each stage. Submit as PDF.
 
 ---
----
-
-# Module 2: Infrastructure Setup and Linux Fundamentals
-
-## Section 2.1: Networking Fundamentals
-
+# Module 2: Infrastructure, Linux, and Web Servers
+ 
+## Section 2.1 Networking Fundamentals
+ 
 ### Theory
+ 
+- OSI model: only the layers DevOps engineers actually touch (L3 L7)
+- TCP/IP: ports, sockets, connection states (ESTABLISHED, TIME_WAIT)
+- DNS: resolution chain, A records, CNAMEs, TTL, split horizon
+- Load balancing: round robin, least connections, IP hash, sticky sessions
+- Firewalls and security groups: stateful vs. stateless, default deny posture
+- NAT, private vs. public addressing, CIDR notation
 
-- OSI Model
-- TCP/IP Fundamentals
-- Load Balancing Algorithms
-  - Round Robin
-  - Least Connections
-  - IP Hash
-- Firewalls and Security Groups
-- NAT and IP Addressing
-
-
-### Laboratory Exercises
-
-- Lab 2.1.A: Network Diagnostics
-    - Using a Linux VM, use the following tools to troubleshoot network paths and DNS resolution: `ping`, `traceroute`, `netstat`, `ss`, `nslookup`, `dig`
-    - Document the output of each command and explain what information each provides.
-
-- Lab 2.1.B: Subnet Calculation
-    - Given the network `192.168.1.0/26`, calculate: the subnet mask, the network address, the broadcast address, the number of usable hosts, and the usable host range. Show your working.
-
-- Lab 2.1.C: Static Route Configuration
-    - Configure a static route between two VMs on different subnets. Verify connectivity using `ping`. Document the commands used and the routing table before and after.
-
----
-
-## Section 2.2: Virtualization and Linux
-
+### Labs
+ 
+- **Lab 2.1.A Network Diagnostics:** On a Linux VM, use `ping`, `traceroute`, `ss`, `nslookup`, and `dig` to diagnose a deliberately broken DNS and routing scenario. Document each command's output and explain what it reveals.
+- **Lab 2.1.B Subnet Design:** Given `192.168.1.0/26`, calculate subnet mask, broadcast address, usable host range, and number of hosts. Then design a three subnet VPC layout for a typical web/app/db tier.
+- **Lab 2.1.C Static Routing:** Configure two VMs on different subnets. Add static routes to establish connectivity. Show routing table before and after with `ip route`.
+ 
+## Section 2.2 Virtualization and Linux
+ 
 ### Theory
+ 
+- Hypervisors: Type 1 (bare metal) vs. Type 2 (hosted); VMs vs. containers, when each makes sense
+- Why Linux dominates DevOps: tooling ecosystem, SSH first management, minimal attack surface
+- systemd architecture: units, targets, journald, socket activation
 
-- Virtualization Concepts
-  - Type 1 Hypervisor (Bare Metal)
-  - Type 2 Hypervisor (Hosted)
-  - VMs vs. Containers
-- Why Linux in DevOps
-
-### Laboratory Exercises
-
-- Lab 2.2.A: VM Setup
-    - Install VMware Workstation or VirtualBox on your host machine
-    - Create a new VM: allocate a minimum of 2 vCPUs, 4 GB RAM, and 40 GB disk
-    - Install Fedora, CentOS Stream, or RHEL 9 from ISO
-    - Complete post install configuration: set hostname, configure network, enable SSH
-
-- Lab 2.2.B: Linux Fundamentals
-    - Filesystem Navigation: `ls`, `cd`, `pwd`, `find`, `locate`
-    - File Operations: `cp`, `mv`, `rm`, `cat`, `less`, `head`, `tail`, `grep`, `awk`, `sed`
-    - User and Group Management: `useradd`, `usermod`, `groupadd`, `passwd`; inspect `/etc/passwd` and `/etc/shadow`
-    - Permissions and Ownership: `chmod`, `chown`, `chgrp`; apply both octal (`chmod 755`) and symbolic (`chmod u+x`) modes
-    - Package Management: Install, update, and remove packages using `dnf`/`yum` (RHEL/CentOS) or `apt` (Ubuntu/Debian)
-    - Process Management: `ps`, `top`, `htop`, `kill`, `systemctl start|stop|enable|status`
-    - Bash Scripting: Write a script that accepts an argument, uses an `if/else` conditional, loops over a list with `for`, defines a function, and exits with an appropriate exit code
-    - Cron Scheduling: Write a `crontab` entry that runs a script every day at 2:00 AM; locate system-level cron directories (`/etc/cron.d/`, `/etc/cron.daily/`)
-    - Log Management: Use `journalctl -u` to inspect a service log; locate relevant files under `/var/log/`; understand `logrotate` configuration
-    - Network Configuration: Assign a static IP using `nmcli` or `nmtui`; add a custom entry to `/etc/hosts`
-    - Firewall Management: Open and close ports using `firewall-cmd`; list rules with `iptables -L`
-    - SSH Configuration: Generate a key pair with `ssh-keygen`; copy the public key to a remote VM with `ssh-copy-id`; disable password authentication in `/etc/ssh/sshd_config`
-
----
-
-## Section 2.3: Web and Application Servers
-
+### Labs
+ 
+- **Lab 2.2.A VM Setup:** Install Fedora or RHEL 9 in VirtualBox/VMware. Set hostname, configure a static IP with `nmcli`, enable SSH, and disable password auth (key only).
+- **Lab 2.2.B Linux Core Skills:** Complete each of the following and document the commands used: filesystem navigation and `find`; file operations with `grep`, `awk`, `sed`; user/group management and `/etc/shadow` inspection; `chmod` (octal and symbolic); `dnf`/`apt` package lifecycle; process management with `ps`, `top`, `kill`, `systemctl`; firewall management with `firewall-cmd`.
+- **Lab 2.2.C Bash Mini Project:** Write a health check script that accepts a service name as an argument, checks if the service is running, logs the status with a timestamp to `/var/log/healthcheck.log`, and exits with code `0` (healthy) or `1` (unhealthy). Schedule it every 5 minutes via cron. The script must use functions, conditionals, loops, and proper exit codes.
+- **Lab 2.2.D systemd Deep Dive:** Write a custom `.service` unit file that runs the health check script from Lab 2.2.C as a systemd timer instead of cron. Enable it, verify it fires, and inspect output with `journalctl -u`.
+ 
+## Section 2.3 Web and Application Servers
+ 
 ### Theory
+ 
+- Web vs. application servers: the distinction and where each sits in a stack
+- Apache HTTP Server: MPM models (prefork vs. event), virtual hosts, `mod_proxy`
+- Nginx: event driven architecture, reverse proxy, upstream load balancing
+- Apache Tomcat: JVM requirements, connector architecture, Manager app
+- TLS termination: where to terminate (load balancer, reverse proxy, or app)
 
-- Web Servers and Application Servers
-- Apache HTTP Server
-- Nginx
-- Apache Tomcat
-
-### Laboratory Exercises
-
-- Lab 2.3.A: Apache HTTP Server
-    - Install `httpd` and enable it as a systemd service
-    - Configure a named virtual host to serve a static PHP website
-    - Configure a second virtual host for a Python WSGI application using `mod_wsgi`
-    - Enable HTTPS using a self signed SSL certificate with `openssl` and `mod_ssl`
-    - Locate and customize the Apache access log and error log formats
-
-- Lab 2.3.B: Nginx
-    - Install Nginx and configure it to serve a static site
-    - Configure Nginx as a reverse proxy forwarding requests to a backend application
-    - Configure Nginx as a load balancer using an `upstream` block with round robin and least connections strategies
-
-- Lab 2.3.C: Apache Tomcat
-    - Verify the installed JDK version; confirm it is compatible with the Tomcat version being installed
-    - Download and install Apache Tomcat
-    - Deploy a compiled `.war` file to the `webapps/` directory and verify the application is accessible
-    - Configure a Tomcat manager user in `tomcat-users.xml` and access the Manager web interface
-
----
-
-## Section 2.4: Web Application Development Basics
-
+### Labs
+ 
+- **Lab 2.3.A Apache:** Install `httpd`; configure two named virtual hosts (static site + Python WSGI via `mod_wsgi`); enable HTTPS with a self signed certificate; customize access and error log formats.
+- **Lab 2.3.B Nginx:** Install Nginx; serve a static site; configure it as a reverse proxy to a backend application; add an `upstream` block for round robin load balancing across two backends.
+- **Lab 2.3.C Tomcat:** Install Tomcat; verify JDK compatibility; deploy a `.war` file; configure a manager user in `tomcat-users.xml`; access the Manager UI.
+ 
+## Section 2.4 Sample Applications
+ 
+> **Note:** These apps are not throwaway exercises. Each one follows CI/CD friendly conventions (env based config, unit tests, build artifacts) and gets carried forward into Module 3 pipelines.
+ 
 ### Theory
+ 
+- What makes an application CI/CD friendly: environment driven config, testable units, repeatable builds
+- Twelve factor app principles (factors 1, 3, and 6 are directly relevant here)
 
-- Sample Applications in DevOps Training
-- CI/CD Friendly Application Characteristics
-  
-### Laboratory Exercises
-
-- Lab 2.4.A: PHP Application
-    - Write a PHP application that connects to a MySQL database and displays at least one record from a table.
-    - This application will be used in Module 3 Jenkins labs. Ensure it reads database credentials from environment variables, not hardcoded values.
-
-- Lab 2.4.B: Python Flask Application
-    - Write a Python Flask application that returns a JSON response on a `GET /` request. Include at least one unit test using `pytest`. Confirm the test passes from the command line.
-
-- Lab 2.4.C: Java Application
-    - Create a basic Java Servlet application using Maven. Package it as a `.war` file with `mvn clean package`. Verify the `.war` file is produced in the `target/` directory and can be deployed to Tomcat from Lab 2.3.C.
+### Labs
+ 
+- **Lab 2.4.A PHP:** Build a PHP app connecting to MySQL. Credentials come from environment variables only. Must display at least one DB record. This app is deployed in Lab 3.2.D.
+- **Lab 2.4.B Python Flask:** Build a Flask API returning JSON on `GET /health` and `GET /`. Include at least two `pytest` unit tests. Tests must pass from the command line before proceeding. This app is containerized in Module 5.
+- **Lab 2.4.C Java:** Create a Maven servlet project. Build with `mvn clean package`; verify the `.war` in `target/`. This artifact is deployed to Tomcat in Lab 3.2.C.
 
 ---
-
 # Module 3: Version Control and CI/CD Pipelines
-
-## Section 3.1: Git and GitHub
-
+ 
+## Section 3.1 Git and GitHub
+ 
 ### Theory
+ 
+- Why distributed version control: the mental model engineers need, not history
+- Branching strategies: Git Flow, trunk based development, feature branching, tradeoffs for each team size
+- Pull requests and code review: what makes a good review, what slows teams down
+- Conventional commits: structured commit messages and why they matter for release automation
+- Pre commit hooks: shifting quality checks to the developer machine before CI even runs
+- Signed commits and branch protection as baseline security hygiene
 
-- Why Version Control
-- Git's Distributed Model
-- Branching Strategies
-  - Git Flow
-  - Trunk Based Development
-  - Feature Branching:
+### Labs
+ 
+- **Lab 3.1.A Git Fundamentals:** Init a repo; stage and commit; create a feature branch; introduce a merge conflict deliberately; resolve it manually; push to GitHub; clone to a second location.
+- **Lab 3.1.B History and Recovery:** Demonstrate and document the use case for each: `git log --oneline --graph`, `git diff`, `git stash`, `git rebase -i`, `git revert`, `git reset`. Critically: show the difference between `reset` (rewrites history, destructive on shared branches) and `revert` (safe for shared branches).
+- **Lab 3.1.C Professional GitHub Setup:** Add a `.gitignore` (Python or Java template); install `pre-commit` with at least two hooks (`trailing-whitespace`, `check-yaml`); configure branch protection on `main` requiring one PR review and passing status checks; enforce conventional commit format via `commitlint`.
 
-- Pull Requests and Code Review
+## Section 3.2 Jenkins
+ 
+### Theory
+ 
+- Jenkins architecture: controller, agents, executors, workspaces
+- Freestyle vs. Declarative Pipeline vs. Scripted Pipeline: when each is appropriate
+- Jenkinsfile as code: the pipeline lives in the repo, not in the Jenkins UI
+- Webhook based triggering: push events vs. polling (polling is a last resort)
+- Jenkins agents on Docker: ephemeral, clean build environments on every run
 
-### Laboratory Exercises
+### Labs
+ 
+- **Lab 3.2.A Jenkins Setup:** Install Jenkins via RPM or WAR on a Linux VM. Install plugins: Git, Pipeline, Maven Integration, SSH Agent, Role Based Authorization Strategy. Connect a second VM as a build agent over SSH.
+- **Lab 3.2.B RBAC:** Create developer and admin roles. Verify developer cannot access administrative functions or modify pipeline configuration.
+- **Lab 3.2.C Java Pipeline to Tomcat:** Declarative `Jenkinsfile` with stages: `Checkout`, `Build` (`mvn clean package`), `Deploy` (`.war` to Tomcat via SSH Agent). Trigger on push via GitHub webhook.
+- **Lab 3.2.D PHP Pipeline to Apache:** Declarative `Jenkinsfile`, `Checkout`, `Test` (static lint or syntax check), `Deploy` to Apache virtual host via SSH Agent.
+- **Lab 3.2.E Flask Pipeline to Nginx:** Multi stage `Jenkinsfile`, `Checkout`, `Test` (`pytest`), fail and halt if tests fail, `Deploy` behind Nginx reverse proxy.
+- **Lab 3.2.F Docker Agent Pipeline *(NEW)*:** Convert the Flask pipeline to run inside an ephemeral Docker container agent (`agent { docker { image 'python:3.12-slim' } }`). Confirm the build environment is clean and reproducible across runs.
+ 
+## Section 3.3 GitHub Actions
+ 
+### Theory
+ 
+- GitHub Actions core concepts: workflow, trigger event, job, step, runner, secrets, environment
+- Reusable workflows and composite actions: reducing duplication across repositories
+- Matrix builds: testing across multiple OS or language versions in parallel
+- GitHub Actions vs. Jenkins: hosted runners vs. self managed, GitHub native vs. platform agnostic
+- GitHub Environments: manual approval gates before deploying to production
 
-- Lab 3.1.A: Git Fundamentals
-    - Initialize a local repository; stage and commit files
-    - Create a feature branch; make changes; merge back to `main`; resolve a deliberately introduced merge conflict manually
-    - Push the repository to GitHub; clone it to a second location
+### Labs
+ 
+- **Lab 3.3.A First Workflow:** Write `.github/workflows/ci.yml` triggering on push to `main`. Steps: checkout, install deps, run `pytest`. Confirm green badge appears on the repo.
+- **Lab 3.3.B Matrix Build *(NEW)*:** Extend the CI workflow to run tests across Python 3.10, 3.11, and 3.12 using a matrix strategy. All three must pass before the workflow succeeds.
+- **Lab 3.3.C Secrets and Deploy:** Store an SSH private key as a GitHub Secret. Write a workflow deploying the Flask app to a cloud server on merge to `main`, injecting the secret as an env variable. Add a GitHub Environment called `production` requiring one manual approval before deploy.
+ 
+## Section 3.4 Build Tools
+ 
+### Theory
+ 
+- Maven: Project Object Model (`pom.xml`), build lifecycle phases, dependency resolution, repositories
+- Make and Makefile: still widely used for polyglot projects and infrastructure tooling
+- Artifact versioning: semantic versioning, SNAPSHOT vs. release, why version pinning matters
 
-- Lab 3.1.B: Git History and Recovery
-    - Use the following commands and document the result and use case for each: `git log`, `git diff`, `git stash`, `git rebase`, `git revert`, `git reset`
-    - Specifically: demonstrate the difference between `git reset` (rewrites history; do not use on shared branches) and `git revert` (creates a new commit that undoes a previous commit; safe for shared branches).
-
-- Lab 3.1.C: GitHub Workflow
-    - Create a `.gitignore` file appropriate for a Python or Java project
-    - Configure branch protection rules on the `main` branch: require at least one pull request review before merging; require status checks to pass before merging
+### Labs
+ 
+- **Lab 3.4.A Maven:** Create a project from archetype; add a dependency; run `mvn clean package`; inspect `target/`. Verify the resulting `.war` deploys to Tomcat from Lab 2.3.C.
+- **Lab 3.4.B Makefile *(NEW)*:** Write a `Makefile` for the Flask project with targets: `install`, `test`, `build` (Docker image), `push`, `deploy`. The Jenkins and GitHub Actions pipelines must invoke `make` targets rather than inline shell commands.
 
 ---
 
-## Section 3.2: Jenkins for CI/CD
-
+# Module 4: Configuration Management with Ansible
+ 
+## Section 4.1 Ansible Fundamentals
+ 
 ### Theory
+ 
+- Ansible architecture: control node, managed nodes, agentless SSH based execution
+- Inventory: static vs. dynamic; AWS EC2 dynamic inventory plugin
+- Idempotency: why it matters and how to verify it (run twice, check nothing changes)
+- Ansible vs. Terraform: configuration state vs. infrastructure provisioning, not competitors
+- Jinja2 templating: variables, filters, conditionals in templates
+- Ansible Vault: encrypting secrets at rest in the repository
+- Roles: standardized directory structure, reusability, Galaxy
 
-- Jenkins Architecture
-- Freestyle Jobs vs. Pipeline Jobs
-  - Freestyle Jobs
-  - Pipeline Jobs (Declarative)
-  - Pipeline Jobs (Scripted)
-- Jenkinsfile as Code
-- Webhook Based Triggering
+### Labs
+ 
+- **Lab 4.1.A Core Ansible:** Install Ansible on a control node. Write a static inventory with `[webservers]` and `[dbservers]` groups. Run ad hoc commands (`ping`, `command`, `yum`, `service`). Write a playbook installing and starting Apache with a handler that restarts only on config change.
+- **Lab 4.1.B Practical Playbooks:** Write a playbook managing user accounts (create, password, groups). Write a second playbook deploying the PHP app from Lab 2.4.A (install Apache, copy files, set permissions, restart). Encrypt a `db_password` variable with `ansible-vault`.
+- **Lab 4.1.C Roles Refactor:** Convert the PHP deployment playbook into an Ansible role with the standard structure: `tasks/`, `handlers/`, `templates/`, `vars/`, `defaults/`. A Jinja2 template must generate the virtual host config file from variables.
+- **Lab 4.1.D Dynamic Inventory *(NEW)*:** Replace the static inventory with the AWS EC2 dynamic inventory plugin. Target EC2 instances by tag (e.g., `Role=webserver`). Run the PHP deployment role against dynamically discovered hosts.
+- **Lab 4.1.E Jenkins Integration:** Add an Ansible deployment stage to the Jenkins pipeline from Lab 3.2.D. Replace the direct SSH step with `ansible-playbook` execution. Verify the full chain: Git push, Jenkins build, Ansible deploys, app accessible.
 
-### Laboratory Exercises
-
-- Lab 3.2.A: Jenkins Setup
-    - Install Jenkins on a Linux VM using RPM or WAR file
-    - Install and configure essential plugins: Git, Pipeline, Maven Integration, SSH Agent, Role-Based Authorization Strategy
-    - Configure a Jenkins Agent node by connecting a second VM as a build agent over SSH
-
-- Lab 3.2.B: User and Role Management
-    - Create Jenkins user accounts
-    - Assign roles using the Role Based Authorization Strategy plugin
-    - Verify that a developer role user cannot access administrative functions
-
-- Lab 3.2.C: Freestyle Pipeline `Java App to Tomcat`
-    - Create a Freestyle job that: pulls source from GitHub, builds with Maven (`mvn clean package`), and deploys the `.war` file to the Tomcat instance from Lab 2.3.C
-    - Configure a GitHub webhook to trigger this job on push to `main`
-
-- Lab 3.2.D: Declarative Pipeline `PHP App to Apache`
-    - Write a `Jenkinsfile` with the following stages: `Checkout`, `Test`, `Deploy`. Deploy the PHP application from Lab 2.4.A to the Apache virtual host configured in Lab 2.3.A using the SSH Agent plugin.
-
-- Lab 3.2.E: Declarative Pipeline `Python App to Nginx`
-    - Write a multi stage `Jenkinsfile` for the Flask application from Lab 2.4.B. Include a `Test` stage that runs `pytest`; configure the pipeline to fail and halt if any test fails. Deploy the passing application behind the Nginx reverse proxy from Lab 2.3.B.
-
----
-
-## Section 3.3: GitHub Actions
-
-### Theory
-
-- GitHub Actions Concepts
-    - Workflow
-    - Event
-    - Job
-    - Step
-    - Runner
-    - Secrets
-- GitHub Actions vs. Jenkins
-
-### Laboratory Exercises
-
-- Lab 3.3.A: First Workflow
-    - Write a workflow YAML in `.github/workflows/ci.yml` that triggers on push to `main`. The workflow must: check out the code, install dependencies, and run the application's test suite.
-
-- Lab 3.3.B: Secrets and Deployment
-    - Store a deployment credential (e.g., SSH private key or API token) as a GitHub Secret
-    - Write a workflow that deploys the application to a cloud server on merge to `main`, injecting the secret as an environment variable at runtime
-
----
-
-## Section 3.4: Build Automation with Maven
-
-### Theory
-
-- Maven's Role
-- Project Object Model (`pom.xml`)
-- Maven Repositories
-
-### Laboratory Exercises
-
-- Lab 3.4.A: Maven Basics
-  - Create a Maven project using an archetype: `mvn archetype:generate`
-  - Add a dependency to `pom.xml`; verify it is resolved from Maven Central
-  - Run `mvn clean package`; inspect the contents of the `target/` directory
-
-- Lab 3.4.B: Nexus Integration *(Optional: requires available Nexus infrastructure)*
-    - Configure Maven's `settings.xml` to deploy built artifacts to a Nexus repository instead of Maven Central. Run `mvn deploy` and verify the artifact appears in Nexus.
-
----
-
-# Module 4: Automation with Ansible
-
-## Section 4.1: Ansible Fundamentals
-
-### Theory
-
-- Ansible Architecture
-- Push vs. Pull Configuration Management
-    - Push based (Ansible)
-    - Pull based (Chef, Puppet)
-- Idempotency
-- Ansible vs. Terraform
-
-### Laboratory Exercises
-
-- Lab 4.1.A: Core Ansible
-    - Install Ansible on a control node
-    - Create a static inventory file with at least two groups: `[webservers]` and `[dbservers]`
-    - Run ad-hoc commands using the `ping`, `command`, `yum`, and `service` modules
-    - Write a playbook that installs and starts Apache on all `[webservers]` hosts
-    - Add a `handler` that restarts Apache only when a configuration file changes; use `notify` to trigger it
-    - Encrypt a variable file containing a database password using `ansible-vault`
-
-- Lab 4.1.B: Practical Playbooks
-    - Write a playbook to manage user accounts: create users, set initial passwords, assign them to groups
-    - Write a playbook to deploy the PHP application from Lab 2.4.A: install Apache, copy application files, set correct permissions, restart the service
-    - Refactor the playbook into an Ansible role with the standard directory structure: `tasks/`, `handlers/`, `templates/`, `vars/`
-      
-- Lab 4.1.C: Ansible and Jenkins Integration
-    - Add an Ansible deployment stage to the Jenkins Declarative Pipeline from Lab 3.2.D
-    - Replace the direct SSH deployment step with an Ansible playbook execution
-    - Verify that the pipeline completes end-to-end: Git push > Jenkins build > Ansible deploys > application is accessible
-
----
 ---
 
 # Module 5: Containerization and Orchestration
-
-## Section 5.1: Docker and Podman: Container Fundamentals
-
-> This section covers both Docker and Podman. Docker is the most widely used container tool for developer workflows and most CI/CD platforms. Podman is the default in Red Hat Enterprise Linux (RHEL 8+) and OpenShift environments, and is growing rapidly in enterprises where rootless containers and daemonless architecture are security requirements. Proficiency in both is expected at the mid-level.
-
+ 
+## Section 5.1 Docker and Podman
+ 
 ### Theory
+ 
+- What containers solve: environment parity, dependency isolation, fast startup
+- Containers vs. VMs: resource sharing, startup time, isolation tradeoffs
+- OCI standards: image spec, runtime spec, distribution spec, why they matter for portability
+- Image layering: union filesystems, layer caching, why layer order affects build time
+- Multi stage builds: separating build dependencies from the runtime image
+- Docker architecture: daemon, CLI, containerd, runc
+- Podman architecture: daemonless, rootless by default, cgroups v2, drop in Docker CLI compatibility
+- Security implications: running as root in Docker vs. rootless in Podman
 
-- What Containers Solve
-- Containers vs. Virtual Machines
-- OCI Standards
-- Image Layering
-- Docker Architecture
-- Podman Architecture
-- Docker vs. Podman 
+### Labs
+ 
+- **Lab 5.1.A Docker Basics:** Install Docker Engine. Pull an image; run with `docker run`. Inspect with `docker ps`, `logs`, `exec`, `inspect`. Write a `Dockerfile` for the Flask app (`FROM`, `RUN`, `COPY`, `EXPOSE`, `CMD`). Build and run. Use `.dockerignore`.
+- **Lab 5.1.B Multi Stage Build *(NEW)*:** Rewrite the Flask `Dockerfile` as a multi stage build: a builder stage installs dependencies into a venv; the final stage copies only the venv and app code. Compare image sizes before and after. Scan both with `trivy` and note the difference in CVE count.
+- **Lab 5.1.C Podman:** Install Podman on RHEL/Fedora. Run the same Docker Hub image as a non root user. Build from the same `Dockerfile` with `podman build`. Verify rootless: `ps aux | grep <process>`. Use `podman generate kube` and inspect the output YAML.
+- **Lab 5.1.D Compose:** Write a `docker-compose.yml` for Flask + MySQL. Use named volumes for DB persistence. Use an `.env` file for credentials (never hardcoded). Start with `docker compose up`; verify connectivity. Repeat with `podman compose up`.
+- **Lab 5.1.E Registry and CI/CD:** Tag and push the Flask image to Docker Hub. Add a build and push stage to the Jenkins pipeline from Lab 4.1.E. Optionally: replace `docker` with `podman` in the pipeline and confirm identical behavior.
+ 
+## Section 5.2 Kubernetes
+ 
+### Theory
+ 
+- Control plane components: API Server, etcd, Scheduler, Controller Manager
+- Worker node components: kubelet, kube proxy, container runtime (containerd)
+- Core objects: Pod, ReplicaSet, Deployment, StatefulSet, DaemonSet, Job, CronJob
+- Service types: ClusterIP, NodePort, LoadBalancer, ExternalName
+- Ingress: routing external traffic, Ingress controllers (Nginx Ingress)
+- Resource requests and limits: why every production workload must define them
+- Liveness, readiness, and startup probes: Kubernetes cannot self heal what it cannot detect
+- ConfigMaps and Secrets: separating config from image
+- Persistent Volumes and PVCs: stateful workloads in Kubernetes
+- Rolling updates and rollback strategy
+- RBAC: ServiceAccounts, Roles, ClusterRoles, RoleBindings
 
-### Laboratory Exercises
+### Labs
+ 
+- **Lab 5.2.A Cluster Setup:** Set up a single node cluster with Minikube or kind. Then set up a multi node cluster (1 control plane + 2 workers) on separate VMs using kubeadm. Verify all nodes `Ready` with `kubectl get nodes`.
+- **Lab 5.2.B Core Workloads:** Write and apply a Pod manifest; inspect with `kubectl describe`. Write a Deployment for the Flask image; apply; verify pods running. Scale to 3 replicas. Write a NodePort Service; access from browser. Update the image tag; observe rolling update; roll back with `kubectl rollout undo`.
+- **Lab 5.2.C Probes and Resource Limits *(NEW)*:** Add liveness (`/health` HTTP probe) and readiness probes to the Flask Deployment. Set resource requests and limits (`cpu: 100m/250m`, `memory: 128Mi/256Mi`). Kill the Flask process inside a pod and observe Kubernetes restart it automatically.
+- **Lab 5.2.D Config and Secrets:** Create a ConfigMap for Flask config; mount as env vars. Create a Secret for the DB password; reference in the Pod spec. Apply the Podman generated YAML from Lab 5.1.C directly with `kubectl apply`.
+- **Lab 5.2.E Ingress *(NEW)*:** Install the Nginx Ingress Controller in Minikube. Write an Ingress manifest routing `/api` to the Flask Service and `/` to a static site. Verify routing from the browser.
+- **Lab 5.2.F RBAC *(NEW)*:** Create a ServiceAccount for the CI/CD pipeline. Bind it to a Role permitting only `get`, `list`, and `update` on Deployments in the app namespace. Verify it cannot access Secrets.
+- **Lab 5.2.G Helm:** Install Helm. Inspect a chart structure (`Chart.yaml`, `values.yaml`, `templates/`). Deploy the Nginx chart from Bitnami. Override values with `--set` and a custom `values.yaml`. Write a minimal Helm chart for the Flask app and deploy it.
+- **Lab 5.2.H Kustomize *(NEW)*:** Write a Kustomize base for the Flask app (Deployment + Service). Create two overlays: `dev` (1 replica, debug env var) and `prod` (3 replicas, resource limits). Apply each with `kubectl apply -k`.
+- **Lab 5.2.I CI/CD for Kubernetes:** Extend the pipeline from Lab 5.1.E to add a `kubectl apply` stage after image push. Verify the new image is running in the cluster after the pipeline completes.
+ 
+## Section 5.3 GitOps
+ 
+### Theory
+ 
+- GitOps principles: declarative config in Git is the source of truth; agents reconcile actual vs. desired state
+- Push based (traditional CI/CD) vs. pull based (GitOps) delivery: security and audit tradeoffs
+- ArgoCD: Application CRD, sync policies, health status, self healing
+- Drift detection: ArgoCD alerting when cluster state diverges from Git
 
-- Lab 5.1.A: Docker Basics
-    - Install Docker Engine on a Linux VM
-    - Pull an image from Docker Hub; run a container with `docker run`
-    - Inspect running containers: `docker ps`, `docker logs`, `docker exec`, `docker inspect`
-    - Write a `Dockerfile` for the Flask application from Lab 2.4.B, using the instructions: `FROM`, `RUN`, `COPY`, `EXPOSE`, `CMD`
-    - Build the image with `docker build`; run it and verify the application responds
-    - Use `.dockerignore` to exclude unnecessary files from the build context
+### Labs
+ 
+- **Lab 5.3.A ArgoCD:** Install ArgoCD in the cluster. Expose the UI; log in. Connect ArgoCD to the GitHub repo containing Flask manifests. Update the replica count in Git; observe ArgoCD detect the drift and auto sync. Then introduce a manual `kubectl` change and observe ArgoCD revert it.
+ 
+## Section 5.4 Red Hat OpenShift
+ 
+### Theory
+ 
+- OpenShift vs. Kubernetes: additional security defaults, SCCs, built in image registry, Routes
+- Source to Image (S2I): build from source without writing a Dockerfile
+- OpenShift Routes vs. Kubernetes Ingress
+- When to choose OpenShift vs. vanilla Kubernetes
 
-- Lab 5.1.B: Podman Basics
-    - Install Podman on a RHEL/Fedora VM (note: Podman is included by default in RHEL 8+)
-    - Run the same Docker Hub image from Lab 5.1.A using `podman run` as a non-root user
-    - Build an image from the same `Dockerfile` with `podman build`; observe CLI parity with Docker
-    - Verify the container runs as a non root process: `ps aux | grep <container-process>`
-    - Use `podman generate kube` on the running container; inspect and save the output YAML
+### Labs
+ 
+- **Lab 5.4.A OpenShift Sandbox:** Access the Red Hat Developer Sandbox. Deploy the Flask app via web console and via `oc` CLI (`oc new-app`, `oc expose`, `oc get route`). Deploy using S2I directly from the GitHub repo. Compare the resulting Route to the Ingress from Lab 5.2.E.
+ 
+# Module 6: Cloud and Infrastructure as Code
+ 
+## Section 6.1 AWS Fundamentals
+ 
+### Theory
+ 
+- Cloud service models: IaaS, PaaS, SaaS and where they map to real AWS services
+- AWS global infrastructure: Regions, Availability Zones, Local Zones
+- IAM: users, groups, roles, policies, least privilege by default
+- VPC fundamentals: subnets (public/private), Internet Gateway, NAT Gateway, route tables, security groups, NACLs
+- EC2: AMIs, instance types, key pairs, instance profiles, user data
+- S3: buckets, object storage, bucket policies, versioning, lifecycle rules
 
-- Lab 5.1.C: Docker Compose and Podman Compose
-    - Write a `docker compose.yml` defining a two container application: Flask app + MySQL database
-    - Use a named volume for MySQL data persistence
-    - Use an `.env` file to supply database credentials; do not hardcode credentials in the YAML
-    - Bring up the stack with `docker compose up`; verify the Flask app connects to MySQL
-    - Bring up the same stack with `podman compose up`; note any behavioral differences
+### Labs
+ 
+- **Lab 6.1.A AWS Setup and EC2:** Create a Free Tier account; configure AWS CLI. Launch an EC2 instance (Amazon Linux 2023), SSH in, install and start Nginx, confirm it serves traffic. Terminate after.
+- **Lab 6.1.B IAM Least Privilege:** Create an IAM user with no permissions; attach S3 read only policy; verify it can list but not create buckets. Create an IAM Role for EC2 with S3 read access; attach to an instance; verify the instance reads S3 without access keys.
+- **Lab 6.1.C VPC Design and Build:** Create a VPC (`10.0.0.0/16`) with a public subnet (`10.0.1.0/24`) and a private subnet (`10.0.2.0/24`). Attach an Internet Gateway to the public subnet. Add a NAT Gateway for private subnet outbound access. Launch one EC2 in each subnet; verify the private instance has outbound internet access but no inbound public IP.
+ 
+## Section 6.2 Terraform
+ 
+### Theory
+ 
+- Terraform's declarative model: desired state vs. imperative scripting
+- Terraform state: what it tracks, why it must not be lost, why it must not live in Git
+- Terraform workflow: `init`, `plan`, `apply`, `destroy`
+- State locking: DynamoDB as a lock backend to prevent concurrent applies
+- Workspaces: environment isolation without duplication
+- Modules: the unit of reuse in Terraform; module sources (local, registry, Git)
 
-- Lab 5.1.D: Registry and CI/CD Integration
-    - Tag and push the Flask application image to Docker Hub using `docker push`
-    - Push the same image using `podman push`; note the identical workflow
-    - Add a container build and push stage to the Jenkins pipeline from Lab 4.1.C
-    - *(Optional)* On a RHEL based Jenkins agent, replace `docker` with `podman` in the pipeline and verify it passes without modification
+### Labs
+ 
+- **Lab 6.2.A Terraform Basics:** Install Terraform. Write `main.tf` provisioning one EC2 and one Security Group allowing SSH. Run `init`, `plan`, `apply`; verify in AWS Console. Run `destroy`.
+- **Lab 6.2.B Variables and Outputs:** Parameterize instance type and region via `variable` blocks. Add an `output` printing the public IP. Run `terraform apply -var="instance_type=t2.micro"`.
+- **Lab 6.2.C Remote State with Locking:** Create an S3 bucket and DynamoDB table for state. Configure `backend "s3"` with `dynamodb_table` for locking. Run `apply`; verify state file is in S3. Simulate a concurrent apply and observe the lock error.
+- **Lab 6.2.D Modules:** Refactor EC2 + Security Group into a reusable module. Call it twice from root config with different parameters: one web server, one build agent.
+- **Lab 6.2.E Cost Estimation *(NEW)*:** Install Infracost. Run `infracost breakdown --path .` against the Terraform config from Lab 6.2.D. Interpret the cost estimate. Add `infracost comment` to the GitHub Actions workflow so every PR shows a cost diff.
 
 ---
+# Module 7: Observability and Security
 
-## Section 5.2: Kubernetes
-
+## Section 7.1 Monitoring with Prometheus and Grafana
+ 
 ### Theory
+ 
+- Three pillars of observability: metrics, logs, traces, what each answers, what each misses
+- Prometheus data model: time series, labels, metric types (counter, gauge, histogram, summary)
+- PromQL: `rate()`, `increase()`, `histogram_quantile()`, the three queries engineers reach for first
+- Alertmanager: routing, grouping, inhibition, silencing, receiver integrations
+- Grafana: panels, variables, annotations, alert rules
+- Service Level Objectives: instrumenting SLOs with Prometheus
 
-- Kubernetes Architecture
-    - Control Plane Components:
-        - API Server
-        - etcd
-        - Scheduler
-        - Controller Manager
-    - Worker Node Components:
-        - kubelet
-        - kube-proxy
-        - Container Runtime
-- Core Kubernetes Objects
-- ReplicaSet vs. ReplicationController
-- Service Types
-    - ClusterIP
-    - NodePort
-    - LoadBalancer
-    - ExternalName
-- OCI Compatibility and Kubernetes
-
-
-### Laboratory Exercises
-
-- Lab 5.2.A: Cluster Setup
-    - Set up a single node local cluster using Minikube or kind
-    - Set up a multi node cluster (1 control plane + 2 workers) on separate VMs using kubeadm; verify all nodes are `Ready` with `kubectl get nodes`
-
-- Lab 5.2.B: Core Workloads
-    - Write and apply a Pod manifest; inspect it with `kubectl describe pod`
-    - Write a Deployment manifest for the Flask application image from Lab 5.1.A; apply it and verify Pods are running
-    - Scale the Deployment to 3 replicas with `kubectl scale`
-    - Write a Service manifest (NodePort) and expose the Deployment; access the application from a browser
-    - Update the Deployment with a new image tag; observe the rolling update; roll it back with `kubectl rollout undo`
-
-- Lab 5.2.C: Configuration and Secrets
-    - Create a ConfigMap holding the Flask application's configuration; mount it as environment variables in the Deployment
-    - Create a Kubernetes Secret for the database password; reference it in the Pod spec
-    - Apply the Podman generated YAML from Lab 5.1.B directly with `kubectl apply`; observe the continuity between local Podman development and Kubernetes deployment
-    - Practice essential `kubectl` commands: `apply`, `get`, `describe`, `logs`, `exec`, `delete`, `rollout status`
-
-- Lab 5.2.D: Helm
-    - Install Helm; inspect the structure of a chart: `Chart.yaml`, `values.yaml`, `templates/`
-    - Add the Bitnami repository; deploy the Nginx chart with `helm install`
-    - Override values with `--set` and with a custom `values.yaml` file
-    - Write a minimal Helm chart for the Flask application; deploy it to the cluster
-
-- Lab 5.2.E: CI/CD for Kubernetes
-  - Extend the pipeline from Lab 5.1.D to add a Kubernetes deployment stage: after the image is pushed to the registry, the pipeline applies the updated Kubernetes manifests to the cluster using kubectl apply. Verify the new image is running in the cluster after the pipeline completes.
-
----
-
-## Section 5.3: GitOps Introduction
-
-> GitOps is increasingly expected knowledge for mid level roles working in Kubernetes environments.
-
+### Labs
+ 
+- **Lab 7.1.A Prometheus and Node Exporter:** Install Prometheus; configure `prometheus.yml` with two scrape targets. Install Node Exporter on each target. Verify targets `UP` in the Prometheus UI. Run PromQL queries: `up`, `rate(node_cpu_seconds_total[5m])`, `node_memory_MemAvailable_bytes`.
+- **Lab 7.1.B Alertmanager *(NEW)*:** Deploy Alertmanager. Write an alert rule firing when CPU usage exceeds 80% for 2 minutes. Configure Alertmanager to route alerts to a Slack webhook. Trigger the alert and verify the notification arrives.
+- **Lab 7.1.C Grafana:** Install Grafana; add Prometheus as a data source. Import the Node Exporter Full dashboard (ID 1860). Build a custom dashboard with three panels: CPU usage (time series), memory usage (gauge), and HTTP request rate from the Flask app (requires adding `prometheus_client` to Flask and a `/metrics` endpoint).
+ 
+## Section 7.2 Distributed Tracing
+ 
 ### Theory
+ 
+- Why logs and metrics are not enough in a microservices environment
+- OpenTelemetry: the open standard for traces, metrics, and logs, vendor neutral instrumentation
+- Trace anatomy: spans, trace context, parent child relationships, sampling
+- Jaeger: open source distributed tracing backend
 
-- GitOps Principles
-- Push Based vs. Pull Based Delivery
-    - Push based (traditional CI/CD)
-    - Pull based (GitOps)
-- ArgoCD
-
-### Laboratory Exercises
-
-- Lab 5.3.A: ArgoCD
-    - Install ArgoCD in the Kubernetes cluster from Lab 5.2.A
-    - Expose the ArgoCD UI; log in
-    - Connect ArgoCD to a GitHub repository containing the Kubernetes manifests from Lab 5.2.B
-    - Update a manifest in the Git repository (e.g., change the replica count); observe ArgoCD detect the change and sync the cluster automatically
-
----
-
-## Section 5.4: Red Hat OpenShift
-
+### Labs
+ 
+- **Lab 7.2.A OpenTelemetry + Jaeger:** Instrument the Flask app with `opentelemetry-sdk` and `opentelemetry-exporter-jaeger`. Deploy Jaeger in the Kubernetes cluster. Make several requests to Flask; find the resulting traces in the Jaeger UI; identify latency at each span.
+ 
+## Section 7.3 Log Management with Elastic Stack
+ 
 ### Theory
+ 
+- Elastic Stack components: Elasticsearch (indexing and search), Logstash (parsing and enrichment), Kibana (visualization), Filebeat (lightweight shipper)
+- Log pipeline: collection, parsing, indexing, visualization
+- Structured vs. unstructured logs: why structured logging (JSON) makes downstream parsing trivial
+- Index lifecycle management: keeping storage costs under control
 
-- OpenShift Overview
-- Container Runtime in OpenShift and RHEL
-- OpenShift vs Kubernetes
-- When to Choose OpenShift vs. Kubernetes
-
-### Laboratory Exercises
-
-- Lab 5.4.A: OpenShift Deployment
-    - Access the Red Hat OpenShift Developer Sandbox (free at developers.redhat.com)
-    - Deploy the Flask application using the OpenShift web console
-    - Deploy the same application using the `oc` CLI: `oc new-app`, `oc expose`, `oc get route`
-    - Use Source to Image (S2I) to build and deploy the application directly from the GitHub repository, without writing a `Dockerfile`
-    - Compare an OpenShift Route to the Kubernetes Ingress configured in Lab 5.2.B
-    - Note that `podman` commands from Section 5.1 behave consistently within this RHEL-based environment
-
-
----
-
-# Module 6: Cloud Integration and Infrastructure as Code
-
-## Section 6.1: Cloud Fundamentals and AWS
-
+### Labs
+ 
+- **Lab 7.3.A Stack Setup:** Install Elasticsearch and Kibana. Verify cluster health: `curl http://localhost:9200/_cluster/health`.
+- **Lab 7.3.B Log Pipeline:** Install Filebeat on the Apache VM; configure it to ship `/var/log/httpd/access_log`. Write a Logstash pipeline with a `grok` filter parsing Apache Combined Log Format. In Kibana, create an index pattern and filter entries by HTTP status code.
+- **Lab 7.3.C Kibana Dashboard:** Build a dashboard with three panels: request count over time (area chart), HTTP status code distribution (pie chart), and top 10 requested URLs (data table).
+ 
+## Section 7.4 DevSecOps
+ 
 ### Theory
+ 
+- Shifting security left: finding vulnerabilities at commit time costs far less than finding them in production
+- OWASP Top 10: the vulnerabilities every DevOps engineer must recognize
+- Secrets management: why `.env` files committed to Git end careers, and what to do instead
+- SAST (Static Application Security Testing): analyzing source code without running it
+- SCA (Software Composition Analysis): known vulnerabilities in third party dependencies
+- Container image security: base image age, pinned tags, non root `USER`
+- Rootless containers as a security control: the attack surface when root in container maps to root on host
+- Least privilege in CI/CD: pipeline credentials should have the minimum scope to do their job
 
-- Cloud Service Models
-    - IaaS (Infrastructure as a Service)
-    - PaaS (Platform as a Service)
-    - SaaS (Software as a Service)
-- AWS Global Infrastructure
-    - Regions
-    - Availability Zones (AZs)
-- AWS IAM
-- VPC Fundamentals
-    - Subnets
-    - Internet Gateway
-    - NAT Gateway
-    - Route Tables
-    - Security Groups
-
-### Laboratory Exercises
-
-- Lab 6.1.A: AWS Setup and EC2
-    - Create an AWS Free Tier account; configure the AWS CLI: `aws configure`
-    - Launch an EC2 instance: select an AMI (Amazon Linux 2023 or Ubuntu), choose instance type, create a key pair, configure a security group
-    - Connect to the instance via SSH; install and start Nginx
-    - Terminate the instance when complete to avoid charges
-
-- Lab 6.1.B: IAM
-    - Create an IAM user with no permissions; attach an S3 read-only policy; verify the user can list but not create S3 buckets
-    - Create an IAM Role for EC2 with S3 read access; attach it to an EC2 instance; verify the instance can read S3 without access keys
-
-- Lab 6.1.C: VPC and Networking
-    - Create a VPC with CIDR `10.0.0.0/16`
-    - Create a public subnet (`10.0.1.0/24`) and attach an Internet Gateway
-    - Create a route table with a default route to the Internet Gateway; associate it with the public subnet
-    - Launch an EC2 instance into the public subnet and verify internet connectivity
-
-- Lab 6.1.D: S3
-    - Create an S3 bucket; upload the static HTML file from Lab 2.4.A
-    - Configure a bucket policy for static website hosting; access the site via the S3 website endpoint
-
----
-
-## Section 6.2: Terraform for Infrastructure as Code
-
-
+### Labs
+ 
+- **Lab 7.4.A HashiCorp Vault:** Install Vault in dev mode. Write a DB password: `vault kv put secret/myapp db_password=<value>`. Retrieve it from a Jenkins pipeline step. Compare to the insecure alternative of writing it directly in the `Jenkinsfile`.
+- **Lab 7.4.B SAST and Dependency Scanning *(NEW)*:** Run Bandit against the Flask app: `bandit -r app/`. Resolve at least one finding. Run OWASP Dependency Check against the project. Add both as pipeline stages; fail the pipeline on HIGH severity findings.
+- **Lab 7.4.C Trivy Image Scanning:** Install Trivy. Scan the Flask image: `trivy image <name>`. Identify at least one HIGH/CRITICAL CVE; research it; apply the fix (usually: update the base image). Add Trivy as a pipeline stage; configure it to fail on CRITICAL findings.
+- **Lab 7.4.D Secure Jenkins:** Configure Jenkins to serve over HTTPS with a self signed cert. Set controller executors to zero (all builds on agents). Confirm developer role cannot modify pipelines or access admin settings.
+ 
+## Section 7.5 Project Management with Jira
+ 
 ### Theory
+ 
+- Agile in Jira: Epics, User Stories, Tasks, Sub tasks; Sprint planning; Kanban boards
+- Jira + Git integration: commit messages linking to issues, PR status in Jira
+- Jira in a DevOps context: tracing a feature from backlog to deployed
 
-- Terraform's Declarative Model
-- Terraform State
-- Terraform Workflow
-  
-### Laboratory Exercises
+### Labs
+ 
+- **Lab 7.5.A Jira Setup:** Create a Scrum or Kanban project. Create an Epic; write three User Stories under it; create a Sprint; assign stories; start the Sprint.
+- **Lab 7.5.B Git Integration:** Commit a code change with the Jira issue key in the message. Open a GitHub PR; verify it appears in the Jira issue's development panel. Move the issue to Done on merge.
 
-- Lab 6.2.A: Terraform Basics
-    - Install Terraform; configure the AWS provider in `main.tf`
-    - Write a configuration that provisions one EC2 instance and one Security Group allowing SSH access
-    - Run `terraform init`, `terraform plan`, and `terraform apply`; verify the instance appears in the AWS console
-    - Use `terraform destroy` to remove all resources
-
-- Lab 6.2.B: Variables and Outputs
-    - Parameterize the EC2 instance type and AWS region using `variable` blocks
-    - Add an `output` block to print the public IP of the instance after applying
-
-- Lab 6.2.C: Remote State
-    - Create an S3 bucket and DynamoDB table for state management
-    - Configure a `backend "s3"` block in Terraform to store state remotely
-    - Run `terraform apply` and verify the state file is in S3, not local
-
-- Lab 6.2.D: Modules
-    - Refactor the EC2 and Security Group configuration into a reusable module
-    - Call the module from the root configuration with different parameters for a web server vs. a build agent
-
----
-
-# Module 7: Monitoring, Logging, and Security
-
-## Section 7.1: Monitoring with Prometheus and Grafana
-
-### Theory
-
-- Observability Pillars
-    - Metrics
-    - Logs
-    - Traces
-- Prometheus
-- Grafana
-
-### Laboratory Exercises
-
-- Lab 7.1.A: Prometheus and Node Exporter
-    - Install Prometheus on a Linux VM; configure `prometheus.yml` with at least two scrape targets
-    - Install Node Exporter on each target VM; verify metrics are exposed at `http://<host>:9100/metrics`
-    - In the Prometheus UI, verify targets are `UP`; run PromQL queries: `up`, `rate(node_cpu_seconds_total[5m])`, `node_memory_MemAvailable_bytes`
-
-- Lab 7.1.B: Grafana
-    - Install Grafana; add Prometheus as a data source
-    - Import the Node Exporter Full community dashboard (dashboard ID 1860)
-    - Create a custom dashboard panel showing CPU usage as a time series graph
-    - Configure an alert rule that fires when CPU usage exceeds 80% for more than 2 minutes
-
----
-
-## Section 7.2: Log Management with the Elastic Stack
-
-> The product was officially rebranded from "ELK Stack" to **Elastic Stack** when Beats was added as a fourth component in 2015. "ELK" remains widely used shorthand in the industry and refers to the original three components: Elasticsearch, Logstash, and Kibana.
-
-### Theory
-
-- Elastic Stack Components
-- Log Pipeline
-- Structured vs. Unstructured Logs
-  
-### Laboratory Exercises
-
-- Lab 7.2.A: Elasticsearch and Kibana
-    - Install Elasticsearch; verify cluster health: `curl http://localhost:9200/_cluster/health`
-    - Install Kibana; confirm it connects to Elasticsearch
-
-- Lab 7.2.B: Log Shipping Pipeline
-    - Install Filebeat on the VM running Apache from Lab 2.3.A; configure it to ship `/var/log/httpd/access_log` to Elasticsearch
-    - Write a Logstash pipeline with a `grok` filter to parse the Apache Combined Log Format into structured fields
-    - In Kibana, create an index pattern; use Discover to filter log entries by HTTP status code
-
-- Lab 7.2.C: Kibana Dashboard
-    - Build a Kibana dashboard with at least two panels: request count over time (area chart) and HTTP status code distribution (pie or bar chart)
-
----
-
-## Section 7.3: Security in DevOps (DevSecOps)
-
-### Theory
-
-- Shifting Security Left
-- OWASP Top 10
-- Secrets Management
-- Container Image Security
-- Rootless Containers as a Security Control
-- Least Privilege in CI/CD
-
-### Laboratory Exercises
-
-- Lab 7.3.A: HashiCorp Vault
-    - Install HashiCorp Vault in development mode on a Linux VM
-    - Write a database password to Vault: `vault kv put secret/myapp db_password=<value>`
-    - Retrieve the secret from a Jenkins pipeline using a shell step: `vault kv get -field=db_password secret/myapp`
-    - Compare the Vault-based approach to the insecure alternative of writing the password directly in the `Jenkinsfile`
-
-- Lab 7.3.B: Trivy Image Scanning
-    - Install Trivy on a Linux VM
-    - Scan the Flask application image from Lab 5.1.A: `trivy image <image-name>`
-    - Interpret the output: identify at least one HIGH or CRITICAL severity CVE; research the CVE and identify the remediation (typically: update the base image or the affected package)
-    - Add a Trivy scan step to the CI/CD pipeline from Lab 5.2.E; configure the step to fail the pipeline if any CRITICAL vulnerabilities are found
-
-- Lab 7.3.C: Secure Jenkins Configuration
-  - Configure Jenkins to serve over HTTPS using a self signed certificate
-  - Set the number of executors on the Jenkins Controller to zero; verify all builds run on agents
-  - Confirm that a developer role user cannot modify pipeline configurations or access administrative settings (from Lab 3.2.B)
-
----
-
-## Section 7.4: Project Management with Jira
-
-### Theory
-
-- Agile Concepts in Jira
-    - Epic
-    - User Story
-    - Issue / Task
-    - Sprint
-    - Backlog
-    - Kanban Board
-- Jira and Git Integration
-- Jira in a DevOps Context
-
-### Laboratory Exercises
-
-- Lab 7.4.A: Jira Project Setup
-    - Create a Jira project using the Scrum or Kanban template
-    - Create an Epic; create three User Stories under the Epic
-    - Create a Sprint; assign the User Stories to it; start the Sprint
-
-- Lab 7.4.B: Git Jira Integration
-    - Make a code change to the Flask application repository; include the Jira issue key in the commit message
-    - Open a GitHub pull request; verify the pull request appears in the Jira issue's development panel
-    - Move the issue through the workflow columns to Done upon merge
-
----
 ---
 
 # Module 8: Capstone Project
-
-## Project Overview
-
-The capstone project requires each student to design, build, and operate a complete application delivery pipeline that demonstrates all competencies covered in Modules 1 through 7. The project is completed individually. Students present their completed pipeline in a 10 minute walkthrough during the final session.
-
+ 
+The capstone requires each student to design, build, and operate a complete application delivery pipeline demonstrating all competencies from Modules 1 through 7. Completed individually. Presented in a 15 minute walkthrough during the final session.
+ 
 ## Objective
-
-Deliver a fully automated, observable, and secure application delivery pipeline: from a Git push on a developer's machine to a running, monitored application in a Kubernetes cluster or cloud environment, with no manual steps in between.
-
-## Requirements
-
-All eight of the following components are mandatory:
-
+ 
+A Git push on the developer's machine triggers a fully automated pipeline that tests, scans, builds, and deploys the application to a Kubernetes cluster, with zero manual steps in between, full observability, and no credentials in any file.
+ 
+## Mandatory Components
+ 
+All eight components are required.
+ 
 **1. Application**
-Select or build a web application in PHP, Python Flask, or Java. The application must connect to a database and include at least one feature covered by automated tests. The application must read all configuration (database host, port, credentials) from environment variables — no hardcoded values.
-
+A web application in PHP, Python Flask, or Java. Must connect to a database, include at least one feature covered by automated tests, and read all configuration from environment variables.
+ 
 **2. Version Control**
-Host the application on GitHub. Apply a branching strategy: feature work on a named branch, merged to `main` via pull request, with `main` protected by branch protection rules. Every commit must be traceable to a purpose.
-
+Hosted on GitHub with a branching strategy (feature branches merged via PR). `main` protected by branch protection rules. Conventional commits enforced via `pre-commit`.
+ 
 **3. Containerization**
-Write a `Dockerfile` for the application. Build the image using Docker or Podman (both are acceptable; the image must be OCI compliant). Push the image to Docker Hub or a private registry. The image must not contain hardcoded credentials.
-
-**4. CI/CD Pipeline**
-Build a fully automated pipeline in Jenkins or GitHub Actions. The pipeline must include all of the following stages in order:
-    - Code checkout from Git
-    - Automated unit tests (pipeline must fail and halt if tests fail)
-    - Container image build and push to registry
-    - Container image vulnerability scan with Trivy (fail pipeline on CRITICAL findings)
-    - Deployment to the Kubernetes cluster or cloud VM
-
+A multi stage `Dockerfile` producing a minimal, non root image. Image pushed to Docker Hub or private registry. No credentials in the image.
+ 
+**4. CI/CD Pipeline (Jenkins or GitHub Actions)**
+Stages in this order: checkout, unit tests (fail and halt on failure), SAST/dependency scan, image build and push, Trivy scan (fail on CRITICAL), deploy to Kubernetes.
+ 
 **5. Infrastructure as Code**
-Provision the deployment environment using Terraform. At a minimum, one EC2 instance or a local VM must be defined as code. The environment must be reproducible by running `terraform apply` from the repository.
-
+Terraform provisions the deployment environment. Fully reproducible from `terraform apply`. Remote state in S3 with DynamoDB locking.
+ 
 **6. Configuration Management**
-Use Ansible to configure the deployment target after Terraform provisions it: install required packages, configure system settings, and deploy application configuration files. The Ansible playbook must be in the repository.
-
-**7. Monitoring**
-Deploy Prometheus and Grafana to the environment. Create a Grafana dashboard with at least three meaningful metrics relevant to the running application (e.g., application uptime, CPU usage, HTTP request rate, or error rate).
-
+Ansible configures the deployment target after Terraform provisions it. Playbooks are in the repository and idempotent.
+ 
+**7. Observability**
+Prometheus and Grafana deployed in the cluster. Grafana dashboard with four panels: CPU usage, memory usage, HTTP request rate, HTTP error rate. One alert rule configured in Alertmanager.
+ 
 **8. Security**
-All credentials (database passwords, API keys, registry tokens) must be stored in HashiCorp Vault or GitHub Secrets. No credential, token, or password may appear in source code, Dockerfiles, pipeline definitions, or pipeline logs.
+All credentials in HashiCorp Vault or GitHub Secrets. No credential appears in source code, Dockerfiles, pipeline definitions, or pipeline logs.
 
+---
 ## Deliverables
-
+ 
 | Deliverable | Description |
 |---|---|
-| GitHub Repository | Contains: application source code, `Dockerfile`, `Jenkinsfile` or GitHub Actions workflow YAML, Terraform configuration, Ansible playbooks, Kubernetes manifests |
-| Running Application | Accessible via browser or API at a stable URL or IP at time of presentation |
-| Grafana Dashboard Screenshot | Shows at least three live metrics from the running application |
-| 10-Minute Presentation | Walkthrough of the complete pipeline: Git push > build > test > scan > deploy > monitor. Must include one problem encountered and how it was resolved. |
+| GitHub Repository | App source, `Dockerfile`, pipeline definition, Terraform config, Ansible playbooks, Kubernetes manifests, README with architecture diagram |
+| Live Application | Accessible via browser or API at a stable URL or IP at time of presentation |
+| Grafana Dashboard Screenshot | Four live panels from the running application |
+| 15 Minute Presentation | Full walkthrough: Git push to running app. Must include one problem encountered and how it was resolved. |
 
 ---
-
 # Appendix: Tool and Technology Reference
-
-| Area | Tools Covered |
-|---|---|
-| Virtualization | VMware Workstation, VirtualBox |
-| Linux | Fedora / CentOS Stream / RHEL 9, Ubuntu |
-| Web Servers | Apache HTTP Server, Nginx, Apache Tomcat |
-| Version Control | Git, GitHub |
-| CI/CD | Jenkins, GitHub Actions |
-| Build Tools | Apache Maven |
-| Configuration Management | Ansible |
-| Containers | Docker, Docker Compose, Podman, Podman Compose, Buildah |
-| Container Orchestration | Kubernetes (Minikube, kubeadm), Helm, ArgoCD |
-| Enterprise Kubernetes | Red Hat OpenShift |
-| Infrastructure as Code | Terraform |
-| Cloud | AWS (EC2, S3, IAM, VPC, DynamoDB) |
-| Monitoring | Prometheus, Grafana, Node Exporter |
-| Logging | Elastic Stack (Elasticsearch, Logstash, Kibana, Filebeat) |
-| Security | HashiCorp Vault, Trivy |
-| Project Management | Jira |
+ 
+| Area | Tools | Notes |
+|---|---|---|
+| Virtualization | VirtualBox, VMware Workstation | VirtualBox free; VMware free for personal use |
+| Linux | Fedora / CentOS Stream / RHEL 9, Ubuntu | RHEL family preferred for Red Hat alignment |
+| Web Servers | Apache, Nginx, Tomcat | |
+| Version Control | Git, GitHub | pre commit, conventional commits |
+| CI/CD | Jenkins, GitHub Actions | Docker agents in Jenkins |
+| Build Tools | Maven, Make | Makefile wraps all pipeline steps |
+| Config Management | Ansible | Dynamic inventory, Vault integration |
+| Containers | Docker, Podman, Buildah | Docker Compose, Podman Compose |
+| Orchestration | Kubernetes (Minikube, kubeadm), Helm, Kustomize, ArgoCD | |
+| Enterprise Kubernetes | Red Hat OpenShift | Developer Sandbox (free) |
+| IaC | Terraform | Remote state, modules, Infracost |
+| Cloud | AWS (EC2, S3, IAM, VPC, DynamoDB) | Free Tier account required |
+| Monitoring | Prometheus, Alertmanager, Grafana, Node Exporter | |
+| Tracing | OpenTelemetry, Jaeger | Added in this revision |
+| Logging | Elastic Stack (Elasticsearch, Logstash, Kibana, Filebeat) | |
+| Security | HashiCorp Vault, Trivy, Bandit, OWASP Dependency Check | SAST + SCA + image scanning |
+| Project Management | Jira | Scrum/Kanban, Git integration |
 
 ---
-
-# Official Documentation Sources
-
-- [Jenkins Official Documentation](https://www.jenkins.io/doc/)
-- [Kubernetes Official Documentation](https://kubernetes.io/docs/)
-- [Red Hat OpenShift Documentation](https://docs.openshift.com/)
-- [Terraform Official Documentation](https://developer.hashicorp.com/terraform/docs)
-- [Elastic Documentation](https://www.elastic.co/docs)
-- [Google Site Reliability Engineering Book](https://sre.google/sre-book/table-of-contents/)
-
+## Official Documentation
+ 
+- Jenkins: https://www.jenkins.io/doc/
+- Kubernetes: https://kubernetes.io/docs/
+- OpenShift: https://docs.openshift.com/
+- Terraform: https://developer.hashicorp.com/terraform/docs
+- Ansible: https://docs.ansible.com/
+- Prometheus: https://prometheus.io/docs/
+- OpenTelemetry: https://opentelemetry.io/docs/
+- Elastic: https://www.elastic.co/docs/
+- Google SRE Book: https://sre.google/sre-book/table-of-contents/
 ---
