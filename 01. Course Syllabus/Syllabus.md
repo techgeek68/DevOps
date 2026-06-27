@@ -266,8 +266,8 @@ Upon completion, students will be able to:
 
 ### Labs
  
-- **Lab 5.2.A Cluster Setup:** Set up a single node cluster with Minikube or kind. Then set up a multi node cluster (1 control plane + 2 workers) on separate VMs using kubeadm. Verify all nodes `Ready` with `kubectl get nodes`.
-- **Lab 5.2.B Core Workloads:** Write and apply a Pod manifest; inspect with `kubectl describe`. Write a Deployment for the Flask image; apply; verify pods running. Scale to 3 replicas. Write a NodePort Service; access from browser. Update the image tag; observe rolling update; roll back with `kubectl rollout undo`.
+- **Lab 5.2.A Cluster Setup:** Set up a single node cluster with Minikube or kind. Then set up a multi node cluster (1 control plane + 2 workers) on separate VMs using kubeadm. Verify all nodes are `Ready` with `kubectl get nodes`.
+- **Lab 5.2.B Core Workloads:** Write and apply a Pod manifest; inspect with `kubectl describe`. Write a Deployment for the Flask image; apply; verify pods running. Scale to 3 replicas. Write a NodePort Service; access from the browser. Update the image tag; observe rolling update; roll back with `kubectl rollout undo`.
 - **Lab 5.2.C Probes and Resource Limits *(NEW)*:** Add liveness (`/health` HTTP probe) and readiness probes to the Flask Deployment. Set resource requests and limits (`cpu: 100m/250m`, `memory: 128Mi/256Mi`). Kill the Flask process inside a pod and observe Kubernetes restart it automatically.
 - **Lab 5.2.D Config and Secrets:** Create a ConfigMap for Flask config; mount as env vars. Create a Secret for the DB password; reference in the Pod spec. Apply the Podman generated YAML from Lab 5.1.C directly with `kubectl apply`.
 - **Lab 5.2.E Ingress *(NEW)*:** Install the Nginx Ingress Controller in Minikube. Write an Ingress manifest routing `/api` to the Flask Service and `/` to a static site. Verify routing from the browser.
@@ -288,6 +288,7 @@ Upon completion, students will be able to:
 ### Labs
  
 - **Lab 5.3.A ArgoCD:** Install ArgoCD in the cluster. Expose the UI; log in. Connect ArgoCD to the GitHub repo containing Flask manifests. Update the replica count in Git; observe ArgoCD detect the drift and auto sync. Then introduce a manual `kubectl` change and observe ArgoCD revert it.
+- **Lab 5.3.B: Progressive Delivery:** Implement canary deployment (90/10) for Flask v2 using Argo Rollouts or service-mesh/native ingress weighting. Define rollback criteria (e.g., HTTP 5xx > 2% for 5 minutes) and demonstrate automatic or manual rollback.
  
 ## Section 5.4 Red Hat OpenShift
  
@@ -300,7 +301,7 @@ Upon completion, students will be able to:
 
 ### Labs
  
-- **Lab 5.4.A OpenShift Sandbox:** Access the Red Hat Developer Sandbox. Deploy the Flask app via web console and via `oc` CLI (`oc new-app`, `oc expose`, `oc get route`). Deploy using S2I directly from the GitHub repo. Compare the resulting Route to the Ingress from Lab 5.2.E.
+- **Lab 5.4.An OpenShift Sandbox:** Access the Red Hat Developer Sandbox. Deploy the Flask app via web console and via `oc` CLI (`oc new-app`, `oc expose`, `oc get route`). Deploy using S2I directly from the GitHub repo. Compare the resulting Route to the Ingress from Lab 5.2.E.
  
 # Module 6: Cloud and Infrastructure as Code
  
@@ -317,7 +318,7 @@ Upon completion, students will be able to:
 
 ### Labs
  
-- **Lab 6.1.A AWS Setup and EC2:** Create a Free Tier account; configure AWS CLI. Launch an EC2 instance (Amazon Linux 2023), SSH in, install and start Nginx, confirm it serves traffic. Terminate after.
+- **Lab 6.1.A AWS Setup and EC2:** Create a Free Tier account; configure AWS CLI. Launch an EC2 instance (Amazon Linux 2023), SSH in, install and start Nginx, and confirm it serves traffic. Terminate after.
 - **Lab 6.1.B IAM Least Privilege:** Create an IAM user with no permissions; attach S3 read only policy; verify it can list but not create buckets. Create an IAM Role for EC2 with S3 read access; attach to an instance; verify the instance reads S3 without access keys.
 - **Lab 6.1.C VPC Design and Build:** Create a VPC (`10.0.0.0/16`) with a public subnet (`10.0.1.0/24`) and a private subnet (`10.0.2.0/24`). Attach an Internet Gateway to the public subnet. Add a NAT Gateway for private subnet outbound access. Launch one EC2 in each subnet; verify the private instance has outbound internet access but no inbound public IP.
  
@@ -371,7 +372,7 @@ Upon completion, students will be able to:
 
 ### Labs
  
-- **Lab 7.2.A OpenTelemetry + Jaeger:** Instrument the Flask app with `opentelemetry-sdk` and `opentelemetry-exporter-jaeger`. Deploy Jaeger in the Kubernetes cluster. Make several requests to Flask; find the resulting traces in the Jaeger UI; identify latency at each span.
+- **Lab 7.2.An OpenTelemetry + Jaeger:** Instrument the Flask app with `opentelemetry-sdk` and `opentelemetry-exporter-jaeger`. Deploy Jaeger in the Kubernetes cluster. Make several requests to Flask; find the resulting traces in the Jaeger UI; identify latency at each span.
  
 ## Section 7.3 Log Management with Elastic Stack
  
@@ -407,6 +408,9 @@ Upon completion, students will be able to:
 - **Lab 7.4.B SAST and Dependency Scanning *(NEW)*:** Run Bandit against the Flask app: `bandit -r app/`. Resolve at least one finding. Run OWASP Dependency Check against the project. Add both as pipeline stages; fail the pipeline on HIGH severity findings.
 - **Lab 7.4.C Trivy Image Scanning:** Install Trivy. Scan the Flask image: `trivy image <name>`. Identify at least one HIGH/CRITICAL CVE; research it; apply the fix (usually: update the base image). Add Trivy as a pipeline stage; configure it to fail on CRITICAL findings.
 - **Lab 7.4.D Secure Jenkins:** Configure Jenkins to serve over HTTPS with a self signed cert. Set controller executors to zero (all builds on agents). Confirm developer role cannot modify pipelines or access admin settings.
+- **Lab 7.4.E SBOM + Signing:** Generate an SBOM for the container image (e.g., Syft), sign the image with cosign, and verify the signature in CI before Kubernetes deployment. Fail the pipeline if verification fails.
+- **Lab 7.4.F Policy as Code:** Install Kyverno (or OPA Gatekeeper). Enforce policies that deny privileged containers, require resource limits, and require signed images. Demonstrate one failing and one passing deployment.
+
  
 ## Section 7.5 Project Management with Jira
  
@@ -454,10 +458,13 @@ Terraform provisions the deployment environment. Fully reproducible from `terraf
 Ansible configures the deployment target after Terraform provisions it. Playbooks are in the repository and idempotent.
  
 **7. Observability**
-Prometheus and Grafana deployed in the cluster. Grafana dashboard with four panels: CPU usage, memory usage, HTTP request rate, HTTP error rate. One alert rule configured in Alertmanager.
+Prometheus and Grafana are deployed in the cluster. Grafana dashboard with four panels: CPU usage, memory usage, HTTP request rate, HTTP error rate. One alert rule is configured in Alertmanager.
  
 **8. Security**
 All credentials in HashiCorp Vault or GitHub Secrets. No credential appears in source code, Dockerfiles, pipeline definitions, or pipeline logs.
+
+**9. Resilience & Recovery**
+Demonstrate backup/restore for application state and report actual RTO/RPO from a controlled recovery drill.
 
 ---
 ## Deliverables
@@ -465,7 +472,7 @@ All credentials in HashiCorp Vault or GitHub Secrets. No credential appears in s
 | Deliverable | Description |
 |---|---|
 | GitHub Repository | App source, `Dockerfile`, pipeline definition, Terraform config, Ansible playbooks, Kubernetes manifests, README with architecture diagram |
-| Live Application | Accessible via browser or API at a stable URL or IP at time of presentation |
+| Live Application | Accessible via browser or API at a stable URL or IP at the time of presentation |
 | Grafana Dashboard Screenshot | Four live panels from the running application |
 | 15 Minute Presentation | Full walkthrough: Git push to running app. Must include one problem encountered and how it was resolved. |
 
