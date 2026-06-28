@@ -28,7 +28,7 @@ The curriculum also covers supply chain security (SBOM generation and image sign
 | Requirement | Notes |
 |---|---|
 | Workstation: 16 GB RAM, 100 GB free disk | Minimum for running a local Kubernetes cluster alongside VMs |
-| VirtualBox or VMware Workstation | VirtualBox is free; VMware Workstation Pro is free for personal use |
+| VirtualBox or VMware Workstation | VirtualBox is free; VMware Workstation Pro is free for all users (commercial and personal) as of November 2024 |
 | AWS Free Tier account | Required for Module 6; credit card needed for signup |
 | GitHub account | Free at github.com |
 | Docker Hub account | Free at hub.docker.com |
@@ -67,7 +67,7 @@ Upon completion, students will be able to:
 - SRE vs. DevOps: error budgets, SLIs, SLOs, SLAs, and when each model applies
 - Infrastructure as Code: the shift from click ops to declarative provisioning
 - Microservices vs. monoliths: tradeoffs engineers see daily, not just theory
-- The DORA four metrics: deployment frequency, lead time, change failure rate, MTTR
+- The DORA four metrics: deployment frequency, lead time for changes, change failure rate, time to restore service
 
 ### Labs
 
@@ -414,7 +414,7 @@ Extend the pipeline from Lab 5.1.E to add a `kubectl apply` stage after image pu
 
 ### Theory
 
-- Software supply chain attacks: what they are, why they are effective, real examples (Log4Shell discovery chains, XZ Utils)
+- Software supply chain attacks: what they are, why they are effective, real examples (SolarWinds, XZ Utils). Note: Log4Shell is a dependency vulnerability (SCA risk), not a supply chain compromise, the distinction matters.
 - SBOM (Software Bill of Materials): a machine readable inventory of every component in a container image; SPDX and CycloneDX as the two dominant formats
 - Image signing with cosign: asymmetric key signing of OCI artifacts; keyless signing via Sigstore
 - Signature verification: blocking unsigned or unverified images before they reach the cluster
@@ -428,7 +428,7 @@ Install `syft`. Run `syft <image-name> -o spdx-json > sbom.json` against the Fla
 
 - **Lab 5.3.B Image Signing and Verification:**
 
-Install `cosign`. Sign the Flask image after pushing: `cosign sign <image-digest>`. Add a verification step to the deployment pipeline: `cosign verify <image>`. Configure the pipeline to refuse to deploy if verification fails. Observe what happens when you attempt to deploy a different, unsigned image.
+Install `cosign`. Sign the Flask image after pushing: `cosign sign <image-digest>`. Add a verification step to the deployment pipeline: `cosign verify <image> --certificate-identity=<identity> --certificate-oidc-issuer=<issuer>`. Configure the pipeline to refuse to deploy if verification fails. Observe what happens when you attempt to deploy a different, unsigned image.
 
 ## Section 5.4 Policy as Code
 
@@ -799,7 +799,7 @@ Velero installed and configured with an S3 backend. One backup taken and one suc
 
 | Area | Tools | Notes |
 |---|---|---|
-| Virtualization | VirtualBox, VMware Workstation | VirtualBox free; VMware free for personal use |
+| Virtualization | VirtualBox, VMware Workstation | VirtualBox free; VMware Workstation Pro free for all users (commercial and personal) as of November 2024 |
 | Linux | Fedora / CentOS Stream / RHEL 9, Ubuntu | RHEL family preferred for Red Hat alignment |
 | Web Servers | Apache, Nginx | Core track; Tomcat optional Java enterprise track only |
 | Web Servers *(optional)* | Apache Tomcat | Java enterprise track only |
@@ -833,7 +833,7 @@ Velero installed and configured with an S3 backend. One backup taken and one suc
 - Argo Rollouts: https://argoproj.github.io/rollouts/
 - ArgoCD: https://argo-cd.readthedocs.io/
 - Kyverno: https://kyverno.io/docs/
-- cosign: https://docs.sigstore.dev/cosign/overview/
+- cosign: https://docs.sigstore.dev/cosign/signing/overview/
 - syft: https://github.com/anchore/syft
 - gitleaks: https://github.com/gitleaks/gitleaks
 - trufflehog: https://github.com/trufflesecurity/trufflehog
