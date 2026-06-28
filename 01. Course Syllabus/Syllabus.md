@@ -72,8 +72,8 @@ Upon completion, students will be able to:
 ### Labs
 
 - **Lab 1.A DORA Baseline:** Pick any open source project on GitHub. Measure its approximate DORA metrics from public commit history and release tags. Document findings in a one page Markdown report committed to your own repo.
-
-- **Lab 1.B Architecture Diagram:** Draw the DevOps infinity loop, annotate each stage with the specific tools used in this course, and map one DORA metric to each stage. Submit as PDF.
+  
+- **Lab 1.B SLO and Error Budget Calculation:** Calculate error budgets for various availability targets over a 30 day window. Analyze outage scenarios for hypothetical services to determine budget consumption and design custom SLIs, SLOs, and an external SLA to understand the importance of reliability buffers.
 
 ---
 # Module 2: Infrastructure, Linux, and Web Servers
