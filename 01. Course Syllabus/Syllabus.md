@@ -71,9 +71,21 @@ Upon completion, students will be able to:
 
 ### Labs
 
-- **Lab 1.A DORA Baseline:** Pick any open source project on GitHub. Measure its approximate DORA metrics from public commit history and release tags. Document findings in a one page Markdown report committed to your own repo.
-  
-- **Lab 1.B SLO and Error Budget Calculation:** Calculate error budgets for various availability targets over a 30 day window. Analyze outage scenarios for hypothetical services to determine budget consumption and design custom SLIs, SLOs, and an external SLA to understand the importance of reliability buffers.
+- **Lab 1.A DORA Baseline:**
+
+Pick any open source project on GitHub. Measure its approximate DORA metrics from public commit history, release tags, pull request timelines, and issue trackers. Document findings in a structured Markdown report committed to your own repository.
+
+- **Lab 1.B SLO and Error Budget Calculation:**
+
+Calculate error budgets for six availability targets over a 30 day window. Analyze three outage scenarios for hypothetical services to determine budget consumption and maintenance window feasibility. Design custom SLIs, SLOs, and an external SLA for a chosen service to understand the engineering discipline behind reliability buffers.
+
+- **Lab 1.C IaC Drift Detection with Terraform:**
+
+Provision an AWS security group using Terraform, introduce configuration drift by making manual changes directly through the AWS CLI, detect the drift using `terraform plan`, and restore declared state with `terraform apply`. Then add the same changes correctly through code to understand why version-controlled infrastructure eliminates the drift problem.
+
+- **Lab 1.D DevOps Lifecycle Diagnosis and Redesign:**
+
+Analyze a broken delivery process at a real-world startup scenario with manual deployments, no CI, no monitoring, and a single point of failure engineer. Assess the DORA baseline, identify operational risks, design the complete target lifecycle, build a sprint by sprint 90 day improvement plan, define the team's first SLO, and solve a concrete knowledge concentration problem with a six week deadline.
 
 ---
 # Module 2: Infrastructure, Linux, and Web Servers
