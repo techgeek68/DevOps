@@ -1,1065 +1,1067 @@
 # DevOps and Platform Engineering
----
-### A complete curriculum from Linux fundamentals to AI driven cloud native operations
----
-**Version 2.0** | Instructor: Anup Pyakurel | Contact: +977 9851124956
 
 ---
-## Why this program exists
-
-Software delivery has moved through a few real eras. First came the traditional split, where developers wrote code and a separate operations team kept it running, with long release cycles and manual handoffs. Then came the DevOps era, where automation, shared ownership, and continuous delivery closed that gap. Then came the cloud native era, where Kubernetes, containers, and infrastructure as code became the default way systems get built. Right now, the field is in the middle of a new shift, where AI assistants write a growing share of code and infrastructure, and engineers are judged less by how fast they can type a Terraform file and more by how well they can review, question, and operate what gets generated.
-
-That last shift is not a marketing line. The DORA 2024 and 2025 Accelerate reports, which together surveyed several thousand engineers, found that AI adoption raises individual throughput while making team level delivery less stable on average. Change failure rate and rework rate get worse, not better, unless the surrounding delivery system is already strong. AI adoption tends to amplify the maturity, or the immaturity, of the delivery system it lands in. It does not fix a weak pipeline. It amplifies whatever is already there. That finding is the reason this program exists in the shape it does: the review discipline, the automated gates, the observability, and the rollback path are not old fashioned ceremony to get through before you get to the interesting AI part. They are the thing that decides whether the AI part helps you or hurts you.
-
-So this program teaches all four layers in order, on purpose, because a working engineer meets legacy systems, cloud native systems, and AI assisted workflows in the same week of a real job. Every concept is anchored to a lab or a mini project, so a graduate leaves with a working portfolio, not just notes.
-
-GitHub Actions is the primary CI/CD platform throughout, reflecting where the industry has moved for greenfield projects. Jenkins, Maven, Tomcat, PHP, OpenShift, and the Elastic stack are not scattered through the core as optional detours. They live in a separate, properly scheduled elective track at the end of this document, with their own hours and their own assessment, because "optional" content with no time budget is content that either does not get done or quietly wrecks the schedule.
+*A curriculum spanning Linux systems fundamentals through cloud native and AI assisted delivery operations.*
 
 ---
-## Who this is for
-
-BSc CSIT, BCA, Computer Engineering, and IT Engineering graduates, plus anyone starting out or already a year or two into a junior DevOps role who wants a full, honest, structured path rather than a scattered pile of tutorials.
-
-You do not need prior Linux or networking experience. The primer below is the only real prerequisite, and it is designed so that a motivated beginner can close the gap before Week 1.
-
----
-## Program at a glance
+## 1. Course Information
 
 | Field | Details |
 |---|---|
-| **Course codes** | DVP 101, DVP 201, DVP 301, plus DVP 150 (elective track) |
-| **Credits** | 3, 4, 4, plus 2 for the elective track |
-| **Level** | Undergraduate / Professional Certificate |
-| **Total duration** | 40 weeks across three courses |
-| **Contact hours** | 6 hours of class per week (two 3 hour sessions), plus 1 hour of scheduled lab support |
-| **Independent study** | 6 to 8 hours per week |
-| **Prerequisites** | Completion of the Module 0 primer. Nothing else. |
-| **Cohort size** | 16 to 24 students. Above 24, the lab feedback loop breaks down. |
-| **Delivery** | In person or live online, cohort based. Recordings available. Not self paced. |
+| Program title | DevOps and Platform Engineering |
+| Course codes | DVP 101, DVP 201, DVP 301, and DVP 150 (Elective track) |
+| Credit hours | 3, 4, 4, and 2 for the elective track |
+| Academic level | Undergraduate / Professional Certificate |
+| Total duration | 40 weeks across three sequential courses |
+| Scheduled contact hours | 6 hours of instruction per week delivered as two sessions of 3 hours, plus 1 scheduled hour of supervised laboratory support |
+| Independent study | 6 to 8 hours per week |
+| Delivery mode | In person or synchronous online, cohort based, with recorded sessions. The program is not self paced. |
 
----
-
-| Course | Focus | Weeks |
+| Course | Focus | Duration |
 |---|---|---|
-| **DVP 101: Foundations of Delivery Engineering** | Linux, networking, Git, web servers, application and test fundamentals, containers, CI | 12 |
-| **DVP 201: Cloud Native Infrastructure and Delivery** | Cloud, IaC, config management, Kubernetes, observability, GitOps, progressive delivery | 14 |
-| **DVP 301: Reliability, Security, Platform, and AI Driven Operations** | SRE, chaos, DR, DevSecOps, supply chain, service mesh, FinOps, platform, AI, capstone | 14 |
-| **DVP 150: Enterprise and Legacy Stack (elective)** | Jenkins, Maven, Tomcat, PHP/LAMP, OpenShift, Elastic Stack | Self paced, 25 hours |
-
-DVP 201 requires a pass in DVP 101. DVP 301 requires a pass in DVP 201. The elective can be taken at any point after Week 8 of DVP 101 and is graded independently.
+| DVP 101: Foundations of Delivery Engineering | Linux administration, networking, version control, web and application services, testing, containers, and continuous integration | 12 weeks |
+| DVP 201: Cloud Native Infrastructure and Delivery | Cloud fundamentals, infrastructure as code, configuration management, Kubernetes, observability, GitOps, and progressive delivery | 14 weeks |
+| DVP 301: Reliability, Security, Platform, and AI Driven Operations | Site reliability engineering, chaos engineering, disaster recovery, secure delivery, supply chain integrity, service mesh, cost engineering, platform engineering, AI assisted operations, and capstone | 14 weeks |
+| DVP 150: Enterprise and Legacy Stack (elective) | Enterprise Java delivery, alternate automation servers, the classic web stack, and enterprise container and log platforms | Approximately 25 hours, self paced |
 
 ---
-## What this program costs you in cash
+## 2. Course Description
 
-The AWS free tier does not cover most of what you build in Course 2 and Course 3. Prices below are approximate US East figures at the time of writing, and you must check current AWS pricing yourself, but the shape of the number is right.
+Software delivery has advanced through several distinct engineering eras: a traditional separation of development from operations, the emergence of automation and shared ownership under DevOps, the standardization of containers, orchestration, and infrastructure as code under the cloud native model, and the current transition in which AI assistants generate a growing share of code and infrastructure. In this present era the engineer is evaluated less on authoring speed and more on the ability to review, question, and operate generated artifacts safely.
 
-| Item | Roughly | When |
-|---|---|---|
-| EC2 t3.micro / t3.small for early labs | Free tier covers most of this | Course 2, Weeks 1 to 4 |
-| NAT gateway | About 32 USD per month plus data charges, **not free tier** | Course 2, Week 2 onward |
-| EKS control plane | About 73 USD per month per cluster, **not free tier** | Course 2, Week 8 onward |
-| EKS worker nodes (two t3.medium) | About 60 USD per month if left running | Course 2 and 3 |
-| Load balancer | About 16 USD per month plus usage | Course 2 and 3 |
-| S3, DynamoDB, ECR, Lambda at lab scale | A few dollars total | Throughout |
-| Secrets Manager at lab scale | A few dollars total | Course 3 Module 19 (free path: LocalStack or Vault dev mode) |
+This evaluation reflects a documented empirical finding. The DORA Accelerate research of 2024 and 2025 reports that AI adoption raises individual throughput while reducing team level delivery stability on average, with change failure rate and rework increasing unless the surrounding delivery system is already mature. AI adoption amplifies the maturity of the system it enters rather than correcting its weaknesses. Review discipline, automated quality gates, observability, and reliable rollback are therefore treated in this program as core engineering controls rather than optional ceremony.
 
-**Realistic total if you are disciplined: 40 to 90 USD across the whole program.** You destroy the expensive things after every lab session and only bring them up when you need them. **Realistic total if you forget one `terraform destroy` over a long weekend: 150 USD and a bad Monday.**
-
-Three things are therefore mandatory, not suggested:
-
-1. **Lab 8A is a billing lab, and it comes before anything else in Course 2.** You set an AWS Budget, a billing alarm at 10 USD, and a hard alarm at 50 USD, and you prove they fire.
-
-2. **Every cloud lab ends with a teardown step, and the teardown is part of the grade.** A lab submitted with resources still running loses marks.
-
-3. **There is a documented free path.** If cloud spend is not possible for you, you can complete every graded requirement in this program using kind or k3d for Kubernetes and LocalStack for AWS APIs. The free path is spelled out in Appendix B. You lose some realism, you lose no marks, and you must tell the instructor in Week 1 of Course 2 so the labs get adapted for you in advance rather than improvised on the day.
-
-Everything else in the program is free: GitHub, Docker Hub or GHCR, all the CNCF tooling, and the Red Hat Developer sandbox. AI assistant access is discussed in the AI policy section below, and a free tier assistant is sufficient for every graded task.
+The program teaches four layers in prerequisite order because a practicing engineer encounters legacy systems, cloud native systems, and AI assisted workflows within the same working week. Every concept is anchored to a laboratory exercise or an integrative project so that graduates leave with a demonstrable engineering portfolio.
 
 ---
-## Hardware
+**Complex engineering problems addressed.** 
 
-| | Minimum | Comfortable |
-|---|---|---|
-| RAM | 8 GB | 16 GB |
-| Free disk | 60 GB | 100 GB+ |
-| CPU | 4 cores with virtualization enabled | 8 cores |
-
-On 8 GB, you can do everything, but you run one thing at a time: the VM or the local Kubernetes cluster, not both. Labs that assume both are flagged, and each one has an 8 GB variant that uses a single node k3d cluster instead of kind plus a VM.
-
-If you have less than 8 GB, tell the instructor in Week 1. A shared cloud VM can be arranged for Linux and container work at a cost of a few dollars a month, and that is a normal, supported path, not a favour.
+The curriculum requires students to engage with problems that exhibit the recognized characteristics of complex engineering problems. Students confront conflicting technical and non technical requirements, for example, the direct tension between the GitOps principle that desired cluster state resides in version control and the security principle that credentials must never be committed. They design solutions with no single correct answer, such as selecting among canary deployment, blue green deployment, and feature flags under differing risk, cost, and reversibility constraints. They analyze systems with many interacting subcomponents, including networking, identity, orchestration, storage, and observability. They reason about consequences that extend beyond the technical domain, including cost exposure, data integrity during schema evolution, security blast radius, and the reliability commitments encoded in service level objectives. They also serve diverse stakeholders including developers, operators, security reviewers, and non technical decision makers, translating engineering findings into audience appropriate communication.
 
 ---
-## The AI policy, stated plainly
+## 3. Prerequisites
 
-You may use AI assistants for everything in this program. You are expected to. Pretending otherwise in 2026 would be a bad joke, and a graduate who cannot work fluently with an assistant is already behind.
+The sole formal prerequisite is completion of the ungraded Module 0 primer, which establishes shell scripting, introductory programming, relational query, and structured data literacy. Prior professional Linux or networking experience is not required. The program is designed for graduates of Computer Science and Information Technology, Computer Applications, Computer Engineering, and Information Technology Engineering programs, and for early career practitioners seeking a structured path. A supervised support session precedes Week 1 for students who identify gaps during the primer self check.
 
-But that changes how you get graded, and it changes it in a way you should understand from day one.
-
-**Every graded artefact is defended live.** Ten minutes, one on one or in front of the cohort. The instructor picks lines from your work and asks you to explain them. Why that CIDR block? What breaks if that readiness probe is deleted? What happens to this rollback if the migration has already run? Why did you choose this over the alternative? If you cannot answer, the artefact does not pass, regardless of whether it works.
-
-This is not a trap. It is exactly the job. In a real team, an assistant will write a Terraform module for you in ninety seconds, and then you will spend an hour in review being asked exactly these questions by a senior engineer, and your answer is what you are actually paid for.
-
-Two rules on top of that:
-
-- **Disclose.** Every lab submission includes a one line note: which assistant, what you used it for, what it got wrong. This costs nothing and it builds the habit that Module 24 is about.
-  
-- **Never paste a credential, a private key, or client data into an assistant.** This is a hard rule with a hard consequence, and the reason gets covered properly in Module 24.
+Course level prerequisites are enforced as stated in Section 1.
 
 ---
-## Assessment and grading
+## 4. Course Learning Outcomes
 
-### Weighting
+On successful completion of the program, students will be able to:
 
-| Component | DVP 101 | DVP 201 | DVP 301 |
-|---|---|---|---|
-| Labs (graded, best N of M) | 60% | 50% | 30% |
-| Two practical checkpoints (timed, hands on) | 30% | 30% | 20% |
-| Live defenses | 10% | 10% | 10% |
-| Capstone | n/a | n/a | 40% |
-
-**Pass mark is 60%, with a floor: you cannot pass any course with less than 50% on the practical checkpoints.** Coursework can carry you, but not past a demonstrated inability to do the work under time pressure, because the job has time pressure.
-
----
-### The lab rubric (applies to every graded lab)
-
-Each lab is out of 10.
-
-| Band | Marks | What it means |
-|---|---|---|
-| Works | 0 to 4 | The thing does what was asked. Evidence attached (output, screenshot, or a passing pipeline). |
-| Explained | 0 to 3 | The write up says what you did and, more importantly, *why*, including at least one thing you tried that did not work. |
-| Cleaned up | 0 to 1 | Cloud resources destroyed. No secrets committed. `.gitignore` sane. |
-| Defended | 0 to 2 | You answered the follow up questions. |
-
-A lab that works perfectly and cannot be explained caps at 5 out of 10. That ratio is deliberate, and it is the whole philosophy of the program in one table.
-
----
-### The practical checkpoints
-
-Two per course, three hours each, on a machine you have not seen, with a broken system in front of you. Not a quiz. You get told what should be happening, you get shown what is happening, and you fix it and write up what you found. Lab 7F is the training wheels version of this, and it is why that lab exists.
-
----
-### Late work
-
-Labs are accepted up to one week late at 80% of the awarded mark. After that, they score zero unless you talked to the instructor *before* the deadline, in which case we sort it out like adults. Life happens. Silence is the only thing that costs you.
-
----
-## Program outcomes, and where each one is actually assessed
-
-Twenty two outcomes with no evidence trail is a wish list. Here is the trail.
-
-| # | On completing this program you can... | Assessed by |
-|---|---|---|
-| 1 | Explain the delivery lifecycle, the five DORA metrics, and how DevOps, SRE, and platform engineering relate | Lab 1A, 1D|
-| 2 | Administer Linux systems: users, permissions, services, scripting, performance | Labs 2A to 2E|
-| 3 | Diagnose and design networks: subnetting, DNS, load balancing, firewalls | Labs 3A to 3C |
-| 4 | Apply professional Git and GitHub workflows including review and branch protection | Labs 4A to 4D; capstone component 2 |
-| 5 | Deploy and configure Apache and Nginx, and reason about where TLS terminates | Labs 5A, 5B |
-| 6 | Build a delivery friendly application with environment config and a real test suite | Labs 5C to 5E; capstone component 1 |
-| 7 | Build, run, and secure containers with Docker and Podman | Labs 6A to 6E |
-| 8 | Design CI/CD pipelines in GitHub Actions, authenticating via short lived OIDC credentials | Labs 7A to 7F, 14B; capstone 4 |
-| 9 | Automate configuration with Ansible roles, playbooks, and dynamic inventory | Labs 10A to 10D; capstone 7 |
-| 10 | Provision and scan repeatable cloud infrastructure with Terraform or OpenTofu | Labs 9A to 9G; capstone 6 |
-| 11 | Deploy and operate applications on Kubernetes and on managed EKS | Labs 11A to 11H; capstone 8 |
-| 12 | Secure a cluster with NetworkPolicy, Pod Security Admission, RBAC, and resource limits | Labs 12A to 12D; capstone 8 |
-| 13 | Scale workloads with HPA, Cluster Autoscaler or Karpenter, and right size against real data | Labs 12E, 22C |
-| 14 | Implement observability on OpenTelemetry: Prometheus, Grafana, Jaeger, Alertmanager | Labs 13A to 13E; capstone 9 |
-| 15 | Operate GitOps with ArgoCD, and get secrets into a cluster without putting them in Git | Labs 14A to 14D; capstone 5 |
-| 16 | Run progressive delivery with metric driven automatic rollback, and know when a feature flag is the better tool | Labs 15A to 15C; capstone elective |
-| 17 | Ship a database schema change that is safe to roll back | Lab 15D; capstone 4 |
-| 18 | Apply SRE practice: SLIs, SLOs, error budgets, on call, blameless postmortems | Labs 16A to 16C, 17B |
-| 19 | Run a chaos experiment and interpret the resilience response | Lab 17A |
-| 20 | Execute a scoped DR exercise, measure real RPO and RTO, and write the postmortem | Labs 18A, 18B; capstone elective |
-| 21 | Apply DevSecOps across the pipeline: secrets, SAST, SCA, image scanning, secrets scanning, dependency updates | Labs 19A to 19E; capstone 4 |
-| 22 | Generate an SBOM, sign and verify images, and enforce cluster policy with Kyverno | Labs 20A to 20C; capstone elective |
-| 23 | Explain service mesh fundamentals: mTLS, traffic shifting via Gateway API, mesh observability | Labs 21A, 21B; capstone elective |
-| 24 | Reason about cost, and port a mental model between AWS, GCP, and Azure | Labs 22A to 22C |
-| 25 | Describe platform engineering, golden paths, and internal developer platforms | Labs 23A, 23B; capstone 10 |
-| 26 | Use AI assistants responsibly across code, infrastructure, and operations, and threat model the new risks | Labs 24A to 24E; every live defense |
-| 27 | Deliver a complete, automated, observable, secure pipeline as a solo capstone | Module 25 |
-
----
-## Module 0: The primer
-
-Self paced, ungraded, finish it before Week 1. This closes the gaps that otherwise get quietly assumed and then cause real trouble in Week 5.
-
-- **Bash fundamentals.** Variables, conditionals, loops, functions, exit codes, quoting, pipes, redirects. This gets used constantly from Week 2 onward, so it earns a real primer rather than an assumption.
-
-- **Python basics.** Variables, control flow, functions, file IO, pip. Enough to read and change a small web application.
-
-- **SQL basics.** SELECT, INSERT, UPDATE, joins, and what a connection string actually is.
-
-- **YAML and JSON literacy.** Indentation, key value structure, lists versus maps, and how the same data looks in both. This shows up in almost every tool taught later, and more student hours are lost to YAML indentation than to any single concept in this course.
-
-- **Git, the absolute basics.** Clone, add, commit, push. Module 4 does the real work, but arriving with zero Git is painful.
-
-There is a short, ungraded self check at the end. If you struggle with it, come to the supplementary session in Week 0. That session exists so nobody falls behind quietly.
-
----
-## Required accounts
-
-| Requirement | Notes |
+| Code | Course Learning Outcome |
 |---|---|
-| GitHub account | Day one. Free tier is fine throughout. |
-| Container registry | Docker Hub or GitHub Container Registry. Either. Free. |
-| AWS account | Not needed until Course 2, Week 1. See the cost section above before you create it. |
-| Virtualization | VirtualBox (free) or VMware Workstation Pro (free for personal, educational, and commercial use since Broadcom's 2025 licensing change, no key needed). |
-| Red Hat Developer account | Free. Only needed for the OpenShift elective. |
-| An AI assistant | Any. A free tier is enough for every graded task. |
+| CLO 1 | Explain the software delivery lifecycle and the current DORA metric framework, and relate DevOps, site reliability engineering, and platform engineering as complementary engineering disciplines. |
+| CLO 2 | Administer Linux systems, including identity, permissions, services, automation scripting, and systematic performance diagnosis. |
+| CLO 3 | Analyze and design networks, including subnetting, name resolution, load balancing, and firewall and segmentation policy. |
+| CLO 4 | Apply professional version control and collaborative engineering workflows, including structured code review and branch protection. |
+| CLO 5 | Design and deploy web and application services, and construct delivery friendly applications governed by a layered automated test suite. |
+| CLO 6 | Build, run, and secure containerized workloads using open container standards. |
+| CLO 7 | Design continuous integration and continuous delivery pipelines authenticated through short lived federated credentials. |
+| CLO 8 | Provision reproducible cloud infrastructure as code and converge configuration state using declarative and idempotent methods. |
+| CLO 9 | Deploy, secure, and scale applications on Kubernetes and on managed clusters. |
+| CLO 10 | Implement observability across metrics, logs, and distributed traces using vendor neutral open standards. |
+| CLO 11 | Operate GitOps and progressive delivery with metric driven automatic rollback and safe, reversible database schema evolution. |
+| CLO 12 | Apply site reliability, chaos, and disaster recovery practices, and quantify recovery objectives as measured engineering targets. |
+| CLO 13 | Integrate security controls across the delivery lifecycle, including secrets management, static and composition analysis, supply chain integrity, and policy as code. |
+| CLO 14 | Evaluate advanced traffic management, multi cloud portability, cost engineering, and platform engineering, and communicate findings to technical and non technical audiences. |
+| CLO 15 | Apply AI assisted engineering responsibly, evaluate its measured effect on delivery stability, and threat model the risks introduced by autonomous tooling. |
+| CLO 16 | Integrate the complete toolchain into an automated, observable, secure delivery platform, and defend the design decisions under examination. |
+
+---
+---
+## 5. Module 0: Preparatory Primer
+
+**Objectives.** 
+
+Establish the foundational literacy assumed by Week 1 so that later modules do not silently depend on unstated prerequisites. Self paced and ungraded, completed before instruction begins.
+
+**Topics and subtopics.**
+- Shell scripting fundamentals: variables, conditionals, loops, functions, exit codes, quoting, pipes, and redirection.
+- Introductory programming: variables, control flow, functions, file input and output, and package installation, sufficient to read and modify a small web application.
+- Relational query fundamentals: selection, insertion, update, joins, and the meaning of a connection string.
+- Structured data literacy: indentation, key and value structure, lists compared with maps, and equivalent representations across serialization formats.
+- Version control essentials: clone, add, commit, and push.
+
+**Assessment.** 
+
+A short ungraded self check identifies students who should attend the pre course support session.
 
 ---
 ---
 # DVP 101: Foundations of Delivery Engineering
 
-**12 weeks. Two 3 hour sessions per week.**
-
-| Week | Module | Focus | Deliverable |
-|---|---|---|---|
-| 1 | 1 | Delivery engineering mindset, DORA, SRE, drift | Labs 1A, 1B |
-| 2 | 1 / 2 | Case study, then Linux foundations begin | Lab 1D, 2A |
-| 3 | 2 | Linux: text processing, permissions, packages | Lab 2B |
-| 4 | 2 | Linux: systemd, scripting, cron, logs | Labs 2C, 2D |
-| 5 | 2 / 3 | Linux: processes, performance, SSH. Networking begins | Lab 2E |
-| 6 | 3 | Networking: TCP/IP, DNS, load balancing, subnetting | Labs 3A, 3B |
-| 7 | 3 / 4 | Networking labs, then Git | Lab 3C, 4A |
-| 8 | 4 | Git workflows, review, branch protection, issue tracking | Labs 4B, 4C, 4D. **Checkpoint 1.1** |
-| 9 | 5 | Web servers, application design, testing strategy | Labs 5A, 5B, 5C |
-| 10 | 5 / 6 | The app and its tests. Containers begin | Labs 5D, 5E, 6A |
-| 11 | 6 | Containers: multi stage, rootless, compose, registry | Labs 6B, 6C, 6D, 6E |
-| 12 | 7 | Continuous integration | Labs 7A to 7F. **Checkpoint 1.2** |
+Twelve weeks, two sessions of three hours each per week.
 
 ---
 ## Module 1: The Delivery Engineering Mindset
 
-**Theory**
+**Objectives.** 
 
-- The delivery lifecycle: plan, code, build, test, release, deploy, operate, monitor.
-- Agile and DevOps: what each solves, and how they complement rather than replace each other.
-- SRE next to DevOps: error budgets, SLIs, SLOs, SLAs, and when each model applies.
-- **The DORA metric set, as of the 2024 and 2025 reports.** DORA has grown beyond the original four (deployment frequency, lead time for changes, change failure rate, and mean time to recover) that most articles still cite. Recent reports separate throughput metrics from stability metrics, redefine recovery as "failed deployment recovery time" (specifically, time to recover from a failure caused by a change to production, not from any outage), and add rework as a distinct dimension. Treat the DORA metric set as an evolving research program rather than a fixed list, and check the current `dora.dev` definitions when you cite it.
-- What the DORA 2024 and 2025 research found about AI: individual throughput up, team level stability down on average, with the gap widening in teams whose delivery system is weak and closing in teams whose delivery system is strong. This is the thesis of the entire program, and we state it in Week 1 rather than saving it for Module 24.
-- Infrastructure as code as a concept, and the shift from click ops to declarative provisioning. Hands on Terraform waits for Course 2.
-- Microservices versus monoliths, as a trade off rather than a right answer.
-- A preview of platform engineering and AI assisted operations, so you can see the whole road before you start walking it.
+Establish the conceptual frame for the program: the delivery lifecycle, measurable delivery performance, and the relationship among the delivery disciplines. Supports CLO 1.
 
-**Labs**
+**Topics and subtopics.**
 
-- **1A. Measure DORA, honestly.** Pick a real open source project. From its public commit history and release tags, calculate the two metrics you actually *can* observe from outside: deployment frequency and lead time for changes. Then write the more important half of this lab: explain why change failure rate, failed deployment recovery time, and rework rate **cannot** be derived from public data, and what instrumentation a team would need to add to measure them. The lesson here is that DORA requires instrumentation, not archaeology.
+- The delivery lifecycle: plan, code, build, test, release, deploy, operate, and monitor.
+- Agile and DevOps as complementary rather than competing models.
+- Site reliability engineering alongside DevOps: error budgets, service level indicators, objectives, and agreements, and when each model applies.
+- The DORA metric framework as an evolving research program. Students distinguish throughput metrics from stability metrics, apply the current definition of failed deployment recovery time, and treat rework as a distinct dimension, verifying definitions against the current published guidance rather than legacy summaries.
+- The documented relationship between AI adoption and delivery stability is stated at the outset because it motivates the structure of the entire program.
+- Infrastructure as code as a concept and the shift from interactive provisioning to declarative provisioning.
+- Architectural trade offs between microservices and monoliths.
 
-- **1B. Error budgets.** Calculate the error budget for several availability targets over 30 days. Analyse outage scenarios and see how much budget each consumes and whether a maintenance window still fits. Then design an SLI, a matching SLO, and an external SLA for a service of your choosing, so that the discipline behind a reliability buffer is something you have built once rather than only calculated.
+**Practical laboratories.**
 
-- **1C. Drift, the low tech version.** Two identical Linux VMs. Make the same configuration change two ways: by hand over SSH on one, with a small idempotent shell script on the other. A week later, make an undocumented manual change to the first VM only. Compare how easy it is to know what state each machine is in, and how easy it would be to rebuild each from scratch. This is deliberately primitive. Module 9 does the same thing with real Terraform against real AWS, and you will be asked to compare the two.
+- Lab 1A. Measure deployment frequency and lead time for changes from the public history of a real open source project, then argue with evidence why change failure rate, failed deployment recovery time, and rework cannot be derived from public data and what instrumentation would be required to measure them.
+- Lab 1B. Compute error budgets across several availability targets over a thirty day window, evaluate outage scenarios against the remaining budget, and design a matched service level indicator, objective, and agreement for a chosen service.
+- Lab 1C. Compare manual configuration against a small idempotent script across two identical virtual machines, introduce undocumented drift into one, and evaluate the difficulty of determining and reproducing each machine's state. This exercise is revisited with declarative tooling in Module 9.
+- Lab 1D. Assess the delivery baseline of a described organization with a manual, single person dependent process, then design a target lifecycle, a ninety day improvement plan, an initial objective, and a concrete remedy for single person deployment dependency.
 
-- **1D. The broken startup.** A hypothetical company with a manual, single person dependent delivery process. Assess its DORA baseline, identify the operational risks, design the target lifecycle, build a sprint by sprint 90 day improvement plan, define the team's first SLO, and propose a concrete fix for the "only Ramesh can deploy" problem inside six weeks.
+**Assignments.** 
+
+Written analysis of the DORA baseline for a case organization, with an argued improvement roadmap.
 
 ---
 ## Module 2: Linux and Systems Fundamentals
 
-This is the longest module in the program, and it gets three full weeks, because it is the foundation everything else sits on and because compressing it is the single most common way a DevOps course fails its students.
+**Objectives.** 
 
-**Theory**
+Develop competent administration of Linux systems as the substrate for all later work. This is the longest module because its compression is a common cause of failure in delivery engineering instruction. Supports CLO 2.
 
-- Why Linux is the default here: the tooling ecosystem, SSH first management, and a smaller attack surface.
-- Hypervisors, Type 1 versus Type 2, and virtual machines versus containers, as a short comparison that sets up Module 6.
-- Filesystem hierarchy and fundamental commands: navigation, viewing, file and directory operations, finding things, getting help.
-- Text processing: grep, find, pipelines, redirection, awk, sed, cut, sort, uniq, wc.
-- Compression and archiving: tar, gzip, bzip2, xz, zip.
-- Users, groups, permissions: useradd, usermod, groupadd, sudo, chmod, chown, umask, special permissions, ACLs.
-- Package management: dnf and apt, plus installing from source.
-- systemd: unit files, targets, socket activation, service management, journald.
-- Editors: vim, nano.
-- Shell environment: startup files, PATH, aliases.
-- Bash scripting in practice: variables, arrays, operators, control structures, loops, functions, heredocs, debugging, exit status, trap.
-- Scheduling: cron, systemd timers, at.
-- Logs: journalctl, logrotate.
-- Processes, monitoring, and basic performance tuning: ps, top, htop, signals, background jobs, vmstat, iostat, sar, nice, renice, taskset, sysctl, tuned, ulimit.
-- Host networking: the ip command, connectivity testing, DNS resolution, checking open ports, curl and wget.
-- Firewalls with firewalld.
-- Disks: mounting, fstab, basic partitioning.
-- tmux.
-- SSH: configuration, key based auth, the agent, scp, rsync, sshfs, hardening, troubleshooting.
+**Topics and subtopics.**
 
-**Labs**
+- Rationale for Linux as the default platform, and the distinction between hypervisors and containers as a bridge to Module 6.
+- Filesystem hierarchy and core commands for navigation, inspection, and manipulation.
+- Text processing with pattern matching, stream editing, and field extraction pipelines.
+- Compression and archiving.
+- Identity and access: users, groups, permissions in symbolic and octal form, privilege delegation, special permissions, and access control lists.
+- Package management across major distribution families and installation from source.
+- Service management with the system and service manager, including unit files, targets, and the journal.
+- Shell environment configuration and scripting in practice, including arrays, control structures, functions, here documents, debugging, exit status, and signal handling.
+- Scheduling with recurring jobs and timers.
+- Log management and rotation.
+- Process control, monitoring, and introductory performance tuning across the processor, memory, disk, and network dimensions.
+- Host networking utilities, firewall configuration, storage mounting, terminal multiplexing, and secure shell configuration and hardening.
 
-- **2A.** Build a Fedora or RHEL VM. Set the hostname, configure a static IP with nmcli, enable SSH, and disable password authentication so only key based login works.
+**Practical laboratories.**
 
-- **2B.** The core skills grind: navigation, grep, awk, sed, permissions in octal and symbolic form, user and group management, package installation, process management, firewall rules with firewall-cmd. Document every command.
+- Lab 2A. Build a Linux virtual machine, configure hostname and static addressing, and enforce key based secure shell access only.
+- Lab 2B. Complete a documented skills exercise across navigation, text processing, permission management, identity management, package installation, process control, and firewall rules.
+- Lab 2C. Author a health check script that accepts a service argument, evaluates state, logs a timestamped result, returns a correct exit code, and runs on a schedule.
+- Lab 2D. Reimplement the same check as a service unit and timer, verify execution through the journal, and justify the choice of timer over recurring job scheduling.
+- Lab 2E. Perform performance triage on a degraded virtual machine using command line tools only, identifying the true bottleneck among deliberate distractors and documenting the diagnostic path. This exercise develops experimentation and data interpretation skills for ABET Student Outcome six.
 
-- **2C.** Write a bash health check script that takes a service name as an argument, checks whether it is running, logs the result with a timestamp, and exits with a correct code. Functions, conditionals, loops, proper quoting. Schedule it with cron.
+**Assignments.** 
 
-- **2D.** Rewrite the same thing as a systemd unit plus timer. Enable it, confirm it fires, read its output with journalctl. Then explain in three sentences why you would choose a timer over cron, or the other way round.
-
-- **2E.** A performance triage: given a VM that is "slow", identify whether the bottleneck is CPU, memory, disk, or network, using only command line tools, and write up the diagnostic path you took. There is a deliberate answer, and there are three deliberate red herrings.
+A documented diagnostic report from the performance triage exercise.
 
 ---
 ## Module 3: Networking Fundamentals
 
-**Theory**
+**Objectives.** 
 
-- The OSI model, restricted to the layers a delivery engineer actually touches (L3 to L7), plus the habit of diagnosing bottom to top.
-- TCP/IP and how it maps to OSI.
-- TCP versus UDP, the three way handshake, ports, sockets, common service ports.
-- Connection states: ESTABLISHED, TIME_WAIT, CLOSE_WAIT, and what port exhaustion looks like when it bites you.
-- Routing: routing tables, default gateway, static routes, a conceptual look at dynamic routing.
-- DNS records: A, AAAA, CNAME, MX, NS, TXT, PTR. TTL management. Split horizon DNS.
-- Load balancing: L4 versus L7, round robin, weighted, least connections, IP hash, sticky sessions, health checks.
-- Firewalls and security groups: stateful versus stateless, default deny, firewalld zones, AWS security groups, NACLs, iptables basics.
-- DHCP, and why address assignment matters even for containers and VMs.
-- TLS and HTTPS: the handshake, certificates, CAs and chains, SNI, TLS configuration in Nginx.
-- NAT, private versus public addressing, CIDR.
-- Subnetting: masks, usable host calculations, and why real infrastructure uses several small subnets instead of one large one.
-- NAT gateways, and how a private subnet gets outbound internet without being reachable from outside.
-- Special ranges: loopback, link local, default route, broadcast.
-- The mistakes that actually happen: overlapping CIDRs, undersized subnets, skipping the bottom up diagnostic order, ignoring TTL during a planned cutover, and firewall rules written wide "just for now".
+Enable analysis and design of the networks a delivery engineer operates. Supports CLO 3.
 
-**Labs**
+**Topics and subtopics.**
 
-- **3A.** Diagnose a deliberately broken DNS and routing scenario with ping, traceroute, ss, and dig. Document what each command actually told you and in what order you used them.
+- The layered network model is restricted to the layers a delivery engineer touches, and the discipline of diagnosing from the bottom upward.
+- Transport protocols, the connection handshake, ports, sockets, connection states, and port exhaustion.
+- Routing tables, default gateways, and static and dynamic routing at a conceptual level.
+- Name resolution records, time to live management, and split horizon resolution.
+- Load balancing at the transport and application layers, distribution algorithms, session affinity, and health checking.
+- Stateful and stateless firewalls, default deny posture, security groups, and network access control lists.
+- Address assignment, network address translation, private and public addressing, and classless addressing.
+- Subnetting arithmetic, and the rationale for several small segments over one large segment.
+- Outbound only connectivity for private segments through managed translation.
+- Transport layer security and the certificate trust chain.
+- Common failure modes, including overlapping address ranges, undersized segments, neglected propagation delay during cutover, and overly permissive temporary rules.
 
-- **3B.** Given 192.168.1.0/26, calculate the mask, broadcast address, and usable host range. Then design a three subnet VPC style layout: 10.0.0.0/16 split into a public web tier, an app tier, and a database tier. Keep this on paper. You will build it for real in Module 8 and compare.
+**Practical laboratories.**
 
-- **3C.** Two VMs on different subnets, connected with static routes. Show `ip route` before and after.
+- Lab 3A. Diagnose a deliberately broken resolution and routing scenario using standard tools, documenting what each tool reported and the order of investigation.
+- Lab 3B. Given a fixed address block, calculate the mask, broadcast address, and usable host range, then design a three tier segmented network on paper for later physical realization in Module 8. This design exercise supports ABET Student Outcome one.
+- Lab 3C. Connect two machines on separate segments using static routes and evidence the routing table before and after.
+
+**Assignments.** 
+
+A written subnet design with justification, carried forward for comparison in Module 8.
 
 ---
-## Module 4: Git, GitHub, and Team Engineering Workflows
+## Module 4: Version Control and Collaborative Engineering Workflows
 
-**Theory**
+**Objectives.** 
 
-- Why distributed version control is a mental model, not just a history log.
-- Branching strategies: Git Flow, trunk based development, feature branching, and the trade offs at different team sizes.
-- Pull requests and code review: what makes a review useful rather than a rubber stamp. This section matters more every year because reviewing generated code is becoming the majority of the job.
-- Conventional commits, and the payoff: automated semantic versioning, automated changelogs, automated releases. We do not enforce a commit format as bureaucracy. We enforce it, and then we cash it in in lab 4C.
-- Pre commit hooks: catching problems on the developer machine before a pipeline ever sees them.
+Establish professional collaborative workflows, with emphasis on review as the emerging majority of engineering work. Supports CLO 4.
+
+**Topics and subtopics.**
+
+- Distributed version control as a mental model rather than a history log.
+- Branching strategies and their trade offs across team sizes.
+- Pull requests and code review, and what distinguishes a substantive review from a formality.
+- Conventional commit conventions and their payoff in automated versioning, changelog generation, and release automation.
+- Developer machine safeguards through commit hooks.
 - Signed commits and branch protection as baseline hygiene.
-- Issue tracking and traceability: epics, stories, sprints, boards, and following one feature from backlog to production. We use GitHub Issues and GitHub Projects because they are free, already in your workflow, and integrate with everything else here. Jira is described so that you recognise it in a job, but you will not be asked to run one.
+- Issue tracking and traceability from backlog to production.
 
-**Labs**
+**Practical laboratories.**
 
-- **4A.** The full cycle across two clones of the same repo: stage, commit, branch, cause a merge conflict on purpose, resolve it.
+- Lab 4A. Execute the full collaboration cycle across two clones, including a deliberate merge conflict and its resolution.
+- Lab 4B. Demonstrate with evidence the difference between history rewriting and safe reversal on a shared branch, and articulate the correct response to a colleague who force pushed to the main branch. This exercise develops professional communication for ABET Student Outcome Three.
+- Lab 4C. Configure a repository with ignore rules, commit hooks including secret scanning, branch protection requiring review and passing checks, enforced commit conventions, and an automated release that produces a version and changelog on merge.
+- Lab 4D. Build a project board, trace one feature from epic through pull request to automatic issue closure on merge.
 
-- **4B.** log, diff, stash, rebase, revert, reset. Then demonstrate clearly, with evidence, the difference between `reset` (rewrites history, destructive on a shared branch) and `revert` (safe on a shared branch). Explain when you would use each, and what you would say to a colleague who just force pushed to main.
+**Assignments.** 
 
-- **4C.** Set up a real repo: sane `.gitignore`, pre commit hooks (trailing whitespace, YAML validity, secrets scan), branch protection requiring one review and passing checks, conventional commits enforced with commitlint. **Then wire up semantic release or release please so that merging a `feat:` commit automatically bumps the version and writes the changelog.** That last step is the point of the whole lab.
-
-- **4D.** Build a project board, write an epic with user stories under it, start a sprint, commit a change referencing the issue, open a PR, confirm it links back, and watch the issue close on merge.
-
----
-## Module 5: Web Servers, Applications, and Tests
-
-**Theory**
-
-- Web server versus application server, and where each sits.
-- Apache HTTP Server: MPM models, prefork versus event, virtual hosts, mod_proxy.
-- Nginx: event driven architecture, reverse proxying, upstream load balancing.
-- TLS termination, and where it makes sense to terminate: load balancer, reverse proxy, or the app.
-- What makes an application friendly to automated delivery: config from the environment, testable units, repeatable builds.
-- The parts of the twelve factor model that matter day to day, and the parts that are dated.
-- **Testing strategy, and this is not a footnote.** The test pyramid: many fast unit tests, fewer integration tests, very few end to end tests. What each layer catches and what each layer costs you in pipeline minutes. Contract testing between services. Test data management, and why "it passed locally" usually means "it used my local database". Flaky tests: why one flaky test poisons an entire team's trust in the pipeline, and why quarantining a flaky test is a real engineering decision rather than an admission of defeat.
-- **Pipeline speed as a feature.** A test suite that takes forty minutes is a test suite people learn to skip. Caching, parallelism, and what to run on every commit versus what to run nightly.
-
-**Labs**
-
-- **5A.** Apache: two named virtual hosts (a static site and a Python app via WSGI), HTTPS with a self signed certificate, customised access and error log formats.
-
-- **5B.** Nginx: static site, reverse proxy to a backend, then an upstream block round robining across two backend instances.
-
-- **5C.** Build the application that carries through the rest of the program. A small Python API (FastAPI or Flask) with a health endpoint, a metrics endpoint, and at least one real feature endpoint. Config read entirely from environment variables, no hardcoded credentials anywhere, connected to a real database.
-
-- **5D.** Write its test suite properly: unit tests for the business logic, at least one integration test that talks to a real database in a container, and a deliberate flaky test that you then diagnose and fix. Measure and record the total suite runtime, because you will be asked to keep it under control for the rest of the program.
-
-- **5E.** Add a database migration tool (Alembic or equivalent) and commit the first migration. This looks like housekeeping now. In Module 15, it becomes the difference between a rollback that works and a rollback that lies to you.
+A configured repository demonstrating the full governance and release automation chain.
 
 ---
-## Module 6: Containers with Docker and Podman
+## Module 5: Web Servers, Applications, and Testing Strategy
 
-**Theory**
+**Objectives.** 
 
-- What containers actually solve: environment parity, dependency isolation, fast startup.
-- Containers versus VMs: resource sharing, startup time, isolation trade offs.
-- OCI standards: image spec, runtime spec, distribution spec, and why portability depends on them.
-- Image layering: union filesystems, layer caching, and why layer order changes your build time.
-- Multi stage builds, separating build dependencies from the runtime image.
-- Docker's architecture: daemon, CLI, containerd, runc.
-- Podman's architecture: daemonless, rootless by default, cgroups v2, drop in Docker CLI compatibility.
-- Running as root in Docker versus rootless in Podman, and why this is a real security control rather than a preference.
-- **Image scanning with Trivy, introduced here properly.** What a CVE is, what a CVSS score means and does not mean, why base image age is the single biggest lever on your vulnerability count, and why "critical" in a scanner is not the same as "exploitable in your context". Trivy comes back for infrastructure scanning in Module 9 and pipeline gating in Module 19, and it is taught here first so that neither of those is a forward reference.
+Deploy web and application services and construct a delivery friendly reference application governed by a layered test suite. Supports CLO 5.
 
-**Labs**
+**Topics and subtopics.**
 
-- **6A.** Dockerfile for the API from Module 5. Build, run, inspect. Use a `.dockerignore` so the build context stays clean.
+- The distinction between web servers and application servers and where each sits.
+- Process models, virtual hosts, and reverse proxying for the two dominant web servers.
+- Transport layer security termination and the engineering choice of where to terminate.
+- Properties that make an application friendly to automated delivery: environment sourced configuration, testable units, and repeatable builds.
+- The enduring and the dated elements of the twelve factor model.
+- Testing strategy as a first class engineering concern: the test pyramid, contract testing, test data management, and the engineering decision to quarantine a flaky test.
+- Pipeline speed as a product feature, addressed through caching, parallelism, and selective scheduling.
 
-- **6B.** Rewrite it as a multi stage build. Compare image size and Trivy CVE count before and after, and explain which of the removed CVEs were ever actually reachable from your code.
+**Practical laboratories.**
 
-- **6C.** Run the same image with Podman as a non root user and prove it is genuinely rootless. Use `podman generate kube` to produce a Kubernetes style manifest and keep the output. You will use it in Module 11.
+- Lab 5A. Serve two named virtual hosts with transport layer security using a locally issued certificate and customized logging.
+- Lab 5B. Configure static serving, reverse proxying, and load balanced upstream distribution.
+- Lab 5C. Build the reference application carried through the program: a small service exposing health, metrics, and at least one feature endpoint, configured entirely from the environment, connected to a real database, with no embedded credentials.
+- Lab 5D. Author a layered test suite with unit and integration coverage against a containerized database, diagnose and repair a deliberately flaky test, and record total suite runtime as a controlled metric. This experimentation and measurement exercise supports ABET Student Outcome Six.
+- Lab 5E. Introduce a schema migration tool and commit the first migration, which becomes decisive for reversible rollback in Module 15.
 
-- **6D.** Compose file for the API and its database: named volumes for persistence, env file for credentials. Bring it up with `docker compose`, verify, then repeat with `podman compose`.
+**Assignments.** 
 
-- **6E.** Tag and push the image to your registry by hand once, so the mechanics are familiar before Module 7 automates the same push.
+The reference application and its measured, layered test suite.
+
+---
+## Module 6: Containers and Open Container Standards
+
+**Objectives.** 
+
+Build, run, and secure containerized workloads using open standards. Supports CLO 6.
+
+**Topics and subtopics.**
+
+- The problems containers solve: environment parity, dependency isolation, and rapid startup.
+- Containers compared with virtual machines.
+- Open container standards for image, runtime, and distribution, and their role in portability.
+- Image layering, layer caching, and the effect of layer order on build time.
+- Multi stage builds that separate build dependencies from the runtime image.
+- Daemon based and daemonless container architectures, and rootless execution as a security control rather than a preference.
+- Image vulnerability scanning: the meaning and limits of a vulnerability identifier and severity score, the effect of base image currency, and the difference between a reported vulnerability and an exploitable one. Scanning recurs for infrastructure in Module 9 and for pipeline gating in Module 19.
+
+**Practical laboratories.**
+
+- Lab 6A. Containerize the reference application with a clean build context.
+- Lab 6B. Convert to a multi stage build and compare image size and vulnerability count, reasoning about which removed findings were ever reachable. This is a controlled before and after measurement supporting ABET Student Outcome six.
+- Lab 6C. Run the image rootless and prove it, then generate a Kubernetes style manifest retained for Module 11.
+- Lab 6D. Compose the application and its database with persistent volumes and environment sourced credentials across two compatible runtimes.
+- Lab 6E. Tag and publish the image manually so the mechanics precede their automation in Module 7.
+
+**Assignments.** 
+
+A hardened multi stage image with a documented vulnerability comparison.
 
 ---
 ## Module 7: Continuous Integration
 
-**Theory**
+**Objectives.** 
 
-- GitHub Actions vocabulary: workflow, event, job, step, runner, secrets, environments.
-- Reusable workflows and composite actions.
-- Matrix builds.
-- Environments and manual approval gates.
-- Self hosted runners, and when hosted runners fall short (air gapped, GPU, very large builds).
-- **OIDC based cloud authentication.** Long lived AWS keys sitting in CI secrets are a standing liability that will outlive the employee who created them. OIDC federation lets a workflow assume a scoped, short lived role for one run, with nothing stored anywhere. This is taught here as the *default*, not as an advanced upgrade, and you will never store a static cloud key in this program.
-- Make the Makefile a build wrapper, so `make test` behaves identically from a laptop, from GitHub Actions, and from Jenkins.
-- Artifact versioning: semantic versioning, snapshot versus release, and why pinning matters as soon as anything else depends on you.
-- Caching and pipeline cost: what to cache, what not to, and how to read the minutes bill.
+Design continuous integration pipelines authenticated by short lived federated credentials. Supports CLO 7.
 
-**Labs**
+**Topics and subtopics.**
 
-- **7A.** First workflow: checkout, install, run tests, badge on the repo.
+- Pipeline vocabulary: workflow, event, job, step, runner, secret, and environment.
+- Reusable workflows, composite actions, and matrix builds.
+- Approval gated environments.
+- Self hosted runners and their appropriate use.
+- Federated authentication through short lived credentials as the default, so that no static cloud key is ever stored. Long lived keys in a pipeline are treated as a standing liability.
+- A build wrapper that makes local, hosted, and alternate orchestrations invoke identical commands.
+- Artifact versioning, pinning, and the reading of pipeline cost.
 
-- **7B.** Extend to a matrix across three Python versions.
+**Practical laboratories.**
 
-- **7C.** Makefile with `install`, `test`, `lint`, `build`, `push`, `deploy`. The pipeline calls make targets, not inline shell.
+- Lab 7A. Build a first workflow that installs dependencies, runs tests, and publishes status.
+- Lab 7B. Extend to a matrix across multiple runtime versions.
+- Lab 7C. Introduce a build wrapper so the pipeline invokes named targets rather than inline commands.
+- Lab 7D. Add a container build and publish step.
+- Lab 7E. Extract the test job into a reusable workflow invoked from a second repository.
+- Lab 7F. Repair a pipeline seeded with four planted faults under time pressure and document the diagnostic process. This exercise is the model for the practical checkpoints and directly develops ABET Student Outcome six.
 
-- **7D.** Add a real Docker build and push, publishing the image to your registry.
+**Assignments.** 
 
-- **7E.** Extract the test job into a reusable workflow and call it from a second repository to prove it really is reusable.
+A reusable, versioned integration pipeline for the reference application.
 
-- **7F. The broken pipeline.** You are handed a pipeline with four planted faults: a misreferenced secret, a wrong image tag, a misconfigured trigger, and a caching bug that makes tests pass when they should fail. Fix all four under time pressure and write up the diagnostic process, not just the fix. This is closer to real on call work than anything else in Course 1, and it is the model for both practical checkpoints.
-  
 ---
+### DVP 101 Weekly Schedule
+
+| Week | Modules | Focus | Deliverables |
+|---|---|---|---|
+| 1 | 1 | Delivery mindset, DORA, reliability, drift | Labs 1A, 1B |
+| 2 | 1 and 2 | Case study, Linux foundations begin | Labs 1D, 2A |
+| 3 | 2 | Text processing, permissions, packages | Lab 2B |
+| 4 | 2 | Service management, scripting, scheduling, logs | Labs 2C, 2D |
+| 5 | 2 and 3 | Processes, performance, secure shell, networking begins | Lab 2E |
+| 6 | 3 | Transport, resolution, load balancing, subnetting | Labs 3A, 3B |
+| 7 | 3 and 4 | Networking, then version control | Labs 3C, 4A |
+| 8 | 4 | Collaborative workflows and governance. Checkpoint 1.1 | Labs 4B, 4C, 4D |
+| 9 | 5 | Web services, application design, testing strategy | Labs 5A, 5B, 5C |
+| 10 | 5 and 6 | Test suite, containers begin | Labs 5D, 5E, 6A |
+| 11 | 6 | Multi stage, rootless, compose, registry | Labs 6B, 6C, 6D, 6E |
+| 12 | 7 | Continuous integration. Checkpoint 1.2 | Labs 7A through 7F |
+
 ---
 # DVP 201: Cloud Native Infrastructure and Delivery
 
-**14 weeks.**
-
-| Week | Module | Focus | Deliverable |
-|---|---|---|---|
-| 1 | 8 | AWS, IAM, cost guardrails | Labs 8A, 8B, 8C |
-| 2 | 8 | VPC, EC2, S3 | Labs 8D, 8E |
-| 3 | 9 | Terraform: state, workflow, variables | Labs 9A, 9B, 9C |
-| 4 | 9 | Terraform: modules, drift, scanning, cost | Labs 9D to 9G |
-| 5 | 10 | Ansible: inventory, playbooks, idempotency | Labs 10A, 10B |
-| 6 | 10 / 11 | Ansible roles and dynamic inventory. Kubernetes begins | Labs 10C, 10D. **Checkpoint 2.1** |
-| 7 | 11 | Kubernetes: objects, services, probes, config | Labs 11A to 11C |
-| 8 | 11 | Kubernetes: ingress, Gateway API, Helm, Kustomize, EKS | Labs 11D to 11H |
-| 9 | 12 | Kubernetes in production: RBAC, NetworkPolicy, PSA, storage | Labs 12A to 12D |
-| 10 | 12 | Autoscaling and right sizing | Lab 12E |
-| 11 | 13 | Observability: Prometheus, PromQL, Node Exporter, OTel | Labs 13A, 13B |
-| 12 | 13 | Grafana, Alertmanager, tracing, structured logs | Labs 13C to 13E |
-| 13 | 14 | GitOps with ArgoCD, OIDC federation, secrets into the cluster | Labs 14A to 14D |
-| 14 | 15 | Progressive delivery, feature flags, safe migrations | Labs 15A to 15D. **Checkpoint 2.2** |
-
-Note the ordering change from most curricula: **observability comes before progressive delivery.** You cannot do metric driven rollback without metrics, and teaching it the other way round forces an awkward "install just enough Prometheus" patch that nobody learns anything from.
+Fourteen weeks. Observability is scheduled before progressive delivery because metric driven rollback cannot be taught without established metrics.
 
 ---
-## Module 8: Cloud Fundamentals and Cost Guardrails on AWS
+## Module 8: Cloud Fundamentals and Cost Guardrails
 
-**Theory**
+**Objectives.** 
 
-- Cloud service models (IaaS, PaaS, SaaS) and where each maps to a real AWS service.
-- Global infrastructure: regions, availability zones, local zones.
-- IAM: users, groups, roles, policies, with least privilege as a default rather than an afterthought.
-- VPC: public and private subnets, internet gateway, NAT gateway, route tables, security groups, NACLs.
-- EC2: AMIs, instance types, key pairs, instance profiles, user data.
-- S3: buckets, object storage, bucket policies, versioning, lifecycle rules.
-- **Cost, taken seriously.** What is actually a free tier and what only looks like it? Why a NAT gateway is the most common surprise on a student bill. How to read Cost Explorer. What "destroy your lab" means as a habit rather than a chore.
+Establish cloud fundamentals and cost control as an engineering discipline. Supports CLO 8. This module introduces economic constraint as a first class design consideration for ABET Student Outcome two.
 
-**Labs**
+**Topics and subtopics.**
 
-- **8A. The billing lab, and it comes first.** Set an AWS Budget. Create a billing alarm at 10 USD and a hard alarm at 50 USD, routed to an email you actually read. Then deliberately trip the low alarm and prove it fired. You do not proceed to 8B until this is done and evidenced.
+- Cloud service models and their mapping to real services.
+- Global infrastructure: regions, availability zones, and local zones.
+- Identity and access management with least privilege as the default.
+- Virtual private networks: public and private segments, gateways, translation, route tables, and layered controls.
+- Elastic compute: machine images, instance types, instance profiles, and initialization.
+- Object storage: policies, versioning, and lifecycle rules.
+- Cost as an engineering constraint: distinguishing genuine free allowances from apparent ones, identifying the most common sources of unexpected charges, reading cost reporting, and treating teardown as a required habit.
 
-- **8B.** Launch an EC2 instance, install Nginx, confirm it serves traffic, and tear it down. Take a screenshot of the empty console.
+**Practical laboratories.**
 
-- **8C.** IAM: build a user with no permissions, attach a narrow S3 read only policy, and prove the boundary holds by trying something you should not be able to do. Then build an IAM role for EC2 with S3 read access, attach it to an instance, and confirm the instance can read S3 with no access keys at all. Write two sentences on why the second approach is strictly better.
+- Lab 8A. The billing guardrail exercise, completed before any other cloud work: configure a budget, a warning alarm, and a hard alarm routed to a monitored address, then deliberately trip the warning alarm and evidence that it fired. Students on the equitable access path complete an equivalent instrumented budget simulation, described in Appendix B.
+- Lab 8B. Launch a compute instance, serve traffic, and decommission it with evidence of an empty console.
+- Lab 8C. Construct a permission boundary, prove it holds, then attach an instance role that reads object storage with no static keys, and justify why the role based approach is superior.
+- Lab 8D. Build the segmented network designed on paper in Lab 3B, prove that the private instance reaches the internet outbound only, compare against the paper design, then decommission the costly translation component the same day and quantify the avoided cost.
+- Lab 8E. Configure versioning, lifecycle rules, and a bucket policy, then break and repair the policy to observe the failure mode.
 
-- **8D.** Build a real VPC: 10.0.0.0/16, public subnet 10.0.1.0/24, private subnet 10.0.2.0/24, internet gateway, NAT gateway. One EC2 in each. Prove the private instance can reach the internet outbound but cannot be reached from outside. Compare it to the paper design from lab 3B. **Then destroy the NAT gateway the same day, and say in your write up what it would have cost you if you had not.**
+**Assignments.** 
 
-- **8E.** S3: versioning, a lifecycle rule, and a bucket policy. Break the bucket policy on purpose, observe the failure mode, and fix it.
-
----
-## Module 9: Infrastructure as Code with Terraform and OpenTofu
-
-**Theory**
-
-- Declarative infrastructure versus imperative scripting. Desired state as the core model.
-- State: what it tracks, why losing it ruins your week, and why it must never live in Git.
-- The workflow: init, plan, apply, destroy. And the habit: read the plan. Every time. Especially when an assistant wrote the code.
-- State locking with DynamoDB.
-- Workspaces and environment isolation without duplication.
-- Modules as the unit of reuse: local, registry, and Git sources.
-- **Licensing, told straight.** HashiCorp moved every product, Terraform included, from the open source MPL 2.0 to the Business Source License in August 2023. BUSL is source available, not open source: you can read and use it, but not build a competing hosted service on it. OpenTofu is the community fork of the last MPL version, now under the Linux Foundation, and it is a drop in replacement for essentially everything you will do here. IBM completed its acquisition of HashiCorp in 2025, and Terraform's license did not revert. You will meet both names in the field, and you should know which is which and why the split happened. The same story repeats with Vault and OpenBao in Module 19, and it is the same lesson both times: know the license of the thing you are betting your platform on.
-
-**Labs**
-
-- **9A.** Provision an EC2 instance and a security group. Plan, apply, verify in the console, destroy.
-
-- **9B.** Parameterise instance type and region with variables. Add an output printing the public IP.
-
-- **9C.** Move state into S3 with DynamoDB locking. Then run two applies at once and watch the lock block one of them.
-
-- **9D.** Refactor into a reusable module. Call it twice with different inputs: one web server, one build agent.
-
-- **9E.** Run Infracost against the configuration, read the estimate, and wire it into a pull request as an automatic comment. Then make a change that triples the cost and watch the comment catch it.
-
-- **9F. Drift, the real version.** Provision a security group with Terraform. Introduce drift by changing it in the AWS console. Catch it with `terraform plan` and correct it with `terraform apply`. Compare directly to lab 1C and write two paragraphs on what tooling bought you.
-
-- **9G.** Add infrastructure scanning to the pipeline with Trivy's configuration scanning mode (the same Trivy you learned in Module 6), or Checkov as an alternative. Fix at least one real finding. Note for the record that tfsec, which used to be the default choice here, was folded into Trivy in 2024 and no longer receives new checks.
+A cost controlled network deployment with a written comparison against the Module 3 design.
 
 ---
-## Module 10: Configuration Management with Ansible
+## Module 9: Infrastructure as Code
 
-**Theory**
+**Objectives.** 
 
-- Architecture: control node, managed nodes, agentless SSH execution.
-- Inventory, static and dynamic, including the AWS EC2 plugin.
-- Idempotency, and how to actually verify it: run it twice, and the second run changes nothing.
-- Ansible next to Terraform rather than against it. One provisions infrastructure, the other converges configuration state.
-- Jinja2 templating: variables, filters, conditionals.
-- Ansible Vault, encrypting secrets at rest in the repository.
-- Roles, the standard directory layout, and Galaxy.
+Provision reproducible infrastructure declaratively and manage state safely. Supports CLO 8.
 
-**Labs**
+**Topics and subtopics.**
 
-- **10A.** Install Ansible on a control node, write a static inventory with `webservers` and `dbservers` groups, and run ad hoc commands (ping, command, service) before writing a single playbook, so that the gap between a one off command and a repeatable playbook is something you feel rather than read.
+- Declarative infrastructure and desired state as the core model.
+- State: what it tracks, why its loss is costly, and why it must never reside in version control.
+- The provisioning workflow, and the discipline of reading the plan before every apply, especially when the definition was generated by an assistant.
+- State locking and environment isolation without duplication.
+- Modules as the unit of reuse.
+- Licensing awareness: the migration of major provisioning and secrets tools from open source to source available licenses, the community forks that resulted, the corporate acquisition that followed, and the general lesson of knowing the license of any tool on which a platform depends.
 
-- **10B.** Write a playbook that installs and configures Nginx and deploys the Python API from Module 5 as a systemd service on a VM. Include a handler that restarts the service only on a genuine config change. Encrypt the database password with Ansible Vault. Run it twice and prove the second run is a no op.
+**Practical laboratories.**
 
-- **10C.** Convert it into a proper role: tasks, handlers, templates, defaults. Generate the virtual host config from a Jinja2 template.
+- Lab 9A. Provision compute and a security group, then verify and decommission.
+- Lab 9B. Parameterize the definition and publish an output.
+- Lab 9C. Move the state to remote storage with locking and observe the lock blocking a concurrent apply.
+- Lab 9D. Refactor into a reusable module invoked with two distinct inputs.
+- Lab 9E. Integrate automated cost estimation into pull requests and confirm that a cost tripling change is caught. This exercise supports economic evaluation under ABET Student Outcome Two.
+- Lab 9F. Introduce drift through the console, detect it through the plan, and correct it, then compare directly against the manual drift exercise of Lab 1C.
+- Lab 9G. Add configuration scanning to the pipeline and remediate at least one real finding.
 
-- **10D.** Terraform provisions two tagged EC2 instances. The AWS EC2 dynamic inventory plugin discovers them. Your role configures them. One exercise, and the Terraform to Ansible boundary stops being theory.
+**Assignments.** A modular, scanned, cost estimated infrastructure definition with remote state.
+
+---
+## Module 10: Configuration Management
+
+**Objectives.** 
+
+Converge configuration state idempotently and integrate provisioning with configuration. Supports CLO 8.
+
+**Topics and subtopics.**
+
+- Agentless architecture over secure shell.
+- Static and dynamic inventory, including cloud discovery.
+- Idempotency and its empirical verification through a second run that changes nothing.
+- The complementary relationship between provisioning and configuration convergence.
+- Templating, variables, and filters.
+- Encrypted secrets at rest in the repository.
+- Roles and the standard directory layout.
+
+**Practical laboratories.**
+
+- Lab 10A. Establish a control node, write a grouped static inventory, and run ad hoc commands before writing any playbook, so that the gap between a single command and a repeatable playbook is experienced directly.
+- Lab 10B. Author a playbook that installs and configures a web server, deploys the reference application as a managed service, restarts only on genuine change, encrypts the database credentials, and proves idempotency on a second run.
+- Lab 10C. Convert the playbook into a proper role with templated configuration.
+- Lab 10D. Discover provisioned instances through dynamic inventory and configure them with the role, so the provisioning to configuration boundary becomes concrete.
+
+**Assignments.** 
+
+A role driven configuration pipeline integrated with dynamic inventory.
 
 ---
 ## Module 11: Kubernetes Fundamentals
 
-**Theory**
+**Objectives.** 
 
-- Control plane: API server, etcd, scheduler, controller manager.
-- Worker node: kubelet, kube proxy, container runtime.
-- Core objects: Pod, ReplicaSet, Deployment, StatefulSet, DaemonSet, Job, CronJob.
-- Services: ClusterIP, NodePort, LoadBalancer, ExternalName.
-- **Ingress and Gateway API.** Ingress is what you will find in every existing cluster, and it is effectively frozen. Gateway API is its GA successor, with a proper role split between cluster operator and application developer, and it is what new work should use. You learn both, and you learn which one you are looking at.
-- Resource requests and limits, and why a production workload without them is a noisy neighbour waiting to happen.
-- Liveness, readiness, and startup probes, because Kubernetes cannot self heal what it cannot detect.
-- ConfigMaps and Secrets, and the flat truth that a Kubernetes Secret is base64, not encryption. Module 14 deals with the consequences.
-- Persistent volumes, PVCs, storage classes.
+Deploy and operate applications on Kubernetes and on managed clusters. Supports CLO 9.
+
+**Topics and subtopics.**
+
+- Control plane and worker node components.
+- Core workload objects and their appropriate use.
+- Service types and their exposure semantics.
+- Ingress and its successor gateway model, with the operator and developer role split, and how to recognize which is in use.
+- Resource requests, limits, and the noisy neighbor problem.
+- Liveness, readiness, and startup probes as the basis of self healing.
+- Configuration and secret objects, and the plain fact that a cluster secret is encoded rather than encrypted, whose consequences are addressed in Module 14.
+- Persistent storage abstractions.
 - Rolling updates and rollback.
-- RBAC: ServiceAccounts, Roles, ClusterRoles, RoleBindings.
-- Cluster DNS: how CoreDNS resolves service names, and how to debug resolution from inside a pod.
-- Managed Kubernetes on EKS, and why almost nobody builds their own control plane on AWS anymore.
+- Role based access control.
+- Cluster name resolution and its debugging.
+- Managed Kubernetes and the rationale for not self operating a control plane.
 
-**Labs**
+**Practical laboratories.**
 
-- **11A.** Local cluster with kind (or k3d on 8 GB). Apply a deployment, scale it, expose it, update the image, watch the rolling update, roll it back.
+- Lab 11A. Apply, scale, expose, update, and roll back a deployment on a local cluster.
+- Lab 11B. Add probes and limits, observe self healing, then misconfigure a probe to observe a healthy pod killed in a loop, a real world failure mode.
+- Lab 11C. Wire configuration and secret objects into a pod, apply the manifest generated in Lab 6C, and compare it against manifests written by hand.
+- Lab 11D. Route paths through an ingress controller, then reproduce the routing with the gateway model and evaluate what the newer model provides.
+- Lab 11E. Debug cluster name resolution from inside a pod.
+- Lab 11F. Package the application with a chart and with an overlay tool, and articulate when each is appropriate.
+- Lab 11G. Provision a managed cluster with infrastructure as code, deploy the application, and decommission the cluster at the end of the session.
 
-- **11B.** Add liveness and readiness probes and resource limits. Kill the process inside a pod and watch Kubernetes bring it back. Then set the liveness probe wrong on purpose and watch it kill a healthy pod in a loop, which is a failure mode you will meet in the wild.
+**Assignments.** 
 
-- **11C.** ConfigMap and Secret wired into a pod spec. Apply your `podman generate kube` output from lab 6C with kubectl and compare it to the manifests you have been writing by hand.
-
-- **11D.** Install an ingress controller, route two paths to two services. Then do the same thing again with Gateway API and an HTTPRoute, and write up what the second model gives you that the first does not.
-
-- **11E.** Exec into a debug pod, use nslookup and dig against a service's cluster DNS name, and confirm how CoreDNS resolution actually works.
-
-- **11F.** Helm: deploy a public chart, then write a small chart for your own application. Kustomize: a base for the same app with a dev overlay and a prod overlay. Apply each and explain when you would reach for which.
-
-- **11G.** Provision a real EKS cluster with Terraform and deploy the same application, so that the local cluster and the cloud cluster feel like two versions of one skill rather than two skills. **Destroy it at the end of the session.**
-
-- **11H. Optional, no marks.** The Red Hat Developer sandbox, OpenShift web console, the `oc` CLI, and a comparison of an OpenShift Route to the Ingress from 11D. Fuller treatment lives in the elective track.
+The reference application was deployed to both a local and a managed cluster with documented configuration parity.
 
 ---
 ## Module 12: Kubernetes in Production
 
-Everything in Module 11 gets you a running application. Everything in Module 12 is what stands between that and a cluster you would actually let a customer near.
+**Objectives.** 
 
-**Theory**
+Secure and scale clusters to a production standard. Supports CLO 9. Health, safety, and welfare considerations under ABET Student Outcome Two are made concrete through least privilege, admission control, and network isolation.
 
-- **RBAC in earnest.** Least privilege for a CI/CD service account. Why `cluster-admin` in a pipeline is the same mistake as a static AWS key, wearing a different hat.
-- **Pod Security Admission.** The built in, free baseline. Privileged, baseline, and restricted. You learn this *before* Kyverno in Course 3, because you should know what the platform already gives you before you install a policy engine on top of it.
-- **NetworkPolicy.** Default deny east west traffic. This is the free, built in, layer 3 and 4 control that is the actual first step of zero trust, and it is the thing most teams skip on their way to buying a service mesh. CNI plugins and why NetworkPolicy needs one that supports it.
-- Namespaces, ResourceQuotas, and LimitRanges as a multi tenancy story.
-- Storage in practice: storage classes, dynamic provisioning, volume expansion, and why a StatefulSet is not just a Deployment with a nicer name.
-- **Autoscaling.** Horizontal Pod Autoscaler on CPU and on custom metrics. Vertical Pod Autoscaler and why it fights with HPA. Cluster Autoscaler versus Karpenter for node level scaling. The relationship between requests, limits, and what the autoscaler can actually see.
+**Topics and subtopics.**
 
-**Labs**
+- Least privilege access control for automation identities, and why broad administrative rights in a pipeline repeat the mistake of a static key.
+- Built in workload security admission at the baseline and restricted levels, taught before any external policy engine so that the platform's native controls are understood first.
+- Default deny east west network policy as the unglamorous first step of zero trust, and the network plugin support it requires.
+- Namespaces, quotas, and limit ranges as a multi tenancy story.
+- Storage in practice and the distinction between stateful and stateless workloads.
+- Horizontal and vertical autoscaling, node level autoscaling, and the dependency of the autoscaler on accurate requests and limits.
 
-- **12A.** Create a ServiceAccount for a CI/CD pipeline, bound to a Role permitting only get, list, and update on Deployments in the app namespace. Prove it cannot read Secrets. Then try to make it read Secrets and show the exact error.
+**Practical laboratories.**
 
-- **12B.** Apply Pod Security Admission at the `restricted` level to a namespace. Watch your own application get rejected. Fix the application (non root user, dropped capabilities, no privilege escalation) until it is admitted.
+- Lab 12A. Bind an automation identity to a minimal role, prove it cannot read secrets, and capture the exact denial.
+- Lab 12B. Apply restricted workload security to a namespace, observe rejection, and remediate the application until it is admitted.
+- Lab 12C. Impose a default deny network policy, observe the resulting breakage, and open only the required paths.
+- Lab 12D. Impose quotas and limit ranges and observe the enforcement errors.
+- Lab 12E. Configure horizontal autoscaling against request rate, load test it, then collect real utilization data, right size requests and limits, and quantify the monthly saving. This experiment connects measured data to an economic outcome under ABET Student Outcomes two and six.
 
-- **12C.** Write a default deny NetworkPolicy for a namespace, watch everything break, then open exactly the paths that are needed and no more. This lab is uncomfortable, and it is supposed to be.
+**Assignments.** 
 
-- **12D.** ResourceQuota and LimitRange on a namespace. Try to exceed both. Read the errors.
-
-- **12E.** Configure an HPA on the application against the request rate. Load test it and watch it scale. Then collect real utilisation data, right size the requests and limits, and quantify the monthly saving with Infracost. This is the lab that connects "I set some numbers in a YAML file" to "I saved the company money", and it is the one to put on your CV.
-
----
-## Module 13: Observability Built on Open Standards
-
-**Theory**
-
-- Metrics, logs, and traces: what each answers that the other two cannot.
-- OpenTelemetry is the vendor neutral standard that ties all three together, so you are never locked into one vendor's instrumentation format. Instrument once, export anywhere.
-- The Prometheus data model: time series, labels, counters, gauges, histograms, summaries. Node Exporter for host metrics.
-- PromQL, starting with the three queries you will actually reach for: `rate`, `increase`, `histogram_quantile`.
-- Alertmanager: routing, grouping, inhibition, silencing. And alert fatigue, which is the failure mode that kills more monitoring stacks than any technical problem.
-- Grafana: dashboards, variables, annotations, alert rules.
-- Structured logging, and why JSON logs make everything downstream trivial.
-- Cardinality, and how one badly chosen label (a user ID, a request ID) can take down your Prometheus. This is the single most common self inflicted observability injury.
-
-**Labs**
-
-- **13A.** Install Prometheus and Node Exporter into the cluster. Confirm all targets are up. Instrument the application with OpenTelemetry, exporting metrics to Prometheus and traces to Jaeger from the same instrumentation code.
-
-- **13B.** Write PromQL by hand until it stops being frightening: request rate, error rate, p95 latency from a histogram. Then deliberately add a high cardinality label, watch Prometheus memory climb, and remove it.
-
-- **13C.** Build a Grafana dashboard with real panels: CPU, memory, HTTP request rate, HTTP error rate, p95 latency.
-
-- **13D.** Write an alert that fires on a real threshold, route it through Alertmanager to a chat channel, and confirm the notification arrives. Then write a *bad* alert that fires constantly, live with it for a day, and write two sentences on what alert fatigue does to an on call engineer.
-
-- **13E.** Slow down a database query on purpose. Trace the same problem through a metric, a Jaeger span, and a log line. Write up how much harder this would have been with only one of the three.
+A hardened namespace with a quantified right sizing analysis.
 
 ---
-## Module 14: Continuous Delivery, GitOps, and Getting Secrets Into a Cluster
+## Module 13: Observability on Open Standards
 
-**Theory**
+**Objectives.** 
 
-- Push based delivery (the CI/CD pattern from Course 1) set next to pull based GitOps.
-- ArgoCD: the Application resource, sync policies, health status, self healing, drift detection at the cluster level.
-- OIDC federation as the modern replacement for long lived cloud keys sitting quietly in CI secrets.
-- **The GitOps secrets problem, and this is not optional.** GitOps says the desired state of the cluster lives in Git. Security says credentials must never live in Git. Both are correct, and a curriculum that teaches ArgoCD and then goes quiet has left you with a broken system. The three real answers: Sealed Secrets (encrypt into Git, decrypt in cluster), External Secrets Operator (a reference in Git, the value in a real secret store), and the Vault Agent Injector or Secrets Store CSI driver (inject at pod start). You build one of them, and you can explain the trade offs of the other two.
+Implement observability across metrics, logs, and traces using vendor neutral standards. Supports CLO 10.
 
-**Labs**
+**Topics and subtopics.**
 
-- **14A.** Extend the pipeline from Course 1 with a real deploy stage that applies manifests to the EKS cluster.
+- Metrics, logs, and traces, and what each answers that the others cannot.
+- Vendor neutral instrumentation that allows a single instrumentation to export to any backend.
+- The metric data model, host metric collection, and the core query patterns for rate, increase, and quantile estimation.
+- Alert routing, grouping, inhibition, and silencing, and alert fatigue as the dominant failure mode of monitoring.
+- Dashboards, variables, and annotations.
+- Structured logging.
+- Cardinality, and how one poorly chosen label can destabilize a metrics store.
 
-- **14B.** Set up OIDC federation between GitHub and AWS. Replace the static access keys with a scoped, short lived role. Delete the old keys from secrets entirely. Write a short note comparing the blast radius of a leaked static key against a leaked short lived OIDC token, and be specific about the timelines.
+**Practical laboratories.**
 
-- **14C.** Install ArgoCD, point it at the manifests repo. Change something in Git and watch it sync. Change something by hand in the cluster and watch ArgoCD revert it.
+- Lab 13A. Deploy metric collection into the cluster, confirm targets, and instrument the application to export metrics and traces from a single instrumentation.
+- Lab 13B. The author queries for request rate, error rate, and tail latency from a histogram, then deliberately introduces a high cardinality label, observes memory growth, and removes it. This controlled experiment supports ABET Student Outcome Six.
+- Lab 13C. Build a dashboard of core service signals.
+- Lab 13D. Route a real alert to a channel, then author a deliberately noisy alert and document the effect of alert fatigue on an on call engineer.
+- Lab 13E. Slow a query deliberately and trace the same fault through a metric, a span, and a log line, evaluating the value of correlated signals.
 
-- **14D.** Now put a secret into that GitOps flow without putting the secret into Git. Install External Secrets Operator, back it with AWS Secrets Manager, and have ArgoCD sync an ExternalSecret that resolves to a real Secret in the cluster. Prove the secret value appears nowhere in your repository, including in the history. The correct way to prove this is `git log -p -S '<the secret value>' --all`, which searches every commit on every branch for that string. An empty result is your proof.
+**Assignments.** 
+
+An instrumented service with dashboards, alerting, and tracing.
+
+---
+## Module 14: Continuous Delivery, GitOps, and Cluster Secrets
+
+**Objectives.** 
+
+Operate GitOps delivery and resolve the secrets problem it creates. Supports CLO 11 and CLO 7.
+
+**Topics and subtopics.**
+- Push based delivery contrasted with pull based GitOps.
+- The application resource, sync policies, health status, self healing, and cluster level drift detection.
+- Federated authentication as the modern replacement for long lived cloud keys.
+- The GitOps secrets problem and its three established resolutions: encryption into version control with in cluster decryption, a reference in version control with the value in an external store, and injection at pod start. Students build one and can defend the trade offs of the others. This is a complex engineering problem with conflicting correct principles under ABET Student Outcome Two.
+
+**Practical laboratories.**
+
+- Lab 14A. Add a real deploy stage that applies manifests to a managed cluster.
+- Lab 14B. Establish federated authentication, replace static keys with a scoped short lived role, delete the static keys, and analyze the blast radius difference between a leaked static key and a leaked short lived credential with specific timelines.
+- Lab 14C. Install the delivery controller, observe synchronization from version control, and observe reversion of a manual cluster change.
+- Lab 14D. Introduce a secret into the GitOps flow without committing it, using an external secret operator backed by a real store, and prove through a full history search that the secret value appears nowhere in the repository.
+
+**Assignments.** 
+
+A GitOps delivery flow with externally sourced secrets and evidenced repository cleanliness.
 
 ---
 ## Module 15: Progressive Delivery, Feature Flags, and Safe Migrations
 
-**Theory**
+**Objectives.** 
 
-- Canary and blue green as alternatives to a plain rolling update.
-- Automated rollback driven by a real metric rather than a person staring at a dashboard. You already have the metrics from Module 13, which is why this module is in the right place.
-- **Feature flags, and why infrastructure is only half the story.** A canary controls which *version* of the code is running. A feature flag controls whether a *behaviour* is switched on, for whom, and it can be turned off in a second without a deployment at all. Deploy and release are two different events, and the moment you internalise that, half of progressive delivery gets easier. Flags are cheaper than canaries; they work for things a canary cannot help with, and they carry their own cost: flag debt is real, and a flag you forgot to remove is a bug waiting for a quiet Sunday.
-- **Database migrations, and the rollback that lies to you.** Here is the thing most courses never tell you. You set up a beautiful automated canary rollback. You ship a bad version. The rollback fires, the pods go back to the old image, the dashboard goes green, and your application is still broken because the deployment ran a migration that dropped a column, and the old code is now querying a column that no longer exists. Your rollback rolled back the code and not the data. It cannot roll back the data. The fix is not a better rollback tool, it is the expand and contract pattern: every schema change is split into a backward compatible expand (add the new column, write to both, read from the old), a deploy, and a contract (stop writing the old, drop it) that happens in a *later* release once you are certain you will not need to go back. Destructive migrations make a deploy one way, and a one way deploy is not a deploy you can canary. This single idea is why the migration tool went into your app back in lab 5E.
+Operate progressive delivery with metric driven rollback and reversible schema evolution. Supports CLO 11.
 
-**Labs**
+**Topics and subtopics.**
 
-- **15A.** Install Argo Rollouts. Convert the deployment into a canary backed by an AnalysisTemplate that queries Prometheus for HTTP error rate. Ship a version that is broken on purpose. Watch it get caught and rolled back before promotion completes.
+- Canary and blue green delivery as alternatives to a plain rolling update.
+- Automated rollback driven by a real metric, made possible by the observability established in Module 13.
+- Feature flags as the separation of deployment from release, their advantages, and the cost of flag debt.
+- Database migrations and the rollback that appears to succeed while the application remains broken because the code rolled back and the data did not. The remedy is the expand and contract pattern, in which every schema change is split into a backward compatible expansion, a deploy, and a later contraction, so that a reversible deploy remains reversible. This is the reason the migration tool was introduced in Lab 5E.
 
-- **15B.** Configure a second rollout using blue green: a full parallel environment, an instant cutover, manual promotion, and a rollback by aborting. Write a short note on when you would reach for blue green over canary.
+**Practical laboratories.**
 
-- **15C.** Add a feature flag (OpenFeature with a simple provider, or a flag service) to the application. Ship the code dark, behind the flag, in a normal deploy that changes nothing for users. Then turn it on for ten percent of traffic without deploying anything at all. Then turn it off in under five seconds because something looked wrong. Compare this experience to Lab 15A honestly.
+- Lab 15A. Convert the deployment to a canary governed by an analysis that queries error rate, ship a deliberately broken version, and observe automatic rollback before promotion.
+- Lab 15B. Configure a blue green rollout with instant cutover and abort based rollback, and justify when it is preferable to a canary.
+- Lab 15C. Introduce a feature flag, ship code dark, enable it for a fraction of traffic without deploying, disable it in seconds, and compare the experience honestly against Lab 15A.
+- Lab 15D. Demonstrate the rollback that lies by shipping a destructive migration and observing dashboards report success while the service remains broken, then reimplement with expand and contract and demonstrate a rollback that genuinely restores service. This capstone laboratory of the course integrates data integrity as a safety consideration under ABET Student Outcome Two.
 
-- **15D. The rollback that lies.** Write a migration that drops a column. Deploy it with the canary from 15A. Roll back. Watch the application stay broken even though every dashboard says the rollback succeeded, and understand exactly why. Then redo the whole thing as expand and contract, and demonstrate a rollback that genuinely restores service. This lab is the most important one in Course 2, and it is deliberately the last.
+**Assignments.** 
+
+A demonstrated reversible schema change under automated progressive delivery.
 
 ---
+### DVP 201 Weekly Schedule
+
+| Week | Modules | Focus | Deliverables |
+|---|---|---|---|
+| 1 | 8 | Cloud fundamentals, identity, cost guardrails | Labs 8A, 8B, 8C |
+| 2 | 8 | Network, compute, storage | Labs 8D, 8E |
+| 3 | 9 | Infrastructure as code: state and workflow | Labs 9A, 9B, 9C |
+| 4 | 9 | Modules, drift, scanning, cost | Labs 9D through 9G |
+| 5 | 10 | Configuration management foundations | Labs 10A, 10B |
+| 6 | 10 and 11 | Roles, dynamic inventory, Kubernetes begins. Checkpoint 2.1 | Labs 10C, 10D |
+| 7 | 11 | Objects, services, probes, configuration | Labs 11A through 11C |
+| 8 | 11 | Ingress, gateway, packaging, managed clusters | Labs 11D through 11G |
+| 9 | 12 | Access control, admission, network policy, storage | Labs 12A through 12D |
+| 10 | 12 | Autoscaling and right sizing | Lab 12E |
+| 11 | 13 | Metrics, query language, instrumentation | Labs 13A, 13B |
+| 12 | 13 | Dashboards, alerting, tracing, structured logs | Labs 13C through 13E |
+| 13 | 14 | GitOps, federated identity, cluster secrets | Labs 14A through 14D |
+| 14 | 15 | Progressive delivery, flags, safe migrations. Checkpoint 2.2 | Labs 15A through 15D |
+
 ---
 # DVP 301: Reliability, Security, Platform, and AI Driven Operations
 
-**14 weeks. The capstone starts in Week 1, not Week 11.**
-
-| Week | Module | Focus |
-|---|---|---|
-| 1 | 16 | SRE: SLIs, SLOs, error budgets. **Capstone kickoff and proposal due.** |
-| 2 | 16 / 17 | On call, incident response, blameless postmortems. Chaos engineering |
-| 3 | 18 | Disaster recovery and business continuity |
-| 4 | 19 | DevSecOps: secrets, Vault and OpenBao, SAST, SCA |
-| 5 | 19 | Image scanning, secrets scanning, dependency updates. **Capstone checkpoint 1** |
-| 6 | 20 | Supply chain security and policy as code |
-| 7 | 21 | Service mesh and advanced traffic management |
-| 8 | 22 | Multi cloud, serverless, and FinOps |
-| 9 | 23 | Platform engineering. **Capstone checkpoint 2** |
-| 10 | 24 | AI in modern DevOps and platform work |
-| 11 to 13 | 25 | Capstone build, with a weekly review slot |
-| 14 | 25 | Capstone presentations and live defenses |
+Fourteen weeks. The capstone begins in Week 1 and is built incrementally as each module lands.
 
 ---
-## Module 16: SRE Practices and Incident Response
+## Module 16: Site Reliability Practices and Incident Response
 
-**Theory**
+**Objectives.** 
 
-- SLIs, SLOs, and error budgets as an engineering discipline rather than a slogan. What an error budget is *for*: it is a negotiated permission to ship, and when it is exhausted, the negotiation changes.
-- On call: rotation structure, escalation paths, severity levels, and who actually has the authority to declare an incident.
-- Incident command: the incident commander, the communications lead, the scribe. Why one person doing all three at 3 am is how a one hour incident becomes a four hour one.
-- Incident communication: status pages, stakeholder updates, and the discipline of saying "we are investigating" every twenty minutes even when there is nothing new.
-- Blameless postmortems, and why blame produces quieter engineers rather than better systems.
-- Basic capacity planning.
+Apply reliability engineering and structured incident response. Supports CLO 12. Teamwork under ABET Student Outcome Five is developed through the paired incident simulation.
 
-**Labs**
+**Topics and subtopics.**
 
-- **16A.** Define real SLOs for your service and instrument the matching SLIs in Prometheus. Build the error budget burn rate alert.
+- Indicators, objectives, and error budgets as an engineering discipline, and the error budget as a negotiated permission to ship.
+- On call structure, escalation, severity, and the authority to declare an incident.
+- Incident command roles and why role separation shortens incidents.
+- Incident communication discipline.
+- Blameless postmortems and why blame degrades systems.
+- Introductory capacity planning.
 
-- **16B.** Connect an alert to a real paging tool and walk the full path: alert, page, acknowledgement, escalation on no ack.
+**Practical laboratories.**
 
-- **16C. The incident simulation.** In pairs. One student breaks the other's cluster in a way agreed with the instructor. The other runs the incident: declares severity, communicates status on a schedule, diagnoses, mitigates, and writes the blameless postmortem afterwards with a timeline, a root cause, and follow up actions. Then swap. You will be asked to narrate one of these out loud in a job interview within a year, and this is where you get the story.
+- Lab 16A. Define real objectives, instrument the matching indicators, and build a burn rate alert.
+- Lab 16B. Connect an alert to a paging tool and walk the full escalation path.
+- Lab 16C. Conduct a paired incident simulation in which each student in turn runs a real incident on a partner introduced fault, communicating on a schedule, mitigating, and authoring a blameless postmortem with timeline, root cause, and follow up actions. This exercise develops teamwork and communication under ABET Student Outcomes three and five.
+
+**Assignments.** 
+
+A blameless postmortem from the incident simulation.
 
 ---
 ## Module 17: Chaos Engineering and Resilience
 
-**Theory**
+**Objectives.** 
 
-- Resilience as something tested on purpose rather than hoped for.
-- The real difference between a chaos experiment and an outage: a hypothesis, a blast radius, and a stop button.
-- What a sensible first blast radius looks like.
+Test resilience deliberately and interpret the response. Supports CLO 12.
 
-**Labs**
+**Topics and subtopics.**
 
-- **17A.** Install Chaos Mesh (or Litmus). Write the hypothesis down *first*. Run one contained experiment: kill a pod mid request, or add two seconds of latency between the app and its database. Document what recovered automatically, what did not, and what you would change in the deployment or rollout strategy as a result. An experiment where nothing surprising happened is a valid result and should be written up as one.
+- Resilience as a tested property rather than an assumed one.
+- The distinction between a chaos experiment and an outage: a written hypothesis, a bounded blast radius, and a stop mechanism.
+- Selection of a sensible first blast radius.
+
+**Practical laboratories.**
+
+- Lab 17A. Author a hypothesis in advance, run one contained fault injection experiment, and document what recovered automatically, what did not, and the resulting design change. A result in which nothing surprising occurred is a valid outcome and is written up as such. This exercise embodies hypothesis driven experimentation under ABET Student Outcome Six.
+
+**Assignments.** 
+
+A documented chaos experiment with hypothesis, result, and design conclusion.
 
 ---
 ## Module 18: Disaster Recovery and Business Continuity
 
-**Theory**
+**Objectives.** 
 
-- RPO and RTO as concrete numbers rather than vague promises. If you cannot state yours in minutes, you do not have one.
-- Backup strategies: full, incremental, snapshot. Cost, speed, and recovery complexity trade offs.
-- Kubernetes specific DR: etcd backup for the cluster's own state, which is a different problem from Velero backing up namespaces and PVCs.
-- The gap between having a backup file and having a proven restore. An untested backup is a rumour.
+Execute recovery exercises and quantify recovery objectives. Supports CLO 12.
 
-**Labs**
+**Topics and subtopics.**
 
-- **18A.** Set an RTO target *before* you start. Back up the full application namespace with Velero, delete the namespace, restore it, and measure the actual recovery time against your target. If you missed, find the bottleneck (image pull time, PVC bind time, init container ordering) and propose a fix. Write it up as a one page blameless postmortem.
+- Recovery point and recovery time objectives as concrete measured numbers.
+- Backup strategies and their trade offs in cost, speed, and complexity.
+- Cluster state backup as distinct from workload and volume backup.
+- The gap between possessing a backup and having a proven restore.
 
-- **18B.** Write a scheduled job that dumps the database regularly and ships it to object storage. Then restore from that dump into a fresh database and prove the data is intact, because a backup you have never restored is not a backup.
+**Practical laboratories.**
+
+- Lab 18A. Set a recovery time target in advance, back up and restore a full namespace, measure actual recovery time against the target, identify the bottleneck if the target is missed, and write a one page postmortem. This exercise requires quantitative comparison of measured results against a specified target under ABET Student Outcome Six.
+- Lab 18B. Schedule recurring database dumps to object storage and prove data integrity through a restore into a fresh database.
+
+**Assignments.** 
+
+A measured recovery exercise with a written continuity analysis.
 
 ---
-## Module 19: DevSecOps in Depth
+## Module 19: Security Across the Delivery Lifecycle
 
-**Theory**
+**Objectives.** 
 
-- Shifting security left, in practice rather than as a slogan: catching a vulnerability at commit time costs a fraction of catching it in production.
-- The OWASP Top 10 at a working level.
-- **Secrets management with Vault, and the OpenBao question.** HashiCorp moved Vault to BUSL 1.1 in August 2023, the same move that produced OpenTofu from Terraform. Vault 1.14 was the last MPL release. OpenBao is the community fork of that version, API compatible, MPL 2.0, governed under the Linux Foundation. Vault is now an IBM product. You learn Vault because it is what you will find in a job, and you learn that OpenBao exists because your organisation may one day have to care about the license. Same story as Module 9, and it is not a coincidence.
-- Static analysis (Bandit or equivalent) and software composition analysis (OWASP Dependency Check).
-- Container image scanning, base image age, pinned tags, non root users.
-- **Dependency update automation.** Scanning tells you that you have a vulnerable dependency. It does nothing to fix it. Renovate or Dependabot is the other half of the job, and a scan without an update pipeline just generates a report nobody reads.
-- Secrets scanning across current code *and* full Git history, because deleting a committed key does not remove it from the history.
-- Rootless containers as a real security control, connecting back to Podman in Module 6.
-- Zero trust as a mental model, and NetworkPolicy (Module 12) as its unglamorous first step, rather than as something you buy.
-- Least privilege in CI/CD as a running theme, connecting back to the OIDC pattern in Module 14.
+Integrate security controls throughout the pipeline. Supports CLO 13. Professional and ethical responsibility under ABET Student Outcome Four is developed through secure handling of credentials and data.
 
-**Labs**
+**Topics and subtopics.**
 
-- **19A.** Store a secret in Vault and pull it into a pipeline step, rather than writing it into a workflow file. Then do the same thing against OpenBao and note how little changed.
+- Shifting security earlier, with the cost argument for early detection.
+- The prevailing catalogue of application security risks at a working level.
+- Secrets management and the licensing awareness that parallels Module 9.
+- Static analysis and software composition analysis.
+- Image scanning, base image currency, pinned references, and non root execution.
+- Dependency update automation as the necessary complement to scanning, since a scan without a remediation path produces an unread report.
+- Secrets scanning across current code and full history.
+- Rootless execution as a real control, connecting to Module 6.
+- Zero trust as a mental model with network policy as its first step.
+- Least privilege in the pipeline as a running theme.
 
-- **19B.** Add Bandit and a dependency check as pipeline stages that fail the build on high severity findings. Then find a false positive and handle it properly with a documented suppression rather than by turning the check off.
+**Practical laboratories.**
 
-- **19C.** Run Trivy against the application image, find a real critical CVE, fix it (usually by updating the base image), and add Trivy as a pipeline gate that fails on critical.
+- Lab 19A. Retrieve a secret from a managed store into a pipeline step rather than a workflow file, and repeat against the community fork to observe how little it changes.
+- Lab 19B. Add static and composition analysis as failing gates, then handle a false positive through a documented suppression rather than by disabling the check.
+- Lab 19C. Remediate a real critical finding in the image and add scanning as a gate.
+- Lab 19D. Detect a planted credential across full history, add secret scanning as both a commit hook and a pipeline step, compare pattern based against entropy and verification based detection, and articulate when each is appropriate.
+- Lab 19E. Enable dependency update automation, review and merge a generated update, then configure automatic merging for low risk updates only and justify where the line was drawn.
 
-- **19D.** Run gitleaks against the full Git history and catch a planted credential. Add gitleaks as a pre commit hook *and* as a pipeline step, so a secret that slips past the hook still gets caught. Then run trufflehog against the same repo with a second planted secret, and compare pattern matching against entropy based and verified detection. Say when you would reach for each.
+**Assignments.** 
 
-- **19E.** Enable Renovate or Dependabot. Let it open a PR. Review that PR the way you would review any other, merge it, and watch the vulnerability count drop. Then configure it so that patch updates automerge on green CI and majors do not, and justify where you drew that line.
+A pipeline with integrated security gates and a documented remediation.
 
 ---
 ## Module 20: Supply Chain Security and Policy as Code
 
-**Theory**
+**Objectives.** 
 
-- Real supply chain attacks and why they worked: SolarWinds, the XZ Utils backdoor. And a clear distinction that matters: Log4Shell was a *dependency vulnerability*, a software composition problem, not a supply chain compromise. Different problem, different fix, and people conflate them constantly.
-- SBOMs and the two dominant formats, SPDX and CycloneDX.
-- Image signing with cosign and keyless signing through Sigstore.
-- Admission controllers: how Kubernetes intercepts and validates API requests before they persist, and the difference between a validating webhook that blocks a bad request and a mutating webhook that quietly corrects one.
-- Kyverno, policy written as plain Kubernetes resources. OPA Gatekeeper is noted for teams already invested in Rego. And a reminder from Module 12: check what Pod Security Admission already does for free before you install either.
-- SLSA, the framework these practices ladder up to, and its concrete levels.
+Establish supply chain integrity and enforce policy as code. Supports CLO 13.
 
-**Labs**
+**Topics and subtopics.**
 
-- **20A.** Generate an SBOM for the application image with syft, attach it as a build artifact, then actually use it: find every image in your cluster that contains a given library.
+- Real supply chain compromises and why they succeeded, with a clear distinction between a supply chain compromise and a dependency vulnerability, which are frequently conflated.
+- Software bills of materials and the two dominant formats.
+- Image signing and keyless signing.
+- Admission control, and the difference between a validating and a mutating webhook.
+- Policy expressed as native cluster resources, with the reminder to verify what native workload security already provides before installing a policy engine.
+- The maturity framework these practices ladder toward and its concrete levels.
 
-- **20B.** Sign the image with cosign after push. Add a verification step to the pipeline that refuses to deploy anything unsigned. Confirm it by trying to deploy a different, unsigned image and watching it get rejected.
+**Practical laboratories.**
 
-- **20C.** Install Kyverno. Write a policy that blocks privileged pods. Write a second that requires a verified signature before a pod runs in the production namespace, leaving development unrestricted. Then explain which of these two Pod Security Admissions could have done for you without Kyverno at all.
+- Lab 20A. Generate a bill of materials, attach it as an artifact, then use it to locate every image in the cluster containing a given library.
+- Lab 20B. Sign the image and add a verification gate that refuses unsigned images, confirmed by a rejected unsigned deployment.
+- Lab 20C. Enforce policies that block privileged workloads and require verified signatures in production, then identify which of these native workload security features could have been enforced without a policy engine.
+
+**Assignments.** 
+
+A signed, verified supply chain with an enforced admission policy.
 
 ---
 ## Module 21: Service Mesh and Advanced Traffic Management
 
-**Theory**
+**Objectives.** 
 
-- What a mesh adds on top of Kubernetes networking, and what it does not.
-- **The architecture question, stated currently.** The sidecar proxy model (one proxy injected next to every pod) is what most existing meshes run and what most documentation describes. It is no longer the only model. Istio's ambient mode removes the per pod sidecar in favour of a shared node level component, and eBPF based approaches such as Cilium's take a different route again. The trade off is resource overhead and upgrade pain against isolation and per pod configurability. You should be able to describe all three and say which problem each is solving.
-- Mutual TLS between services, and why encrypting east west traffic matters even inside a cluster you think you trust.
-- Traffic shifting as a mechanism that is genuinely different from changing replica counts: a mesh controls where traffic goes regardless of which pods exist, while a rollout controls which pods exist in the first place.
-- **Linkerd, and two things you need to know before you recommend it at work.** First, since February 2024, the Linkerd open source project no longer publishes stable release artifacts. The source and the weekly edge releases stay open and free, but stable, backported releases come through Buoyant's enterprise distribution, which is free for organisations under fifty employees and paid above that. This is a real budget conversation, and you should not be surprised by it in a meeting. Second, Linkerd's SMI TrafficSplit resource is deprecated and slated for removal; traffic shifting is now done with Gateway API HTTPRoute and GRPCRoute, which is the same Gateway API you learned in Module 11. We teach the current way. Istio is described because it is what you will see in job postings, and because a course that teaches only the smaller tool is not preparing you for the market.
+Evaluate service mesh architectures and advanced traffic control. Supports CLO 14.
 
-**Labs**
+**Topics and subtopics.**
 
-- **21A.** Install Linkerd, inject it into the application namespace, and confirm traffic is actually encrypted with `linkerd viz`. Then read the mesh's own golden metrics and compare them to what your application was reporting on its own.
+- What a mesh adds atop cluster networking and what it does not.
+- The current architecture landscape: the per pod proxy model, the shared node level model, and kernel based approaches, and the trade off between resource overhead and isolation.
+- Mutual transport layer security for east west traffic.
+- Traffic shifting as a mechanism distinct from changing replica counts.
+- Distribution and support realities that affect tool selection at an organizational level, including release and licensing considerations, and the current mechanism for traffic shifting through the gateway routing model rather than deprecated resources.
 
-- **21B.** Shift ten percent of traffic to a second version using a weighted HTTPRoute (not TrafficSplit, which is deprecated). Then explain in your own words how this differs from what Argo Rollouts did in lab 15A, and when you would want both.
+**Practical laboratories.**
+
+- Lab 21A. Inject a mesh into the application namespace, confirm traffic encryption, and compare the mesh golden metrics against the application's own reporting.
+- Lab 21B. Shift a fraction of traffic to a second version using a weighted route, then articulate how this differs from the earlier progressive delivery rollout and when both would be used together.
+
+**Assignments.** 
+
+A mesh enabled namespace with a documented weighted traffic shift.
 
 ---
-## Module 22: Multi Cloud, Serverless, and FinOps
+## Module 22: Multi Cloud, Serverless, and Cost Engineering
 
-**Theory**
+**Objectives.** 
 
-- The five primitives every major cloud shares under different names: identity and access, virtual networking with public and private segmentation, object storage, managed compute, managed relational databases.
+Evaluate portability, serverless fit, and cost engineering, and communicate findings across audiences. Supports CLO 14. Communication under ABET Student Outcome three is directly assessed.
 
-| Concept, already learned on AWS | GCP | Azure |
-|---|---|---|
-| IAM role and policy | IAM role and binding | Managed identity, RBAC role assignment |
-| VPC and subnet | VPC network and subnet | Virtual network and subnet |
-| S3 | Cloud Storage | Blob Storage |
-| EC2 | Compute Engine | Virtual Machines |
-| Security group | Firewall rule | Network security group |
-| EKS | GKE | AKS |
+**Topics and subtopics.**
 
-- Where "the same thing with a different name" breaks down, and it does break down. IAM trust models genuinely differ: AWS has explicit role assumption with trust relationships, GCP has a more implicit project level model. That is a real difference, and flattening it will bite you.
-- Where serverless fits next to containers rather than replacing them. Cold starts, execution limits, and the operational things you give up, along with the ones you gain.
-- **FinOps at the level a delivery engineer needs.** Tagging and cost allocation. Rightsizing (which you already did in lab 12E). Spot and reserved capacity. The single biggest lever, which is almost always "turn off the thing nobody is using". This is not a FinOps specialisation, and it does not pretend to be.
+- The five primitives every major cloud shares under different names: identity and access, virtual networking, object storage, managed compute, and managed databases.
+- Where the equivalence breaks down, particularly in identity trust models, which genuinely differ.
+- Where serverless fits alongside containers, including cold starts and operational trade offs.
+- Cost engineering at the level a delivery engineer requires: tagging and allocation, right sizing, capacity commitment, and the elimination of unused resources.
 
-**Labs**
+**Practical laboratories.**
 
-- **22A.** Deploy one small function to Lambda. Compare the operational experience to the same logic in a container: deploy time, cold start, observability, debugging, cost at ten requests per day and at ten million.
+- Lab 22A. Deploy one function and compare its operational profile against the same logic in a container across deploy time, cold start, observability, and cost at low and high request volumes.
+- Lab 22B. Identify, on paper, exactly what would change to port an existing infrastructure module to another provider, specifying which changes are trivial and which are not. This design analysis supports ABET Student Outcome Two.
+- Lab 22C. Convert the technical right sizing of Lab 12E into a one page memorandum for a non technical executive audience, including current spend, proposed spend, the risk of error, and a validation plan. This exercise directly assesses communication with a range of audiences under ABET Student Outcome three.
 
-- **22B.** Take your Terraform module from Module 9 and identify, on paper and without writing code, exactly what would have to change to port it to GCP or Azure: provider block, resource names, IAM model. Be specific about which change is trivial and which one is not.
+**Assignments.** 
 
-- **22C.** Take the technical rightsizing you did in lab 12E and turn it into a one page memo aimed at a non technical reader, a director of engineering or a CFO. Same data, same number, but the language and the structure are for someone who will not read a Prometheus dashboard. Include the current monthly spend, the proposed monthly spend, the risk of getting it wrong, and one paragraph on how you would validate the change before rolling it out. Translating a technical finding into an audience appropriate document is a distinct skill from producing the finding, and it is the one that decides whether the finding gets acted on.
+A portability analysis and an executive cost memorandum.
 
 ---
 ## Module 23: Platform Engineering
 
-**Theory**
+**Objectives.** 
 
-- Why platform engineering exists, and the cognitive load problem it solves. The framing here comes from Team Topologies, and the core claim is simple: a product team cannot hold Kubernetes, Terraform, the CI system, the observability stack, the policy engine, and their own domain in their heads at once, and asking them to is how you get shadow IT and a half configured cluster.
-- Golden paths and internal developer platforms as a catalogue, not a single tool. A golden path is a paved road, not a fence: the easy way, not the only way.
-- Backstage as the leading open source reference implementation.
-- Platform as a product: your users are engineers, and if they route around you, you built the wrong thing.
-- Why the capstone in this program is, in miniature, exactly what a real platform team hands a new developer on day one.
+Evaluate platform engineering, golden paths, and internal developer platforms. Supports CLO 14.
 
-**Labs**
+**Topics and subtopics.**
 
-- **23A.** Explore a public Backstage demo. Map which pieces you have already built (CI templates, Kubernetes manifests, Kyverno policies, Terraform modules) onto what would become software templates in a real catalogue.
+- The cognitive load argument for platform engineering and how its absence produces shadow systems.
+- Golden paths and internal developer platforms as a catalogue rather than a single tool, where a golden path is a paved road and not a fence.
+- A reference open source implementation.
+- Platform as a product whose users are engineers.
+- The relationship between the program capstone and what a real platform team provides on day one.
 
-- **23B.** Write the day one developer experience for your own project, twice: once with a golden path and once without. Count the steps, count the decisions, count the ways to get it wrong. That difference is the entire value proposition of the discipline, in your own numbers.
+**Practical laboratories.**
 
----
-## Module 24: AI in Modern DevOps and Platform Work
+- Lab 23A. Explore a reference platform and map previously built artifacts onto catalogue templates.
+- Lab 23B. Document the day one developer experience for the student's own project with and without a golden path, quantifying the difference in steps, decisions, and failure modes. This quantitative comparison supports ABET Student Outcome Six.
 
-This module gives a proper home to a thread that has been running through the whole program, because AI tools now sit inside nearly every part of a real delivery workflow, and because you have been using them since Week 1 under a disclosure rule you may not have fully understood the reason for until now.
+**Assignments.** 
 
-**Theory**
-
-- **The review discipline.** AI assistants write a growing share of code and infrastructure. Generated Terraform can be confident, plausible, well formatted, and wrong in a way that costs money or opens a hole. The habit that has to sit next to the convenience is reading the plan every time and knowing enough to spot what is missing rather than only what is present. This is the skill the market is actually short of.
-- **What the data says.** The 2025 DORA research found AI adoption improves throughput and worsens delivery stability: change failure rate and rework rate go the wrong way, at the team level, even as individuals feel faster. AI amplifies the system it lands in. A team with strong tests, real observability, and a working rollback gets faster. A team without them gets faster at breaking things. Everything in the previous 23 modules is the precondition for this module to pay off.
-- **AIOps in practice.** Anomaly detection on metrics. Clustering unusual log patterns to catch what a fixed threshold would miss. Predicting scale needs from traffic patterns rather than reacting afterwards. And where each of these quietly fails.
-- **Chat driven operations.** A language model that can query real observability data and summarise an incident in plain language. Where that genuinely helps an on call engineer at 3 am, and where it will confidently summarise an incident that is not the one you are having.
-- **MLOps from the platform side.** Many delivery teams are now asked to support machine learning workloads. Model versioning. Model serving as just another kind of deployment. GPU scheduling in Kubernetes as an expected skill rather than a niche one.
-- **Prompt injection and AI agent security.** Once an assistant has real access to production tools, the tools are the attack surface, and the untrusted input is anything the model reads. The same least privilege thinking you already apply to cloud credentials applies here, and it applies harder, because an agent will act on an instruction it found in a log line if you let it.
-
-**Labs**
-
-- **24A.** Use an AI assistant to draft a Terraform module and a Kubernetes manifest. Then review both the way a senior engineer would, listing every change you would demand and why, *before* applying anything. Then apply it and see what you missed.
-
-- **24B.** Add an automated AI review step to a pull request pipeline. Compare its findings against Bandit and Trivy on the same change. Be specific about what it caught that they did not, and what it hallucinated. Then answer the design question: should this step be allowed to block a merge? Defend your answer.
-
-- **24C.** Build a small script that pulls recent Prometheus data and asks a language model to summarise what changed. Check the summary against what you know actually happened, from lab 16C. Report the failure modes, not just the successes.
-
-- **24D.** Deploy a small model serving workload and request a GPU resource in the pod spec, even without GPU hardware, to understand the request and limit syntax and what the scheduler does when it cannot satisfy it.
-
-- **24E.** Write a threat model for an internal AI assistant with access to your Kubernetes cluster and your team chat. List what it must never be allowed to do unsupervised, and what a prompt injection delivered through a log line or a Jira ticket could achieve if you got the permissions wrong. A pass on this lab requires at least three distinct attack scenarios, each spelling out the specific tool call the assistant would make, the data exfiltration or state change that would result, and the specific least privilege policy (RBAC, tool allowlist, output sanitization) that would prevent it.
+A golden path definition with a quantified value analysis.
 
 ---
+## Module 24: AI Assisted Delivery and Platform Operations
+
+**Objectives.** 
+
+Apply AI assisted engineering responsibly, evaluate its effect on stability, and threat model its risks. Supports CLO 15. Ethical and professional responsibility under ABET Student Outcome four and the acquisition of new knowledge under ABET Student Outcome seven are central.
+
+**Topics and subtopics.**
+
+- Review discipline as the counterpart to generation, since generated infrastructure can be confident, plausible, and wrong.
+- The empirical finding that AI adoption raises throughput and lowers stability, and that it amplifies the maturity of the system it enters, which makes the preceding twenty three modules the precondition for benefit.
+- Operational analytics: anomaly detection, log clustering, and predictive scaling, together with their failure modes.
+- Conversational operations grounded in real observability data, and where they mislead.
+- Machine learning operations from the platform perspective: model versioning, model serving as deployment, and accelerator scheduling.
+- Prompt injection and agent security, and the application of least privilege to autonomous tooling that will act on instructions it reads.
+
+**Practical laboratories.**
+
+- Lab 24A. Draft infrastructure and a manifest with an assistant, review both as a senior engineer would before applying, then apply and evaluate what the review missed.
+- Lab 24B. Add an automated review step to a pull request pipeline, compare its findings against deterministic analysis, evaluate what it caught and what it fabricated, and defend a position on whether it should block a merge.
+- Lab 24C. Summarize recent metric data with a language model, check the summary against known ground truth from the incident simulation, and report the failure modes.
+- Lab 24D. Request an accelerator resource in a pod specification and observe scheduler behavior when the resource cannot be satisfied.
+- Lab 24E. Author a threat model for an internal assistant with cluster and chat access, specifying at least three distinct attack scenarios, each with the specific tool call, the resulting exfiltration or state change, and the specific least privilege control that would prevent it. This exercise develops ethical reasoning and risk analysis under ABET Student Outcome four.
+
+**Assignments.** 
+
+An evaluated AI review integration and a threat model with at least three defended scenarios.
+
+---
+### DVP 301 Weekly Schedule
+
+| Week | Modules | Focus |
+|---|---|---|
+| 1 | 16 | Reliability practices. Capstone kickoff and proposal due |
+| 2 | 16 and 17 | Incident response, then chaos engineering |
+| 3 | 18 | Disaster recovery and continuity |
+| 4 | 19 | Security foundations, secrets, static and composition analysis |
+| 5 | 19 | Image and secret scanning, dependency automation. Capstone checkpoint 1 |
+| 6 | 20 | Supply chain security and policy as code |
+| 7 | 21 | Service mesh and advanced traffic management |
+| 8 | 22 | Multi cloud, serverless, and cost engineering |
+| 9 | 23 | Platform engineering. Capstone checkpoint 2 |
+| 10 | 24 | AI assisted delivery and platform operations |
+| 11 to 13 | 25 | Capstone build with weekly review |
+| 14 | 25 | Capstone presentations and live defenses |
+
 ---
 ## Module 25: Capstone Project
 
-One student, one complete pipeline. A Git push on your machine triggers a fully automated pipeline that tests, scans, and deploys to a Kubernetes cluster with no manual steps, short lived OIDC credentials instead of static keys, cluster policy enforcing what can run, observability watching the result, and no long lived credentials anywhere.
+**Objectives.** 
 
-The capstone starts in **Week 1 of Course 3**, not Week 11. You propose it, you get it approved, you build it incrementally as each module lands, and you present it in Week 14. There are two review checkpoints where it gets looked at and where you find out early that something is wrong, rather than three days before the demo.
+Integrate the complete toolchain into an automated, observable, secure delivery platform, and defend every design decision under examination. Supports CLO 16 and consolidates all preceding outcomes.
 
----
-### Core, and all of it is required
+**Engineering design framing.** The capstone is the program's principal engineering design experience and satisfies the ABET requirement for a culminating design activity. Students execute a complete design process: eliciting requirements, proposing an architecture, evaluating alternatives, building incrementally, validating against measured criteria, and defending decisions. The design is bounded by multiple realistic constraints and considerations, which students must document and reconcile:
 
-1. **Application.** Health endpoint, metrics endpoint, at least one feature covered by automated tests at two levels (unit and integration), config read entirely from environment variables, and a migration tool with at least one migration.
+- Economic. Cloud spend is bounded by budget guardrails, and right sizing is quantified.
+- Health, safety, and welfare. Reliability objectives, reversible schema evolution, and security controls protect the users and operators of the delivered system.
+- Environmental and sustainability. Right sizing and autoscaling reduce wasted compute and its associated energy and carbon footprint.
+- Social and professional. Accessibility of the developer experience and blameless operational culture are explicit design goals.
+- Ethical and global. Credential handling, data protection, license awareness, and cross provider portability are addressed as professional obligations.
 
-2. **Version control.** GitHub. Feature branches through pull requests. Main protected. Conventional commits enforced with pre commit, and an automated release that produces a version and a changelog. GitLeaks as a pre commit hook.
+**Structure.** 
 
-3. **Containerisation.** Multi stage, non root Dockerfile. Image pushed to a registry. No credentials anywhere in the image.
+The capstone begins in Week 1 of DVP 301, is proposed and approved, is built incrementally as each module lands, and is presented in Week 14. Two review checkpoints provide early correction.
 
-4. **CI/CD pipeline**, in this order: checkout, secrets scan, unit tests that halt on failure, integration tests, SAST and dependency scan, image build and push, Trivy scan gating on critical, deploy. All cloud authentication through OIDC federation. **No static AWS keys, anywhere, ever.** Dependency updates automated with Renovate or Dependabot.
+**Core requirements, all mandatory.**
 
-5. **Getting secrets into the cluster** without putting them in Git. One of Sealed Secrets, External Secrets Operator, the Vault, or OpenBao injector. You must be able to explain why you chose yours.
+1. Application with health and metrics endpoints, at least one feature covered by unit and integration tests, environment sourced configuration, and a migration tool with at least one migration.
+2. Version control with protected main branch, reviewed pull requests, enforced commit conventions, automated release, and secret scanning as a commit hook.
+3. Multi stage, non root container image published to a registry with no embedded credentials.
+4. A continuous integration and delivery pipeline ordered as checkout, secret scan, halting unit tests, integration tests, static and composition analysis, image build and publish, gating vulnerability scan, and deploy, with all cloud authentication through short lived federated credentials and no static keys anywhere, and automated dependency updates.
+5. Cluster secrets sourced without committing them to version control, using one established method, with a defended justification of the choice.
+6. Infrastructure as code that provisions the whole environment reproducibly with remote locked state and a configuration scan in the pipeline.
+7. Configuration management that converges the deployment target after provisioning using dynamic inventory and idempotent definitions.
+8. A hardened Kubernetes deployment with least privilege access control, restricted workload security, a default deny network policy with only required paths opened, and requests, limits, and autoscaling.
+9. Observability with dashboards for core service signals, at least one alert rule that has actually fired, and distributed tracing through open instrumentation.
+10. A safe schema change demonstrated through expand and contract with a proven reversible rollback.
+11. A platform catalogue entry describing the whole system as a golden path a new developer could follow on day one.
 
-6. **Infrastructure as code.** Terraform or OpenTofu provisions the whole environment, reproducible from `apply`, remote state in S3, DynamoDB locking, and a Trivy or Checkov configuration scan in the pipeline.
+**Electives, choose exactly two, completed thoroughly.**
 
-7. **Configuration management.** Ansible configures the deployment target after provisioning, using dynamic inventory, with idempotent playbooks in the repo.
+- A. Progressive delivery with automated metric driven rollback, or a justified feature flag equivalent.
+- B. Supply chain integrity with a bill of materials, signing, verification, and enforced admission policy.
+- C. Service mesh with confirmed mutual transport layer security and one weighted traffic shift.
+- D. Disaster recovery with a measured restore against a preset recovery target, written as a one page postmortem.
+- E. An evaluated AI review step with a written assessment of its findings, fabrications, and merge blocking suitability.
 
-8. **Kubernetes, hardened.** The application runs on EKS (or on the documented free path). RBAC is scoped to the least privilege for the pipeline service account. Pod Security Admission at `restricted`. A default deny NetworkPolicy with only the required paths opened. Requests, limits, and an HPA.
+**Deliverables.** 
 
-9. **Observability.** Prometheus and Grafana with a dashboard showing CPU, memory, request rate, error rate, and p95 latency. One working Alertmanager rule that has actually fired. Jaeger traces the application through OpenTelemetry.
+The repository, a live application at a stable address, a dashboard, evidence for both electives, a written record of AI assistant contributions and errors, a fifteen minute presentation that includes at least one real problem and its resolution, and a ten minute live defense.
 
-10. **A safe schema change.** Demonstrate one migration shipped using expand and contract, and demonstrate that you can roll the deployment back afterwards with the application still working. This is a core requirement and not an elective because it is the one everybody gets wrong.
+**Equitable access.** 
 
-11. **Platform catalogue entry.** A README describing the whole thing as a golden path a new developer could follow on day one.
-
----
-### Electives: choose two
-
-You pick two of the following and do them properly. You do not do all five badly. This is a deliberate change from the previous version of this syllabus, where the capstone asked one student for a quarter of work from a platform team, and got, predictably, a lot of things half done.
-
-- **A. Progressive delivery.** Argo Rollouts canary with an AnalysisTemplate querying Prometheus. A deliberately broken deploy must trigger automatic rollback before promotion. Or the feature flag equivalent, with a documented argument for why flags were the better tool here.
-
-- **B. Supply chain.** SBOM with syft, cosign signing after push, signature verified in the pipeline before deploy, and a Kyverno policy enforcing the same thing at the cluster level so that an unsigned image is rejected at admission.
-
-- **C. Service mesh.** Linkerd installed, namespace injected, mTLS confirmed with `linkerd viz`, and one weighted HTTPRoute traffic shift demonstrated.
-
-- **D. Disaster recovery.** Velero with an S3 backend. One backup, one successful restore, actual RTO measured against a target you set in advance, written up as a one page blameless postmortem.
-
-- **E. AI in the pipeline.** An automated AI review step, with a written evaluation of what it caught that the deterministic tools did not, what it hallucinated, and whether you would let it block a merge.
-
----
-### Deliverables
-
-The repository. A live application at a stable address. A Grafana dashboard screenshot. Evidence for both electives. A short written record of what your AI assistant got right and wrong during the build. A fifteen minute presentation that must include at least one real problem you hit and how you got out of it. And a ten minute live defense where the instructor picks lines from your work and asks you to explain them.
+Every core and elective requirement is completable through the equitable access path described in Appendix B. Requirements whose native form depends on a managed cloud, specifically the billing guardrail and the managed control plane experience, are assessed through equivalent emulated exercises that measure the same underlying competency. Students electing this path notify the instructional team in Week 1 of DVP 201 so that laboratories are adapted in advance.
 
 ---
-### Capstone rubric, out of 100
+## 6. Assessment Scheme
 
-| | Marks |
+### 6.1 Course Weightings
+
+| Component | DVP 101 | DVP 201 | DVP 301 |
+|---|:---:|:---:|:---:|
+| Graded laboratories, best subset of many | 60% | 50% | 30% |
+| Two timed practical checkpoints | 30% | 30% | 20% |
+| Live defenses | 10% | 10% | 10% |
+| Integrative milestone project | not applicable | 10% | not applicable |
+| Capstone project | not applicable | not applicable | 40% |
+| Total | 100% | 100% | 100% |
+
+The passing mark for each course is 60 percent, subject to a floor: no course is passed with less than 50 percent on the timed practical checkpoints, because the profession imposes time pressure that coursework cannot simulate.
+
+### 6.2 Laboratory Rubric
+
+Each graded laboratory is scored out of 10.
+
+| Band | Marks | Criterion |
+|---|:---:|---|
+| Works | 0 to 4 | The result performs the required function, with attached evidence. |
+| Explained | 0 to 3 | The write up states what was done and why, including at least one approach that failed. |
+| Cleaned up | 0 to 1 | Cloud resources decommissioned, no committed secrets, sensible ignore rules. |
+| Defended | 0 to 2 | Follow up questions answered. |
+
+A laboratory that works but cannot be explained is capped at 5 out of 10, which encodes the program's central pedagogy: the ability to explain a system is valued as highly as the ability to produce it.
+
+### 6.3 Practical Checkpoints
+
+Two per course, three hours each, conducted on an unfamiliar machine presenting a broken system. Students are told the intended behavior, shown the actual behavior, and required to diagnose, repair, and document their findings. Each checkpoint is scored against a published rubric weighting correct diagnosis, correct remediation, and quality of the written diagnostic narrative in equal thirds. Laboratory 7F is the training equivalent of this format.
+
+### 6.4 Live Defenses
+
+Every graded artifact is defended in a ten minute examination, individually or before the cohort, in which the instructional team selects specific lines of the student's work and requires explanation. An artifact that cannot be defended does not pass regardless of whether it functions. This models professional code review and directly develops communication under ABET Student Outcome three.
+
+### 6.5 Late Work
+
+Laboratories are accepted up to one week late at 80 percent of the awarded mark, after which they score zero unless prior arrangement was made before the deadline. Practical checkpoints and capstone milestones follow a separate accommodation policy published in the course handbook, under which documented circumstances are arranged in advance with the instructional team.
+
+### 6.6 Direct Assessment and Continuous ABET Evaluation
+
+The following instruments provide direct measurement of Course Learning Outcomes and the mapped ABET Student Outcomes. Each is evaluated against a defined performance indicator with a target that at least 70 percent of students achieve a score of 70 percent or higher. Results are reviewed each cohort to drive continuous improvement.
+
+| Assessment instrument | Course Learning Outcomes measured | ABET Student Outcomes measured |
+|---|---|---|
+| Module 1 measurement and improvement laboratories | CLO 1 | 1, 4, 7 |
+| Module 2 performance triage report | CLO 2 | 1, 6 |
+| Module 3 subnet design and diagnosis | CLO 3 | 1, 6 |
+| Module 4 governance and communication laboratories | CLO 4 | 3, 5 |
+| Module 5 layered test suite and measurement | CLO 5 | 1, 6 |
+| Module 6 hardened image comparison | CLO 6 | 1, 2 |
+| Module 7 integration pipeline and fault repair | CLO 7 | 2, 6 |
+| Modules 8 to 10 infrastructure and configuration builds | CLO 8 | 1, 2, 6 |
+| Modules 11 and 12 cluster deployment and hardening | CLO 9 | 1, 2 |
+| Module 13 observability build | CLO 10 | 6 |
+| Modules 14 and 15 delivery and safe migration | CLO 11 | 2, 6 |
+| Modules 16 to 18 reliability, chaos, and recovery | CLO 12 | 4, 5, 6 |
+| Modules 19 and 20 security and supply chain | CLO 13 | 2, 4 |
+| Modules 21 to 23 mesh, cost memorandum, and platform | CLO 14 | 2, 3, 4 |
+| Module 24 AI review evaluation and threat model | CLO 15 | 4, 7 |
+| Module 25 capstone and live defense | CLO 16 | 1, 2, 3, 6 |
+
+The practical checkpoints, the live defenses, and the capstone provide triangulated direct evidence across every ABET Student Outcome, and the equal weighting of the live defense within the capstone rubric ensures that explanation and judgment are measured alongside function.
+
+### 6.7 Capstone Rubric
+
+| Component | Marks |
+|---|:---:|
+| Core components one to eleven, working and evidenced | 45 |
+| The two electives, completed thoroughly | 15 |
+| Live defense, explanation of the delivered system | 20 |
+| Presentation, including an honest account of a real problem | 10 |
+| Write up quality, including the AI contribution record | 10 |
+| Total | 100 |
+
+The live defense carries twice the weight of the presentation by design, because a system the student can fully explain demonstrates the competency the program certifies.
+
+---
+## 7. Program Policies
+
+**Use of AI assistants.** Students are expected to use AI assistants throughout the program. Because assessment centers on the live defense, fluency with assistants raises rather than lowers the standard: every artifact must be defended line by line. Two rules apply. First, every submission discloses which assistant was used, for what, and what it produced incorrectly. Second, no credential, private key, or client data is ever provided to an assistant, a rule with a strict consequence grounded in the reasoning of Module 24.
+
+**Academic integrity.** Integrity is enforced through the defense model. Any work a student cannot explain does not pass, which makes undisclosed copying self defeating.
+
+**Cost and equitable access.** The cloud components of the program incur charges that the standard free allowances do not fully cover. A disciplined student who decommissions costly resources after each session can expect total spend in the range of roughly 40 to 90 United States dollars across the program, while a student who leaves managed resources running will exceed this substantially. Three controls are mandatory: the billing guardrail laboratory precedes all other cloud work, every cloud laboratory ends with an assessed teardown step, and a fully documented equitable access path exists. The equitable access path, detailed in Appendix B, allows completion of every graded requirement using local clusters and cloud service emulation. Requirements whose native form depends on managed cloud infrastructure are assessed through equivalent exercises that measure the same competency. Students who cannot incur cloud spend take this path without penalty and notify the instructional team in Week 1 of DVP 201.
+
+**Hardware.** A workstation with at least 8 gigabytes of memory, 60 gigabytes of free disk, and four cores with virtualization enabled is the minimum, with 16 gigabytes and 100 gigabytes recommended. Laboratories that assume concurrent virtual machine and cluster operation provide a single node variant for the minimum configuration. Students below the minimum are provided a supported shared cloud workstation.
+
+**Accessibility and conduct.** Accommodation needs are arranged from Week 1. The program enforces a code of professional conduct that prohibits harassment and belittlement, consistent with the blameless culture taught in Module 16, because a team that hides mistakes is the failure mode the reliability curriculum exists to prevent.
+
+---
+## 8. References
+
+### 8.1 Required and Recommended Texts
+
+- Forsgren, Humble, and Kim. *Accelerate: The Science of Lean Software and DevOps.* The research foundation of the DORA metrics. Required reading before citing a DORA metric.
+- Beyer, Jones, Petoff, and Murphy, editors. *Site Reliability Engineering*, and *The Site Reliability Workbook.* Chapters on service level objectives, error budgets, and postmortem culture support Module 16.
+- Skelton and Pais. *Team Topologies.* The source of the cognitive load argument in Module 23.
+- Burns, Beda, Hightower, and Evenson. *Kubernetes Up and Running.* Reference for Modules 11 and 12.
+- Brikman. *Terraform Up and Running.* Reference for Module 9.
+
+### 8.2 Official Documentation
+
+- The DORA research program and current metrics guidance, including the Accelerate State of DevOps reports of 2024 and 2025.
+- Kubernetes documentation, including workloads, services, access control, and the gateway routing model.
+- Prometheus and the query language, and the vendor neutral observability project documentation.
+- Infrastructure as code documentation for the primary tool and its community fork.
+- Configuration management documentation.
+- Managed cloud provider documentation for the primary provider, with conceptual reference to alternate providers.
+- Continuous delivery, progressive delivery, policy engine, and service mesh project documentation.
+
+### 8.3 Industry and Engineering Standards
+
+- OWASP Top Ten application security risks.
+- Open Container Initiative image, runtime, and distribution specifications.
+- NIST Special Publication 800 190, Application Container Security Guide.
+- NIST Special Publication 800 218, Secure Software Development Framework.
+- Supply Chain Levels for Software Artifacts framework.
+- Software bill of materials formats, namely SPDX and CycloneDX.
+- The Kubernetes Gateway API specification.
+- Semantic Versioning specification.
+- CIS Benchmarks for Kubernetes and Linux.
+- ISO/IEC 27001 information security management principles at an awareness level.
+
+---
+## 9. Skills and Competencies
+
+On completion, graduates demonstrate the following professional competencies:
+
+- Systems administration and diagnostic reasoning on Linux hosts.
+- Network analysis, subnet design, and segmentation policy.
+- Collaborative version control, structured code review, and release automation.
+- Application delivery readiness and layered automated testing.
+- Container construction, hardening, and open standard portability.
+- Continuous integration and delivery design with federated short lived authentication.
+- Declarative infrastructure provisioning and idempotent configuration convergence.
+- Kubernetes deployment, security hardening, and autoscaling.
+- Observability instrumentation and metric, log, and trace correlation.
+- GitOps operation, progressive delivery, and reversible schema evolution.
+- Reliability engineering, incident command, chaos experimentation, and disaster recovery.
+- Security integration across the lifecycle, supply chain integrity, and policy as code.
+- Cost engineering, cross provider portability analysis, and platform engineering.
+- Responsible and security aware use of AI assisted tooling.
+- Technical communication tuned to engineering and executive audiences.
+- Engineering judgment under examination, evidenced through live defense of delivered systems.
+
+---
+# Appendix A: Enterprise and Legacy Stack Elective (DVP 150)
+
+This elective exists because a substantial fraction of employment, particularly in finance, telecommunications, government, and established enterprises, runs on a stack the core program does not teach. The material is current in those settings, though it is not what a new project begins with today. It is scheduled with dedicated hours rather than folded into the core as untimed optional content.
+
+- Part 1, enterprise Java delivery, approximately 8 hours. Application container fundamentals and the enterprise build lifecycle, culminating in building and deploying a packaged web application.
+- Part 2, alternate automation server, approximately 8 hours. Controller and agent architecture, pipeline as code, webhook triggering, and ephemeral build agents, culminating in a pipeline that invokes the same build wrapper targets defined in Lab 7C, which demonstrates the value of the build wrapper directly.
+- Part 3, the classic web stack, approximately 4 hours. Reconstructing the reference application idea on the classic scripting and relational stack and deploying it with the Module 10 role.
+- Part 4, enterprise container and log platforms, approximately 5 hours. An enterprise Kubernetes distribution with tighter security defaults and its native routing, and an enterprise log platform through ingestion, pipeline processing, and visualization. Given the breadth, this part is treated as guided exposure rather than mastery, and its laboratory targets a single end to end path through each platform.
+
+Students on the alternate automation server track may submit an equivalent pipeline definition in place of the core continuous integration workflow for the capstone, since both invoke identical build wrapper targets.
+
+---
+# Appendix B: Equitable Access Path
+
+| Native component | Equivalent |
 |---|---|
-| Core components 1 to 11, working and evidenced | 45 |
-| The two electives, done properly | 15 |
-| Live defense: can you explain your own system | 20 |
-| Presentation, including the honest problem story | 10 |
-| Write up quality, including the AI record | 10 |
+| Managed Kubernetes | A single node local cluster on the student workstation |
+| Managed cloud object storage, database, identity, and secret services | A local cloud service emulator exposing compatible interfaces |
+| Managed translation gateway and a real virtual network | The Module 3 and Module 8 network designs on paper, with a virtual internal network to evidence routing |
+| A managed load balancer | The ingress controller in the local cluster |
+| Remote cloud infrastructure state | Local emulated object and lock storage, with identical definitions and a different endpoint |
 
-The live defense is worth twice the presentation, on purpose. A polished demo of a system you cannot explain is worth less than a rough system you understand completely, and every hiring manager you will ever meet agrees with that, even if they never say it out loud.
-
----
----
-# DVP 150: Enterprise and Legacy Stack (elective)
-
-**Self paced, roughly 25 hours, 2 credits, graded pass or fail on four submitted labs. Available from Week 8 of DVP 101 onward.**
-
-This exists because a real fraction of jobs, especially in banks, telcos, government, and older enterprises, run on a stack the core course does not teach. Nothing here is dead. It is just not what a greenfield project starts with in 2026, and stuffing it into the core as "optional" content with no hours attached was doing nobody any favours.
-
-**Part 1: Java enterprise (8 hours).** Tomcat: JVM requirements, connector architecture, the Manager app. Maven: the project object model, the build lifecycle, and dependency resolution. Lab: create a Maven servlet project, add a dependency, build with `mvn clean package`, verify the WAR, deploy it to Tomcat.
-
-**Part 2: Jenkins (8 hours).** Controller, agents, executors, workspaces. Declarative versus scripted pipelines. The Jenkinsfile as code in the repo rather than clicks in a UI. Webhook triggering. Ephemeral Docker agents for clean build environments. Lab: install Jenkins, connect a build agent over SSH, create developer and admin roles and prove the boundary holds, and write a Jenkinsfile that invokes the **same make targets** from lab 7C, triggered by a GitHub webhook, running in an ephemeral Docker agent. The point of the make wrapper becomes obvious here: the commands are identical, only the orchestrator changed.
-
-**Part 3: The LAMP path (4 hours).** Build the same idea as the Module 5 application in PHP with MySQL. Then deploy it with the Ansible role from Module 10. Useful if you are heading into a shop that still runs one.
-
-**Part 4: OpenShift and Elastic (5 hours).** OpenShift: how it extends Kubernetes with tighter security defaults, a built in registry, and Routes instead of plain Ingress. Deploy through the web console and the `oc` CLI on the free Red Hat Developer sandbox, and compare the Route to the Ingress from lab 11D. Elastic: install Elasticsearch and Kibana, verify cluster health, ship a log file with Filebeat, write a Logstash pipeline with a grok filter, build a Kibana index pattern filtering on HTTP status. Worth doing if you are heading somewhere that already runs Elastic at scale, which many large enterprises still do.
-
-Students on the Jenkins track may submit a Jenkinsfile in place of the GitHub Actions workflow for the capstone, invoking the same make targets, so the commands are identical.
+The equitable access path cannot reproduce the experience of a managed control plane or the shape of a real cloud bill. Where a graded requirement depends on either, specifically the billing guardrail laboratory and the managed control plane laboratory, an equivalent emulated exercise measures the same underlying competency, so that no student is disadvantaged in assessment. Students able to spend in the range of roughly 40 to 90 United States dollars across the program are encouraged to use managed infrastructure for the added realism, and students who cannot take the equitable access path without penalty.
 
 ---
-## Certification alignment
+# Appendix C: Certification Alignment
 
-None of these are required. The coursework maps closely enough that a motivated graduate can sit them with real confidence rather than starting from zero. Names and exam codes were checked against each certifying body's own site, and you should check them again yourself, because they change.
+None of the following certifications is required. The coursework aligns closely enough that a prepared graduate can pursue them with confidence. Certification names and codes change, and students should verify current details with each certifying body.
 
 | After | Reasonable targets |
 |---|---|
-| **DVP 101** | Linux Foundation Certified System Administrator (LFCS) or CompTIA Linux+ (XK0-006) as the Linux specific route. GitHub Foundations as an optional lighter target that maps directly onto Module 4. |
-| **DVP 201** | Kubernetes and Cloud Native Associate (KCNA) as an early Kubernetes checkpoint. HashiCorp Certified: Terraform Associate. Certified Kubernetes Administrator (CKA). Certified Kubernetes Application Developer (CKAD). AWS Certified Solutions Architect Associate. Along the way: Certified GitOps Associate (CGOA), Certified Argo Project Associate (CAPA), Prometheus Certified Associate (PCA), OpenTelemetry Certified Associate (OTCA). |
-| **DVP 301** | AWS Certified DevOps Engineer Professional as a stretch. Certified Kubernetes Security Specialist (CKS) as an advanced stretch. Kubernetes and Cloud Native Security Associate (KCSA). Kyverno Certified Associate (KCA). Certified Backstage Associate (CBA). Cloud Native Platform Engineer (CNPE) as a longer term target. |
+| DVP 101 | A Linux system administration certification and an introductory version control certification aligned to Module 4. |
+| DVP 201 | An introductory cloud native certification, an infrastructure as code associate certification, a Kubernetes administrator or application developer certification, an associate cloud architecture certification, and associate certifications in GitOps, progressive delivery projects, metrics, and observability. |
+| DVP 301 | A professional cloud delivery engineering certification, a Kubernetes security specialist certification, associate certifications in cloud native security and policy engines, a developer platform associate certification, and a platform engineering certification as a longer term target. |
 
-Two notes. KCNA, KCSA, CKA, CKAD, and CKS together make up what the Linux Foundation calls the Kubestronaut track, which is a decent long term goal if you want one badge that spans the ecosystem. And on the Terraform Associate: you are certifying on a product that is now BUSL licensed and owned by IBM, which does not make the certification less useful, but you should hold both facts in your head at once.
-
----
-## Reading
-
-Not optional, not long, and each one is here because it does something this syllabus cannot do in a paragraph.
-
-- **Accelerate**, Forsgren, Humble, Kim. The research behind DORA. Read it before you quote a DORA metric at anyone.
-
-- **The DORA Accelerate State of DevOps reports (2024 and 2025)** and the current metrics guide at dora.dev. Free, current, and the empirical basis for Module 24. The AI findings live in the 2024 and 2025 reports as major sections rather than a single standalone document, so cite the report and the year.
-
-- **Site Reliability Engineering** and **The Site Reliability Workbook**, Google. Free online. Chapters 3, 4, and 15 are the ones that matter most for Module 16.
-
-- **Team Topologies**, Skelton and Pais. The source of the cognitive load argument in Module 23.
-
-- **Kubernetes Up and Running**, and **Terraform Up and Running**, Brikman. Reference, not cover to cover.
+Students pursuing an infrastructure as code certification should note that the primary tool is now under a source available license and corporate ownership, facts that do not diminish the certification's value but should be held alongside it.
 
 ---
-## What this curriculum leaves out on purpose
+# Appendix D: Explicitly Excluded Scope
 
-No curriculum covers everything, and pretending otherwise makes it worse, not better.
-
-It does not go deep on **MLOps**. Module 24 gives you the platform side, which is what a delivery engineer is actually asked for. Training and evaluating models is a different discipline.
-
-It does not go deep on **Windows Server administration**, **mobile CI/CD**, or **game engine build pipelines**. Different specialisations, and pretending otherwise would just make this document longer.
-
-It touches **FinOps** at the level a delivery engineer needs and no further. A dedicated cost engineer needs far more.
-
-It does not build toward an **offensive security** certification path. That is a genuinely different career direction from this one, and the DevSecOps here is defensive by design.
-
-It does not teach **Istio hands on**. You get the concepts, the architectural comparison, and the vocabulary, but the hands on mesh is Linkerd because it can be learned in a week rather than a term. If you land somewhere running Istio, you will not be lost, but you will have reading to do, and this is an honest trade rather than a hidden one.
-
----
-## Appendix A: Tool reference
-
-| Area | Tools | Notes |
-|---|---|---|
-| Virtualization | VirtualBox, VMware Workstation Pro | Both free for this use |
-| Linux | Fedora, RHEL, or Ubuntu | RHEL family preferred |
-| Web servers | Apache, Nginx | Tomcat lives in the elective |
-| Version control | Git, GitHub | pre commit, commitlint, semantic-release |
-| Issue tracking | GitHub Issues and Projects | Jira described, not required |
-| CI/CD | GitHub Actions | Matrix builds, reusable workflows, OIDC federation |
-| Build wrapper | Make | Identical commands across every orchestrator |
-| Testing | pytest, testcontainers | Unit, integration, and one deliberate flake |
-| Migrations | Alembic or equivalent | Expand and contract, taught properly |
-| Containers | Docker, Podman | Compose, rootless, multi stage |
-| Config management | Ansible | Dynamic inventory, Vault, Jinja2 |
-| IaC | Terraform, OpenTofu | Remote state, modules, Infracost, Trivy or Checkov |
-| Cloud | AWS: EC2, S3, IAM, VPC, EKS, Lambda, DynamoDB, Secrets Manager | GCP and Azure conceptually |
-| Cloud auth | OIDC federation | Never a static key |
-| Orchestration | Kubernetes, kind or k3d, EKS, Helm, Kustomize | Ingress and Gateway API |
-| Cluster security | RBAC, Pod Security Admission, NetworkPolicy | Before you install a policy engine |
-| Autoscaling | HPA, Cluster Autoscaler, Karpenter | With real right sizing data |
-| GitOps | ArgoCD | Plus External Secrets Operator, because secrets do not go in Git |
-| Progressive delivery | Argo Rollouts, OpenFeature | Canary, blue green, and flags |
-| Service mesh | Linkerd | Gateway API HTTPRoute, not deprecated TrafficSplit. Istio for awareness |
-| Policy as code | Kyverno | OPA Gatekeeper noted |
-| Supply chain | syft, cosign, Sigstore | SBOM, signing, verification |
-| Observability | Prometheus, Alertmanager, Grafana, Node Exporter | The base for SLOs and for canary analysis |
-| Tracing | OpenTelemetry, Jaeger | Vendor neutral, instrument once |
-| Secrets | Vault, OpenBao | Know the license story |
-| Security scanning | Trivy, Bandit, OWASP Dependency Check, gitleaks, trufflehog | Plus Renovate, because a scan without a fix is a report |
-| Resilience | Chaos Mesh or Litmus | One experiment, with a written hypothesis |
-| DR | Velero | Namespace and PVC backup, measured RTO |
-| Platform | Backstage | Conceptual |
-| AI | An AI coding assistant, an AI PR reviewer, an LLM for chatops | Used with an explicit review discipline throughout |
-
----
-## Appendix B: The free path
-
-| Instead of | Use |
-|---|---|
-| EKS | k3d or kind, single node, on your laptop |
-| AWS S3, DynamoDB, IAM, Secrets Manager | LocalStack |
-| A NAT gateway and a real VPC | The Module 3 and 8 network designs on paper, plus a VirtualBox internal network to prove the routing |
-| A real load balancer | The ingress controller in your local cluster |
-| Cloud based Terraform state | LocalStack S3 and DynamoDB, same code, different endpoint |
-
-The one thing the free path cannot give you is the experience of a managed control plane and the shape of a real cloud bill, and those matter. If you can afford 40 to 90 USD across nine months, spend it. If you cannot, take the free path and do not think twice about it.
-
----
-## Appendix C: Course policies
-
-**Office hours.** Two hours per week, scheduled, plus a shared channel where questions get answered within one working day. Ask in the channel rather than by direct message, because the answer usually helps four other people.
-
-**Code of conduct.** Be decent. No harassment, no discrimination, no belittling anyone for not knowing something yet. Everyone in this room did not know what a subnet mask was at some point. The person asking the "obvious" question is doing the room a favour, and treating them badly for it is the fastest way to build a team that hides its mistakes, which is the exact opposite of everything Module 16 is about.
-
-**Accessibility.** Tell the instructor what you need in Week 1, and it gets arranged. Recordings, extended time on checkpoints, and alternative lab formats are all normal.
-
-**Academic integrity.** Covered by the AI policy above. Short version: use whatever tools you like, and be able to defend every line. Copying another student's work and being unable to explain it fails on the defense anyway, which is rather the point of grading this way.
-
----
-## Career and employability
-
-- Treat the capstone as a portfolio centrepiece, not an assignment to forget. Keep the repository public and keep improving it after the course ends. It will be the best thing on your CV for at least two years.
-
-- Turn three labs into short write ups: the DORA analysis (1A), the rightsizing proposal with a real number on it (12E), and the migration rollback that lied to you (15D). That third one, told well, will do more for you in an interview than any certificate, because almost nobody at your level can explain it.
-
-- Practise narrating an incident out loud, using the postmortem from 16C. "Tell me about a time production broke" is the single most common interview question in this field, and a real, well documented story beats a rehearsed answer every time.
-
-- Contribute something small to a real open source tool used in this course. Even a documentation fix. It is a concrete, checkable signal that costs you an evening.
-
-- Join a cloud native community, locally or online. Meetups are still one of the fastest routes to hearing about a job before it gets posted.
+The program deliberately excludes topics that constitute distinct disciplines to preserve depth over breadth. It does not teach model training and evaluation, addressing only the platform side of machine learning operations. It does not cover Windows server administration, mobile delivery pipelines, or game build pipelines. It treats cost engineering only at the level a delivery engineer requires. It does not pursue an offensive security path, and its security content is defensive by design. It teaches service mesh concepts and one hands on mesh rather than the full breadth of every mesh implementation, an honest trade acknowledged so that graduates entering an environment running an unfamiliar mesh know precisely what additional study they require.
 
 ---
