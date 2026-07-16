@@ -1,0 +1,187 @@
+# Lab 1D: DevOps Lifecycle Diagnosis and Redesign
+
+---
+> *Lab 1C introduces configuration drift hands on. Lab 1D synthesizes everything from Module 1 into one applied design exercise.*
+---
+### Objective
+
+Take a broken delivery process and redesign it completely using everything from Part B and the previous three labs. This lab synthesizes the core topics from Module 1 into one applied engineering exercise.
+
+This is the kind of analysis you do during your first month at a new company, in a system design interview, or when making the case to leadership for why the team needs to invest in platform work.
+
+---
+### What You Need
+- Paper, a whiteboard, draw.io (app.diagrams.net), or any diagramming tool
+- You completed Lab 1A report and Lab 1B calculations for reference
+- No terminal or cloud account required
+- Approximately 75 minutes
+
+### Prerequisites
+- Completed Labs 1A, 1B, and 1C
+- Read all of Part B (Sections 1 through 8)
+
+---
+### The Scenario
+
+You are the first dedicated DevOps engineer joining a nine-person team at a startup building a SaaS invoicing tool (Python Flask API, React frontend, PostgreSQL database, deployed on a single AWS EC2 instance).
+
+Here is the current state of everything:
+
+**Development:**
+- All code lives on GitHub
+- Developers push directly to the `main` branch (no branches, no pull requests)
+- There are unit tests for the API, but they are run manually by developers on their laptops before pushing
+- The frontend has no tests
+
+**Deployment:**
+- One engineer (Ramesh) does all deployments by SSH-ing into the production EC2 instance and running:
+  ```bash
+  cd /opt/invoicing-app && git pull && pip install -r requirements.txt && sudo systemctl restart app
+  ```
+- Ramesh is the only person who knows this process
+- Deployments happen once a week on Friday afternoons
+- Ramesh is going on paternity leave in six weeks
+
+**Infrastructure:**
+- One EC2 t3.medium instance running everything (web server, app, and PostgreSQL)
+- The instance was created manually in the AWS console two years ago
+- There is no staging environment
+- No Terraform or IaC of any kind
+- Instance backups: none
+
+**Monitoring:**
+- No monitoring tools
+- The team finds out about outages when customers email support
+- Average time from outage start to team awareness: 2 to 4 hours
+- Last month, there were three outages totalling approximately 5 hours of downtime
+
+**Incidents:**
+- No incident management process
+- When something breaks, whoever is available tries to fix it
+- No postmortems or runbooks
+
+---
+### Part 1: Baseline DORA Assessment
+
+Before you can improve anything, you need to understand where you are starting from. Using the scenario details, estimate the team's current DORA metrics.
+
+| Metric | Estimated Current Value | DORA Level | Evidence from the Scenario |
+|---|---|---|---|
+| Deployment Frequency | | | |
+| Lead Time for Changes | | | |
+| Change Failure Rate | | | |
+| Failed Deployment Recovery Time (FDRT) | | | |
+
+For each metric, write one sentence explaining the evidence from the scenario that supports your estimate. You do not need exact numbers. Reason through what is most likely given what you know.
+
+---
+### Part 2: Identify the Risks
+
+Before designing the target state, list the four most critical operational risks in the current setup. For each risk, describe:
+- What the risk is
+- What is the likely consequence if it materializes
+- How soon it could materialize (imminently, within months, eventually)
+
+One risk is immediately obvious from the scenario. Find the other three.
+
+| Risk | Consequence | Urgency |
+|---|---|---|
+| | | |
+| | | |
+| | | |
+| | | |
+
+---
+### Part 3: Design the Target State
+
+Design the complete DevOps lifecycle for this team over a 6-month transformation. For each stage, specify what the current state is, what the target state is, what tool enables it, and what the success condition looks like.
+
+**Plan:**
+
+| | Current | Target |
+|---|---|---|
+| What happens | Informal Slack discussions | |
+| Tool | None | |
+| Responsible | Whoever is loudest | |
+| Success condition | N/A | |
+
+Complete this table for all eight stages: Plan, Code, Build, Test, Release, Deploy, Operate, Monitor.
+
+For Deploy and Monitor in particular, be specific. Name the exact deployment strategy, the exact monitoring tools, and what dashboards you would build.
+
+---
+### Part 4: Prioritize the First 90 Days
+
+You have been asked to present a 90-day plan to the CTO. The team can implement roughly two significant engineering changes per two week sprint, giving you about six sprints and twelve major changes to work with.
+
+From the following list, select and sequence your top eight priorities for the first 90 days. Justify each choice with one to two sentences.
+
+Available improvements:
+- Branch protection rules and pull request workflow on GitHub
+- GitHub Actions CI pipeline (lint, unit tests, run on every PR)
+- Add a staging environment (separate EC2 instance)
+- Automated deployment pipeline (replace manual SSH with GitHub Actions)
+- Terraform for existing infrastructure (import and codify the EC2 instance and security groups)
+- Separate PostgreSQL to a dedicated RDS instance (remove DB from the app EC2)
+- Daily automated database backups to S3
+- Prometheus and Node Exporter on the EC2 instance
+- Grafana dashboard with CPU, memory, and application error rate panels
+- PagerDuty or similar alerting so the team knows about outages before customers do
+- Runbook documentation for the three most common failure scenarios
+- On-call rotation established with at least three engineers
+- SLO definition and Grafana SLO dashboard
+- End-to-end tests with Playwright for the critical invoicing workflow
+
+Present your 90 day plan as a sprint-by-sprint table:
+
+| Sprint | Changes | Justification |
+|---|---|---|
+| 1 (weeks 1-2) | | |
+| 2 (weeks 3-4) | | |
+| 3 (weeks 5-6) | | |
+| 4 (weeks 7-8) | | |
+| 5 (weeks 9-10) | | |
+| 6 (weeks 11-12) | | |
+
+**Constraint:** Ramesh leaves in six weeks (end of sprint 3). Whatever process or knowledge is locked in his head must be documented or automated before then.
+
+---
+### Part 5: Define the First SLO
+
+The team has never defined any reliability targets. You need to define their first SLO before you can build alerting, because alerting without an SLO is just noise.
+
+The most critical user journey: a customer logs in, creates an invoice, and sends it to their client. If this fails, the product has failed.
+
+Define:
+
+1. One SLI that measures the success rate of this journey end-to-end. Be specific about numerator, denominator, and time window.
+
+2. An SLO target for this SLI. Justify your choice given the team's current measured performance (use the scenario: three outages last month totalling 5 hours of downtime).
+
+   Hint: Calculate what availability the team is currently achieving before setting a target. Set the initial SLO at or slightly above current performance, not at the theoretical ceiling.
+
+3. The error budget in minutes per 30 days.
+
+4. The external SLA you would propose to enterprise customers. What buffer are you building in?
+
+5. The first Grafana alert you would configure once the SLO is defined. Be specific about the condition, threshold, window, and routing.
+
+---
+### Part 6: The Ramesh Problem
+
+Write a 150 to 200 word response to this specific question:
+
+Ramesh is going on paternity leave in six weeks. He is the only person who can deploy the application and the only person who knows how the production server is configured. What specifically do you do in the next six weeks, and in what order?
+
+Your answer must name specific tools or documents and address both the knowledge transfer problem (runbooks, documentation) and the process problem (automating the deployment so it no longer depends on any one person).
+
+---
+### What Strong Answers Look Like
+
+**Weak:** "Add monitoring to the system."
+
+**Strong:** "Deploy Prometheus with Node Exporter to the EC2 instance in Sprint 3. Instrument the Flask API with `prometheus_flask_exporter` to expose a `/metrics` endpoint. Configure a Grafana alert that fires when the 5-minute rate of HTTP 500 responses exceeds 2% of total requests, routing to a PagerDuty integration. This alert fires within 2 minutes of an outage starting, replacing the current 2 to 4 hour customer-email-based detection."
+
+Every improvement you recommend should  be concrete enough that a colleague could implement it the next morning without asking you any clarifying questions.
+
+---
