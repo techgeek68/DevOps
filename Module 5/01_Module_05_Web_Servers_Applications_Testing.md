@@ -202,7 +202,14 @@ sudo firewall-cmd --reload
 sudo firewall-cmd --list-all
 ```
 
-Verify: open `http://127.0.0.1` in a browser or run `curl -I http://127.0.0.1`. You should see the Apache test page.
+Verify: 
+
+- Open `http://127.0.0.1` in a browser or run `curl -I http://127.0.0.1`. 
+
+- To verify from the Host Computer, you must use the Server's IP address.
+
+You should see the Apache test page.
+![Apache Server Test Page](<Screenshot 2026-07-16 at 1.04.41 PM.png>)
 
 Key configuration files:
 
@@ -230,7 +237,7 @@ sudo apachectl configtest
 
 ```bash
 # Create website directories
-sudo mkdir -p /var/www/html/{page1,page2}
+sudo mkdir -p /var/www/html/{About,Notes}
 
 # Set ownership (Apache runs as the 'apache' user on RHEL/CentOS)
 sudo chown -R apache:apache /var/www/html
@@ -240,51 +247,392 @@ sudo chmod -R 755 /var/www/html
 ls -ld /var/www/html/
 ```
 
-Create the homepage `/var/www/html/index.html`:
+Create the homepage
+```bash
+sudo vim /var/www/html/index.html
+```
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DevOps Lab - Static Site</title>
-    <style>
-        body { font-family: sans-serif; max-width: 900px; margin: 2rem auto; padding: 20px; color: #333; }
-        header { border-bottom: 2px solid #ddd; padding-bottom: 20px; margin-bottom: 30px; }
-        h1 { color: #2c3e50; }
-        nav a { color: #0066cc; text-decoration: none; padding: 8px 16px; margin-right: 8px; }
-        nav a:hover { background-color: #f0f0f0; border-radius: 4px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f1ec;
+    --panel: #ffffff;
+    --ink: #2a2622;
+    --muted: #746e66;
+    --rule: #e2ddd3;
+    --signal: #b5622f;
+    --signal-soft: #f4e6dc;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 56px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.55;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 580px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 34px 36px 38px;
+    box-shadow: 0 12px 30px -22px rgba(42, 38, 34, 0.45);
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0 0 10px;
+    font-size: 1.7rem;
+    font-weight: 600;
+  }
+
+  p.intro {
+    margin: 0 0 26px;
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+
+  nav {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 26px;
+    flex-wrap: wrap;
+  }
+
+  nav a {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 8px 15px;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+  }
+
+  nav a:hover,
+  nav a:focus-visible {
+    border-color: var(--signal);
+    background: var(--signal-soft);
+    outline: none;
+    transform: translateY(-1px);
+  }
+
+  nav a:active { transform: translateY(0); }
+
+  main p {
+    margin: 0;
+    padding: 14px 16px;
+    background: var(--signal-soft);
+    border-left: 3px solid var(--signal);
+    border-radius: 6px;
+    font-size: 0.95rem;
+  }
+
+  footer {
+    margin-top: 26px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  @media (max-width: 480px) {
+    .card { padding: 26px 22px 30px; }
+  }
+</style>
 </head>
 <body>
-    <header>
-        <h1>DevOps Lab</h1>
-        <p>Apache static website — served from /var/www/html</p>
-        <nav>
-            <a href="/page1">Page 1</a>
-            <a href="/page2">Page 2</a>
-        </nav>
-    </header>
+  <div class="card">
+    <div class="eyebrow">DevOps: Webserver Lab</div>
+    <h1>Hey, welcome in.</h1>
+    <p class="intro">This is a small Apache box I use for testing deployments and configs before they go anywhere that matters. This static site is served from <code>/var/www/html</code>.</p>
+    <nav>
+    <a href="About/about.html">About</a>
+    <a href="Notes/note.html">Notes</a>
+    </nav>
     <main>
-        <p>Apache HTTP Server is running correctly.</p>
+      <p>The Apache HTTP server is up and responding as expected.</p>
     </main>
+    <footer>apache · static · last checked manually</footer>
+  </div>
 </body>
 </html>
 ```
 
-Create `page1` and `page2` with similar content. Then:
+Create `About` and `Notes` with similar content:
+
+```bash
+sudo vi /var/www/html/About/about.html
+```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About: DevOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f1ec;
+    --panel: #ffffff;
+    --ink: #2a2622;
+    --muted: #746e66;
+    --rule: #e2ddd3;
+    --signal: #b5622f;
+    --signal-soft: #f4e6dc;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 56px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 580px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 34px 36px 38px;
+    box-shadow: 0 12px 30px -22px rgba(42, 38, 34, 0.45);
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0 0 16px;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 16px;
+    color: var(--ink);
+    font-size: 0.98rem;
+  }
+
+  p.muted { color: var(--muted); }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 0.85em;
+  }
+
+  a.back {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 8px 15px;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  a.back:hover,
+  a.back:focus-visible {
+    border-color: var(--signal);
+    background: var(--signal-soft);
+    outline: none;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow">about</div>
+    <h1>Why this box exists</h1>
+    <p>I keep this Apache instance around to try things out before they touch a real environment config changes, a new vhost, a deploy script that might have a typo in it. Low stakes, easy to rebuild.</p>
+    <p class="muted">It runs plain static files out of <code>/var/www/html</code>, no database, no build step. If it's up and this page loads, Apache is doing its job.</p>
+    <a class="back" href="../index.html">Back Home</a>
+  </div>
+</body>
+</html>
+```
+```bash
+sudo vi /var/www/html/Notes/note.html
+```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevOps: Webserver Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f1ec;
+    --panel: #ffffff;
+    --ink: #2a2622;
+    --muted: #746e66;
+    --rule: #e2ddd3;
+    --signal: #b5622f;
+    --signal-soft: #f4e6dc;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 56px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 580px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 34px 36px 38px;
+    box-shadow: 0 12px 30px -22px rgba(42, 38, 34, 0.45);
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0 0 18px;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+
+  ul {
+    list-style: none;
+    margin: 0 0 8px;
+    padding: 0;
+  }
+
+  li {
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule);
+    font-size: 0.95rem;
+  }
+
+  li:first-child { border-top: none; }
+
+  li time {
+    flex: 0 0 auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--muted);
+    padding-top: 2px;
+    white-space: nowrap;
+  }
+
+  a.back {
+    display: inline-block;
+    margin-top: 22px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 8px 15px;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  a.back:hover,
+  a.back:focus-visible {
+    border-color: var(--signal);
+    background: var(--signal-soft);
+    outline: none;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow">notes</div>
+    <h1>What I did to set this up</h1>
+    <ul>
+      <li><time>step 1</time><span>Installed Apache with <code>apt install apache2</code> and left the default config alone.</span></li>
+      <li><time>step 2</time><span>Dropped these static files into <code>/var/www/html</code>, replacing the default landing page.</span></li>
+      <li><time>step 3</time><span>Opened port 80 and confirmed the page loads from another machine on the network.</span></li>
+      <li><time>step 4</time><span>Noted here so future-me remembers why this box is configured the way it is.</span></li>
+    </ul>
+    <a class="back" href="../index.html">Back Home</a>
+  </div>
+</body>
+</html>
+```
 
 ```bash
 sudo apachectl configtest
 sudo systemctl restart httpd
 ```
 
-Test: `http://localhost/`, `http://localhost/page1`, `http://localhost/page2`.
+Test in the browser: 
+```bash
+http:IP_Address_of_Your_Server
+```
+![Expected Output Static Site](<Screenshot 2026-07-17 at 7.00.20 AM.png>)
 
 ---
-
-### Part 3: Name-Based Virtual Hosts
+### Part 3: Name Based Virtual Hosts
 
 A virtual host allows one Apache server to serve multiple websites on one IP, distinguished by the `Host:` HTTP header sent by the client.
 
