@@ -629,8 +629,11 @@ Test in the browser:
 ```bash
 http:IP_Address_of_Your_Server
 ```
-![Expected Output Static Site](<Screenshot 2026-07-17 at 7.00.20 AM.png>)
+![Homepage](<Screenshot 2026-07-17 at 7.00.20 AM.png>)
 
+![About](<Screenshot 2026-07-17 at 9.13.03 AM.png>)
+
+![Notes](<Screenshot 2026-07-17 at 9.13.15 AM.png>)
 ---
 ### Part 3: Name Based Virtual Hosts
 
@@ -640,21 +643,67 @@ A virtual host allows one Apache server to serve multiple websites on one IP, di
 sudo mkdir -p /var/www/myapp.local
 sudo chown -R apache:apache /var/www/myapp.local
 sudo chmod -R 755 /var/www/myapp.local
+```
+
+- Create a homepage:
+```bash
 sudo vim /var/www/myapp.local/index.html
 ```
 
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>myapp.local</title></head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>myapp.local</title>
+<style>
+  /* Plain page, one soft background, nothing competing for attention. */
+  body {
+    font-family: sans-serif;
+    max-width: 700px;
+    margin: 3rem auto;
+    padding: 32px 28px;
+    color: #333;
+    background: #fafaf8;
+    border: 1px solid #e6e4df;
+    border-radius: 10px;
+    line-height: 1.5;
+  }
+
+  h1 {
+    color: #2c3e50;
+    margin: 0 0 10px;
+    font-size: 1.5rem;
+  }
+
+  /* A short human line instead of a bare status message. */
+  p {
+    color: #5c5c5c;
+    margin: 0;
+  }
+
+  code {
+    background: #f0f0ec;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.95em;
+    color: #333;
+  }
+</style>
+</head>
 <body>
-    <h1>Virtual host: myapp.local</h1>
-    <p>Served from /var/www/myapp.local</p>
+  <h1>Virtual Host: myapp.local</h1>
+  <p>This one's served from <code>/var/www/myapp.local</code>.</p>
 </body>
 </html>
 ```
 
-Create the virtual host configuration `/etc/httpd/conf.d/myapp.local.conf`:
+- Create the virtual host configuration:
+```bash
+sudo vi /etc/httpd/conf.d/myapp.local.conf
+```
 
 ```apache
 <VirtualHost *:80>
@@ -674,51 +723,258 @@ Create the virtual host configuration `/etc/httpd/conf.d/myapp.local.conf`:
 </VirtualHost>
 ```
 
-`Options -Indexes` prevents Apache from listing directory contents when no index file exists. Always set this in production — exposing directory listings reveals your file structure to anyone on the internet.
+`Options -Indexes` prevents Apache from listing directory contents when no index file exists. Always set this in production exposing directory listings reveals your file structure to anyone on the internet.
 
 ```bash
 sudo apachectl configtest
 sudo httpd -S                    # Show all configured virtual hosts
 sudo systemctl restart httpd
-echo "127.0.0.1  myapp.local  www.myapp.local" | sudo tee -a /etc/hosts
 ```
 
-Test: `http://myapp.local/`. To host more sites, repeat the pattern: each site gets its own directory and its own `.conf` file in `/etc/httpd/conf.d/`.
+- If you want to access it from the VM's browser:
+```bash
+echo "<Your_Server_IP>  myapp.local  www.myapp.local" | sudo tee -a /etc/hosts
+```
+- If you want to access it from the host (Linux/macOS) browser:
+```bash
+sudo sh -c 'echo "<Your_Server_IP>  myapp.local  www.myapp.local" >> /etc/hosts'
+```
+- If you want to access it from the host (Windows) browser:
+  - Open Notepad as Administrator
+  - Notepad > File > Open > File name: `C:\Windows\System32\drivers\etc\hosts`
+> Change the file type filter from "Text Documents" to "All Files" so Notepad shows it, since it has no extension.
+  - Append
+  ```text
+  <Your_Server_IP>  myapp.local  www.myapp.local
+  ```
+
+Test: `http://myapp.local/`
+
+![VirtualHost](<Screenshot 2026-07-17 at 9.42.08 AM.png>)
+
+To host more sites, repeat the pattern: each site gets its own directory and its own `.conf` file in `/etc/httpd/conf.d/`.
 
 ---
 ### Part 4: HTTPS with a Self-Signed Certificate
 
-HTTPS encrypts traffic between client and server using TLS. This lab terminates TLS **at Apache** for a single-server setup; in the multi-tier pattern of Section 5.1 §5 you would instead terminate at Nginx. Certificate options:
+HTTPS encrypts traffic between client and server using TLS. This lab terminates TLS **at Apache** for a single server setup; in the multi tier pattern of Section 5.1 §5 you would instead terminate at Nginx. Certificate options:
 
-- **Let's Encrypt:** Free, automated, 90-day certificates via `certbot`. Requires a publicly routable domain. Standard for production.
+- **Let's Encrypt:** Free, automated, 90 day certificates via `certbot`. Requires a publicly routable domain. Standard for production.
 - **Commercial CA:** Paid certificates (DigiCert, Sectigo). Used when extended validation is required.
-- **Self-signed:** Generated locally, not trusted by browsers. Use only in lab or internal environments.
+- **Self signed:** Generated locally, not trusted by browsers. Use only in lab or internal environments.
 
-**Install mod_ssl and generate a self-signed certificate:**
-
+- Install mod_ssl
 ```bash
 sudo dnf install mod_ssl openssl -y
+```
+- Generate a self-signed certificate
+  - Syntax:
+```bash
+sudo openssl req -x509 -nodes -days <DAYS> -newkey rsa:<KEY_SIZE> \
+    -keyout <PATH_TO_KEY> \
+    -out <PATH_TO_CERT> \
+    -subj "/C=<COUNTRY_CODE>/ST=<STATE>/L=<CITY>/O=<ORGANIZATION>/CN=<COMMON_NAME>"
+```
+Flags: 
+  - `-x509` self-signed certificate
+  - `-nodes` no passphrase on the key
+  - `-days 365` one year validity
+  - `-newkey rsa:2048` new 2048-bit RSA key pair
+  - `-subj` subject fields without an interactive prompt.
 
-sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-    -keyout /etc/pki/tls/private/myapp.key \
-    -out /etc/pki/tls/certs/myapp.crt \
-    -subj "/C=NP/ST=Bagmati/L=Kathmandu/O=DevOps Lab/CN=myapp.local"
+- Delete a key
+```bash
+sudo rm /etc/pki/tls/private/<key_name>.key \
+        /etc/pki/tls/certs/<certificate_name>.crt
 ```
 
-Flags: `-x509` self-signed certificate; `-nodes` no passphrase on the key; `-days 365` one year validity; `-newkey rsa:2048` new 2048-bit RSA key pair; `-subj` subject fields without an interactive prompt.
+---
+**Complete Example: Cafe App**
 
-**Create the HTTPS virtual host** `/etc/httpd/conf.d/myapp.local-ssl.conf`:
+```bash
+sudo mkdir -p /var/www/brewhousecafe
+sudo chown -R apache:apache /var/www/brewhousecafe
+sudo chmod -R 755 /var/www/brewhousecafe
+```
+
+- Create a homepage:
+```bash
+sudo vim /var/www/brewhousecafe/index.html
+```
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cafe Brew House</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #efe6d8;
+    --card: #fbf8f2;
+    --ink: #3a2a1c;
+    --muted: #8a7863;
+    --rule: #ddd0b9;
+    --crema: #b9822f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    padding: 44px 16px;
+  }
+  main { width: 100%; max-width: 430px; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.9rem;
+    margin: 0 0 4px;
+  }
+  .sub { color: var(--muted); margin: 0 0 22px; font-size: 0.92rem; }
+  .item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 0;
+    border-top: 1px solid var(--rule);
+  }
+  .item:first-of-type { border-top: none; }
+  .name { font-weight: 600; font-size: 0.98rem; }
+  .roast {
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--crema);
+    margin-top: 2px;
+  }
+  .price { color: var(--muted); font-size: 0.85rem; margin-top: 3px; }
+  .qty { display: flex; align-items: center; gap: 8px; }
+  .qty button {
+    width: 28px; height: 28px;
+    border: 1px solid var(--rule);
+    background: var(--card);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .qty button:hover { border-color: var(--crema); color: var(--crema); }
+  .qty span { min-width: 16px; text-align: center; font-size: 0.9rem; }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 2px solid var(--ink);
+    font-weight: 600;
+  }
+  button.order {
+    width: 100%;
+    margin-top: 20px;
+    padding: 13px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 999px;
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  button.order:hover { background: var(--crema); }
+  .msg { text-align: center; margin-top: 12px; color: var(--muted); font-size: 0.85rem; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Cafe Brew House</h1>
+  <p class="sub">Pick your coffee and adjust the cups you want.</p>
+  <div id="menu"></div>
+  <div class="total"><span>Total</span><span id="total">$0.00</span></div>
+  <button class="order" onclick="placeOrder()">Place order</button>
+  <p class="msg" id="msg"></p>
+</main>
+
+<script>
+  const items = [
+    { name: "Espresso", roast: "Dark roast", price: 3.0 },
+    { name: "Cappuccino", roast: "Medium roast", price: 4.5 },
+    { name: "Latte", roast: "Medium roast", price: 4.75 },
+    { name: "Americano", roast: "Dark roast", price: 3.75 },
+    { name: "Cold Brew", roast: "Steeped overnight", price: 4.25 },
+  ];
+  const qty = items.map(() => 0);
+
+  function render() {
+    const menu = document.getElementById("menu");
+    menu.innerHTML = items.map((it, i) => `
+      <div class="item">
+        <div>
+          <div class="name">${it.name}</div>
+          <div class="roast">${it.roast}</div>
+          <div class="price">$${it.price.toFixed(2)}</div>
+        </div>
+        <div class="qty">
+          <button onclick="change(${i}, -1)">−</button>
+          <span>${qty[i]}</span>
+          <button onclick="change(${i}, 1)">+</button>
+        </div>
+      </div>
+    `).join("");
+    const total = items.reduce((sum, it, i) => sum + it.price * qty[i], 0);
+    document.getElementById("total").textContent = "$" + total.toFixed(2);
+  }
+
+  function change(i, delta) {
+    qty[i] = Math.max(0, qty[i] + delta);
+    document.getElementById("msg").textContent = "";
+    render();
+  }
+
+  function placeOrder() {
+    const total = items.reduce((sum, it, i) => sum + it.price * qty[i], 0);
+    const msg = document.getElementById("msg");
+    if (total === 0) {
+      msg.textContent = "Add a coffee to start your order.";
+      return;
+    }
+    msg.textContent = "Order placed. Total $" + total.toFixed(2) + ". See you soon.";
+  }
+
+  render();
+</script>
+</body>
+</html>
+```
+- Generate the self-signed certificate for the cafe app
+```bash
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/pki/tls/private/brewhousecafe.key \
+    -out /etc/pki/tls/certs/brewhousecafe.crt \
+    -subj "/C=NP/ST=Bagmati/L=Kathmandu/O=Brew House Cafe/CN=brewhousecafe.com.np"
+```
+
+- Create the HTTPS virtual host
+```bash
+sudo vi /etc/httpd/conf.d/brewhousecafe.local-ssl.conf
+```
 
 ```apache
 # HTTPS virtual host
 <VirtualHost *:443>
-    ServerName myapp.local
-    DocumentRoot /var/www/myapp.local
-    ServerAdmin admin@myapp.local
+    ServerName brewhousecafe.com.np
+    DocumentRoot /var/www/brewhousecafe
+    ServerAdmin admin@brewhousecafe.com.np
 
     SSLEngine on
-    SSLCertificateFile /etc/pki/tls/certs/myapp.crt
-    SSLCertificateKeyFile /etc/pki/tls/private/myapp.key
+    SSLCertificateFile /etc/pki/tls/certs/brewhousecafe.crt
+    SSLCertificateKeyFile /etc/pki/tls/private/brewhousecafe.key
 
     # Disable deprecated protocols; allow TLS 1.2 and 1.3 only
     SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
@@ -728,76 +984,90 @@ Flags: `-x509` self-signed certificate; `-nodes` no passphrase on the key; `-day
     Header always set X-Content-Type-Options "nosniff"
     Header always set X-Frame-Options "DENY"
 
-    <Directory "/var/www/myapp.local">
+    <Directory "/var/www/brewhousecafe">
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
     </Directory>
 
-    ErrorLog /var/log/httpd/myapp.local_ssl_error.log
-    CustomLog /var/log/httpd/myapp.local_ssl_access.log combined
+    ErrorLog /var/log/httpd/brewhousecafe.com.np_ssl_error.log
+    CustomLog /var/log/httpd/brewhousecafe.com.np_ssl_access.log combined
 </VirtualHost>
 
 # Redirect all HTTP to HTTPS
 <VirtualHost *:80>
-    ServerName myapp.local
-    Redirect permanent / https://myapp.local/
+    ServerName brewhousecafe.local
+    Redirect permanent / https://brewhousecafe.local/
 </VirtualHost>
 ```
 
+- Add `https` service in the firewall
+```bash
+sudo firewall-cmd --add-service=https --permanent
+sudo firewall-cmd --reload
+```
+- Check syntax and restart the service
 ```bash
 sudo apachectl configtest
 sudo systemctl restart httpd
 ```
 
-Test: `https://myapp.local/`. The browser warns because the cert is self-signed; proceed past it and confirm the padlock shows TLS is active.
+Test: `https://www.brewhouse.com.np`
 
-**Let's Encrypt for production (real domain required):**
+The browser warns because the cert is self-signed; proceed past it and confirm the padlock shows TLS is active.
 
-```bash
-sudo dnf install certbot python3-certbot-apache -y
-sudo certbot --apache -d example.com -d www.example.com
-sudo certbot renew --dry-run                              # Test auto-renewal
-```
+![Browser Warning](<Screenshot 2026-07-17 at 11.49.37 AM.png>)
+
+![Proceed](<Screenshot 2026-07-17 at 11.50.05 AM.png>)
+
+![Accessing Website](<Screenshot 2026-07-17 at 11.50.30 AM.png>)
 
 ---
+**Let's Encrypt for production (Production domain required):**
 
+- Syntax:
+```bash
+sudo dnf install certbot python3-certbot-<PLUGIN> -y
+sudo certbot --<PLUGIN> -d <DOMAIN> -d <SUBDOMAIN>
+sudo certbot renew --dry-run
+```
+* **`<PLUGIN>`** Configures the web server automatically (for example, `apache` or `nginx`).
+* **`-d <DOMAIN>`** Adds a domain to the certificate. Repeat `-d` for multiple domains.
+* **`certbot renew --dry-run`** Tests automatic certificate renewal without issuing a new certificate.
+
+- Example: Brew House Cafe (production domain)
+```bash
+sudo dnf install certbot python3-certbot-apache -y
+sudo certbot --apache -d brewhousecafe.com -d www.brewhousecafe.com
+sudo certbot renew --dry-run                              # Test auto-renewal
+```
+>Note this only works with brewhousecafe.com being a real, publicly routable domain with DNS pointed at this server's public IP.
+
+---
 ### Part 5: PHP Website with PHP-FPM
 
 Apache serves PHP through **PHP-FPM** (FastCGI Process Manager), the current standard. PHP runs as a separate process pool; Apache proxies PHP requests to it. This is more efficient and more secure than in-process modules, and supports multiple PHP versions per server.
 
 ```bash
 sudo dnf install php php-fpm php-mysqlnd php-json php-xml php-mbstring -y
+```
+```bash
 sudo systemctl enable --now php-fpm
 sudo systemctl status php-fpm
+```
+```bash
 php -v
 ```
-
-**Create virtual host configuration** `/etc/httpd/conf.d/phpsite.conf`:
-
-```apache
-<VirtualHost *:80>
-    ServerName phpsite.local
-    DocumentRoot /var/www/phpsite
-    ServerAdmin admin@phpsite.local
-
-    # Forward .php files to PHP-FPM via Unix socket
-    <FilesMatch \.php$>
-        SetHandler "proxy:unix:/run/php-fpm/www.sock|fcgi://localhost"
-    </FilesMatch>
-
-    <Directory "/var/www/phpsite">
-        Options -Indexes +FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    ErrorLog /var/log/httpd/phpsite_error.log
-    CustomLog /var/log/httpd/phpsite_access.log combined
-</VirtualHost>
+- Create a project Directory:
+```bash
+sudo mkdir -p /var/www/phpsite
+sudo chown -R apache:apache /var/www/phpsite
+sudo chmod -R 755 /var/www/phpsite
 ```
-
-**Create the PHP application** `/var/www/phpsite/index.php`:
+- Create the PHP application
+```bash
+sudo vi /var/www/phpsite/index.php
+```
 
 ```php
 <?php
@@ -809,10 +1079,49 @@ $name = htmlspecialchars($_POST['name'] ?? '');
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PHP Demo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 700px;
+            margin: 3rem auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        p {
+            margin: 0.4rem 0;
+        }
+        form {
+            margin-top: 1.2rem;
+        }
+        input[type="text"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        button {
+            padding: 8px 16px;
+            margin-left: 6px;
+            border: 1px solid #2c3e50;
+            background: #2c3e50;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #1f2d3a;
+        }
+    </style>
 </head>
 <body>
-    <h1>PHP-FPM Demo</h1>
+    <h1>PHP FPM Demo</h1>
     <p><strong>Server:</strong> <?= htmlspecialchars($_SERVER['SERVER_NAME']) ?></p>
     <p><strong>PHP Version:</strong> <?= PHP_VERSION ?></p>
     <p><strong>Session visits:</strong> <?= $_SESSION['visits'] ?></p>
@@ -829,40 +1138,67 @@ $name = htmlspecialchars($_POST['name'] ?? '');
 
 `htmlspecialchars()` converts special characters to HTML entities, preventing cross-site scripting (XSS). Always escape output derived from user input.
 
+- Create virtual host configuration
 ```bash
-sudo mkdir -p /var/www/phpsite
-sudo chown -R apache:apache /var/www/phpsite
-sudo chmod -R 755 /var/www/phpsite
-sudo find /var/www/phpsite -type f -exec chmod 644 {} \;
+sudo vi /etc/httpd/conf.d/phpsite.conf
+```
 
-echo "127.0.0.1  phpsite.local" | sudo tee -a /etc/hosts
+```apache
+<VirtualHost *:80>
+    ServerName mytestwebphp
+    DocumentRoot /var/www/phpsite
+    ServerAdmin admin@mytestwebphp.com.np
 
+    # Forward .php files to PHP-FPM via Unix socket
+    <FilesMatch \.php$>
+        SetHandler "proxy:unix:/run/php-fpm/www.sock|fcgi://localhost"
+    </FilesMatch>
+
+    <Directory "/var/www/mytestwebphp">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog /var/log/httpd/mytestwebphp_error.log
+    CustomLog /var/log/httpd/mytestwebphp_access.log combined
+</VirtualHost>
+```
+
+```bash
 sudo apachectl configtest
 sudo systemctl restart php-fpm
 sudo systemctl restart httpd
 ```
+```bash
+echo "<Your_Server_IP> mytestwebphp" | sudo tee -a /etc/hosts
+```
 
-Test: `http://phpsite.local/`
+Test: `http://mytestwebphp`
+
+![php site accessing through browser](<Screenshot 2026-07-17 at 12.40.27 PM.png>)
 
 ---
-
 ### Part 6: Python Website with mod_wsgi
 
-`mod_wsgi` bridges Apache and Python web applications. WSGI (Web Server Gateway Interface) is the standard Python interface between web servers and Python frameworks — Django, Flask, and most others implement it.
+`mod_wsgi` bridges Apache and Python web applications. WSGI (Web Server Gateway Interface) is the standard Python interface between web servers and Python frameworks: Django, Flask, and most others implement it.
 
 **Two deployment modes:**
 - **Embedded mode:** Python runs inside Apache processes. Simple but less isolated.
 - **Daemon mode (recommended):** Python runs in separate processes. Better isolation, graceful restarts without restarting Apache, and different Python environments per application.
 
 ```bash
-# RHEL/CentOS/Fedora
 sudo dnf install httpd python3 python3-mod_wsgi -y
-# Debian/Ubuntu:  sudo apt install apache2 libapache2-mod-wsgi-py3 -y
-
+```
+```bash
 sudo httpd -M | grep wsgi     # Verify the module loaded
 ```
 
-**Create the application** `/var/www/pysite/app.py`:
+- Create the application
+```bash
+sudo mkdir /var/www/pysite
+sudo vim /var/www/pysite/app.py
+```
 
 ```python
 #!/usr/bin/env python3
@@ -888,7 +1224,10 @@ def application(environ, start_response):
     return [html.encode('utf-8')]
 ```
 
-**Create the virtual host** `/etc/httpd/conf.d/pysite.conf`:
+**Create the virtual host** 
+```bash
+sudo vi /etc/httpd/conf.d/pysite.conf
+```
 
 ```apache
 <VirtualHost *:80>
@@ -916,21 +1255,30 @@ def application(environ, start_response):
 </VirtualHost>
 ```
 
-**Set permissions and SELinux context:**
-
+- Set permissions and SELinux context:
 ```bash
-sudo mkdir -p /var/www/pysite
 sudo chown -R apache:apache /var/www/pysite
 sudo chmod -R 755 /var/www/pysite
+```
+```bash
 sudo chcon -R -t httpd_sys_content_t /var/www/pysite
 sudo setsebool -P httpd_execmem 1          # Needed by mod_wsgi daemon mode
-
-echo "127.0.0.1  pysite.local" | sudo tee -a /etc/hosts
+```
+```bash
 sudo apachectl configtest
 sudo systemctl restart httpd
 ```
+- Resolve host locally:
+```bash
+echo "<Your_Server_IP>  pysite.local" | sudo tee -a /etc/hosts
+```
 
-Test: `http://pysite.local/`. A **403 Forbidden** is almost always a wrong SELinux context (`chcon`) or wrong ownership (`chown -R apache:apache`).
+- Test: 
+```text
+http://pysite.local/
+```
+
+>A 403 Forbidden is almost always a wrong SELinux context or wrong ownership.
 
 ---
 
