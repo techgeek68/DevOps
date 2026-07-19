@@ -1404,16 +1404,22 @@ Apache writes an access log and an error log; reading them is essential when tro
 
 ```bash
 sudo tail -f /var/log/httpd/access_log           # Follow access log in real time
+```
+```bash
 sudo tail -f /var/log/httpd/error_log            # Follow error log in real time
+```
+```bash
 sudo grep " 404 " /var/log/httpd/access_log      # Find 404 errors
+```
+```bash
 sudo grep " 500 " /var/log/httpd/access_log      # Find 500 server errors
-
+```
+```bash
 # HTTP status code distribution
 sudo awk '{print $9}' /var/log/httpd/access_log | sort | uniq -c | sort -rn | head -10
 ```
 
 **Combined Log Format**: One line, then its fields:
-
 ```
 192.168.1.10 - alice [25/Jun/2026:09:15:23 +0545] "GET /index.php HTTP/1.1" 200 4823 "-" "Mozilla/5.0"
 ```
@@ -1421,28 +1427,44 @@ sudo awk '{print $9}' /var/log/httpd/access_log | sort | uniq -c | sort -rn | he
 Fields: client IP, identity (usually `-`), auth user, timestamp, request line, status code, response bytes, referrer, user agent.
 
 ---
-## Lab 5.1.B: Nginx — Static Site, Reverse Proxy, and Load Balancer
+> Apache and Nginx can coexist on the same server, but they cannot listen on the same IP address and port simultaneously. Running both requires different ports, different IP addresses, or a reverse proxy configuration.
+```bash
+sudo systemctl disable httpd.service --now
+```
+---
+## Lab 5.1.B: Nginx - Static Site, Reverse Proxy, and Load Balancer
 
 ### Part 1: Install and Start Nginx
 
 ```bash
 sudo dnf install nginx -y
+```
+```bash
 sudo systemctl enable --now nginx
 sudo systemctl status nginx
+```
+```bash
 nginx -v
-
+```
+```bash
 sudo firewall-cmd --permanent --add-service=http
 sudo firewall-cmd --permanent --add-service=https
 sudo firewall-cmd --reload
 ```
 
-Test: `http://localhost` — you should see the Nginx welcome page.
+Test: `http://<Your_Server_IP>`
 
-Key commands:
+>You should see the Nginx welcome page.
+
+Major commands:
 
 ```bash
 sudo nginx -t                 # Test configuration syntax
+```
+```bash
 sudo nginx -T                 # Test and dump the full config
+```
+```bash
 sudo systemctl reload nginx   # Apply changes without dropping connections
 sudo systemctl restart nginx  # Full restart (drops active connections briefly)
 ```
@@ -1460,25 +1482,72 @@ sudo vim /var/www/nginx-static/index.html
 ```html
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><title>Nginx Static Site</title></head>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nginx Static Site</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{background:#0e0e12;color:#d8dae0;font-family:Inter,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+  .card{max-width:520px;width:100%;background:#18181f;border:1px solid #2a2a35;border-radius:12px;overflow:hidden}
+  .bar{display:flex;justify-content:space-between;padding:10px 20px;border-bottom:1px solid #2a2a35;font:12px "Space Mono",monospace;color:#6b6e7a}
+  .body{padding:32px 24px 24px}
+  .label{font:11px/1 "Space Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:#b08d57;margin-bottom:12px}
+  h1{font:600 26px/1.3 Inter,sans-serif;margin-bottom:16px}
+  .pill{display:inline-flex;align-items:center;gap:8px;background:rgba(72,199,118,.12);border:1px solid rgba(72,199,118,.3);color:#48c776;font:13px "Space Mono",monospace;padding:6px 12px;border-radius:99px;margin-bottom:24px}
+  .pill i{width:7px;height:7px;border-radius:50%;background:#48c776;animation:p 2s ease-out infinite}
+  @keyframes p{0%{box-shadow:0 0 0 0 rgba(72,199,118,.5)}70%{box-shadow:0 0 0 8px transparent}to{box-shadow:0 0 0 0 transparent}}
+  .info{background:#111116;border:1px solid #2a2a35;border-radius:8px;padding:14px 16px;margin-bottom:20px;font:13px "Space Mono",monospace}
+  .row{display:flex;justify-content:space-between;padding:4px 0;color:#6b6e7a}
+  .row span:last-child{color:#d8dae0}
+  .note{font-size:14px;line-height:1.6;color:#6b6e7a}
+  .note code{font-family:"Space Mono",monospace;background:#111116;border:1px solid #2a2a35;border-radius:4px;padding:1px 5px;color:#d8dae0;font-size:12px}
+  .foot{display:flex;justify-content:space-between;padding:12px 24px;font:11px "Space Mono",monospace;color:#6b6e7a}
+  @media(prefers-reduced-motion:reduce){.pill i{animation:none}}
+</style>
+</head>
 <body>
-    <h1>Nginx Static Site</h1>
-    <p>Served from /var/www/nginx-static. Nginx is running correctly.</p>
+  <div class="card">
+    <div class="bar"><span>nginx</span><span>worker active</span></div>
+    <div class="body">
+      <p class="label">Server response</p>
+      <h1>This box is answering requests. Nginx is running correctly.</h1>
+      <div class="pill"><i></i>Online and serving</div>
+      <div class="info">
+        <div class="row"><span>Root</span><span>/var/www/nginx static</span></div>
+        <div class="row"><span>Handler</span><span>nginx</span></div>
+        <div class="row"><span>Loaded</span><span id="t">...</span></div>
+      </div>
+      <p class="note">Drop an <code>index.html</code> into the document root and it will replace this page on the next request.</p>
+    </div>
+    <div class="foot"><span>200</span><span id="c">...</span></div>
+  </div>
+  <script>
+    const o={hour:'2-digit',minute:'2-digit',second:'2-digit'};
+    document.getElementById('t').textContent=new Date().toLocaleTimeString(undefined,o);
+    setInterval(()=>document.getElementById('c').textContent=new Date().toLocaleTimeString(undefined,o),1000);
+  </script>
 </body>
 </html>
 ```
 
 ```bash
 sudo chown -R nginx:nginx /var/www/nginx-static
+```
+
+```bash
 sudo chcon -R -t httpd_sys_content_t /var/www/nginx-static
 ```
 
-Create the server block `/etc/nginx/conf.d/static-site.conf`:
-
+- Create the server block `
+```bash
+sudo vi /etc/nginx/conf.d/static-site.conf
+```
 ```nginx
 server {
     listen 80;
-    server_name static.local;
+    server_name mysite.test;
 
     root /var/www/nginx-static;
     index index.html;
@@ -1494,72 +1563,474 @@ server {
 ```
 
 ```bash
-echo "127.0.0.1  static.local" | sudo tee -a /etc/hosts
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Test: `http://static.local/`
+```bash
+echo "<Your_Server_IP>  mysite.test" | sudo tee -a /etc/hosts
+```
 
+Test: `http://mysite.test`
+
+![Expected Output](<Screenshot 2026-07-19 at 2.19.50 AM.png>)
 ---
-
 ### Part 3: Nginx as a Reverse Proxy
 
 A reverse proxy accepts client requests and forwards them to a backend. The client talks only to Nginx; the backend is invisible from outside. This enables TLS termination, centralised logging, access control, and load distribution without changing the application.
 
-Simulate a backend with a simple Python HTTP server:
+In Part 2 Nginx read files from disk. Here it reads nothing. It opens a second connection to an application and relays the answer back.
 
-```bash
-# In a separate terminal: a minimal HTTP server on port 5000
-python3 -m http.server 5000 --directory /var/www/nginx-static &
+```
+HOST machine                    │  VM (guest)
+                                │
+browser ──80──▶ 192.168.56.10 ──┼──▶ nginx (proxy.local) ──5000──▶ backend app
+   ▲                            │                                  (127.0.0.1 only)
+   └── /etc/hosts maps          │
+       proxy.local → VM IP      │  port 5000 is not reachable from the host
 ```
 
-Create `/etc/nginx/conf.d/reverse-proxy.conf`:
+Every step runs **inside the VM** unless it is marked *on the host*.
 
+
+- Build the backend:
+```bash
+sudo mkdir -p /opt/demo-backend
+```
+```bash
+sudo vim /opt/demo-backend/app.py
+```
+```python
+#!/usr/bin/env python3
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from datetime import datetime
+import html
+import re
+import socket
+
+LISTEN = ("127.0.0.1", 5000)          # loopback only: unreachable from outside
+SHOW = ("Host", "X-Real-IP", "X-Forwarded-For", "X-Forwarded-Proto",
+        "X-Server-Addr", "Connection", "User-Agent")
+
+PAGE = """<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request waybill &mdash; backend behind Nginx</title>
+<style>
+  :root{
+    --desk:#2B2D26; --paper:#E4E2D7; --ink:#23241E;
+    --rule:#B7B5A6; --faint:#6E6D60; --stamp:#5A3E9B;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+    --cond:"Arial Narrow","Helvetica Neue Condensed",Impact,system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  body{background:var(--desk);color:var(--ink);font-family:var(--mono);
+       padding:40px 16px 64px;display:flex;justify-content:center}
+  .sheet{position:relative;width:100%;max-width:680px;background:var(--paper);
+         box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  /* torn-off stub: the sheet was pulled from a pad */
+  .sheet::before{content:"";position:absolute;left:0;right:0;top:-9px;height:9px;
+    background:radial-gradient(circle at 6px 9px,var(--desk) 4.5px,var(--paper) 5px) 0 0/12px 9px repeat-x}
+
+  .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+            padding:26px 26px 14px;border-bottom:2px solid var(--ink)}
+  .issuer{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint)}
+  h1{font-family:var(--cond);font-weight:700;font-size:34px;line-height:.95;
+     letter-spacing:.04em;text-transform:uppercase}
+  .serial{font-size:11px;letter-spacing:.12em;color:var(--faint);text-align:right;white-space:nowrap}
+
+  .route{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px;
+         padding:14px 26px;border-bottom:1px solid var(--rule);font-size:12px}
+  .route i{font-style:normal;color:var(--faint)}
+  .route b{font-weight:500}
+  .route .last{color:var(--stamp)}
+
+  .note{padding:22px 26px 6px;font-size:12.5px;line-height:1.75;color:#3E4038;max-width:56ch}
+  .note em{font-style:normal;background:rgba(90,62,155,.12);padding:0 3px}
+
+  .cap{padding:24px 26px 0;font-family:var(--cond);font-size:13px;font-weight:700;
+       letter-spacing:.2em;text-transform:uppercase}
+  .fields{padding:8px 26px 26px}
+  .f{display:grid;grid-template-columns:minmax(0,15rem) 1fr;align-items:baseline;
+     column-gap:12px;padding:9px 0;border-bottom:1px dotted var(--rule)}
+  .k{font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+  .v{font-size:13px;word-break:break-all}
+  .v.off{color:#9C9A8C}
+  .v.off::before{content:"\2014 ";color:var(--rule)}
+
+  .stamp{position:absolute;right:22px;bottom:74px;transform:rotate(-7deg);
+    padding:8px 14px 7px;border:2px solid var(--stamp);outline:1px solid var(--stamp);
+    outline-offset:2px;color:var(--stamp);opacity:.82;mix-blend-mode:multiply;
+    font-family:var(--cond);text-transform:uppercase;text-align:center;pointer-events:none}
+  .stamp b{display:block;font-size:17px;font-weight:700;letter-spacing:.13em}
+  .stamp span{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;margin-top:3px}
+
+  .foot{display:flex;flex-wrap:wrap;gap:4px 28px;padding:12px 26px;
+        border-top:2px solid var(--ink);font-size:10.5px;letter-spacing:.1em;
+        text-transform:uppercase;color:var(--faint)}
+  .foot b{font-weight:500;color:var(--ink);text-transform:none;letter-spacing:.04em}
+
+  @media(max-width:560px){
+    h1{font-size:26px}
+    .masthead{flex-direction:column;align-items:flex-start;gap:8px}
+    .serial{text-align:left}
+    .f{grid-template-columns:1fr;gap:2px}
+    .stamp{position:static;transform:rotate(-2deg);display:block;margin:0 26px 22px}
+  }
+</style>
+</head>
+<body>
+  <div class="sheet">
+    <div class="masthead">
+      <div>
+        <div class="issuer">Issued by nginx &middot; upstream copy</div>
+        <h1>Request<br>waybill</h1>
+      </div>
+      <div class="serial">delivered {{TIME}}<br>{{HOSTNAME}}</div>
+    </div>
+
+    <div class="route">
+      <i>from</i> <b>{{CLIENT}}</b>
+      <i>via</i> <b>{{EDGE}}</b>
+      <i>to</i> <b class="last">127.0.0.1:{{PORT}}</b>
+    </div>
+
+    <p class="note">Your browser never opened a socket to this process. It is bound to
+      <em>127.0.0.1:{{PORT}}</em> and answers nothing else. Everything below is what actually
+      arrived at the application &mdash; Nginx either carried it along or wrote it itself.</p>
+
+    <p class="cap">Headers received</p>
+    <div class="fields">
+      {{ROWS}}
+    </div>
+
+    <div class="stamp"><b>Received<br>via proxy</b><span>port {{PORT}}</span></div>
+
+    <div class="foot">
+      <span>status <b>200</b></span>
+      <span>path <b>{{PATH}}</b></span>
+      <span>sheet 03 / proxied</span>
+    </div>
+  </div>
+</body>
+</html>"""
+
+# render pipeline 
+# Values that never change are baked in once, at import time.
+PAGE = (PAGE.replace("{{PORT}}", str(LISTEN[1]))
+            .replace("{{HOSTNAME}}", html.escape(socket.gethostname())))
+
+# The rest is split once into literal chunks and placeholder names, so each
+# request is a single str.join instead of a chain of full-string copies.
+_PARTS = re.split(r"\{\{(\w+)\}\}", PAGE)   # even = literal, odd = key
+
+
+def render(values):
+    out = _PARTS[:]
+    for i in range(1, len(out), 2):
+        out[i] = values[out[i]]
+    return "".join(out)
+
+
+# Header names and row numbers are static, so pre-build everything around
+# the value: only the value itself is escaped per request.
+_ROW_HEAD = tuple(
+    '<div class="f"><span class="k">%s</span><span class="v' % html.escape(name)
+    for name in SHOW
+)
+
+
+class Handler(BaseHTTPRequestHandler):
+    server_version = "demo-backend/1.0"
+    protocol_version = "HTTP/1.1"      # required for upstream keepalive
+    disable_nagle_algorithm = True
+
+    def _page(self):
+        get = self.headers.get
+        rows = []
+        for head, name in zip(_ROW_HEAD, SHOW):
+            value = get(name)
+            if value:
+                rows.append('%s">%s</span></div>' % (head, html.escape(value)))
+            else:
+                rows.append('%s off">not set</span></div>' % head)
+
+        return render({
+            "ROWS": "".join(rows),
+            # who asked, and which address of this VM they asked on
+            "CLIENT": html.escape(get("X-Real-IP") or self.client_address[0]),
+            "EDGE": html.escape(get("X-Server-Addr") or "direct, no proxy"),
+            "PATH": html.escape(self.path),
+            "TIME": datetime.now().strftime("%H:%M:%S"),
+        }).encode("utf-8")
+
+    def _respond(self, payload, body=True):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(payload)))
+        self.end_headers()
+        if body:
+            self.wfile.write(payload)
+
+    def do_GET(self):
+        if self.path == "/favicon.ico":
+            self.send_response(204)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
+        self._respond(self._page())
+
+    def do_HEAD(self):
+        self._respond(self._page(), body=False)
+
+    def log_message(self, fmt, *args):
+        print("[backend] " + fmt % args, flush=True)
+
+
+class Server(ThreadingHTTPServer):
+    daemon_threads = True
+    allow_reuse_address = True
+
+
+if __name__ == "__main__":
+    server = Server(LISTEN, Handler)
+    print("listening on %s:%d" % LISTEN, flush=True)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\nshutting down", flush=True)
+    finally:
+        server.server_close()
+```
+
+- Run it in the foreground once to confirm it works:
+
+```bash
+python3 /opt/demo-backend/app.py
+```
+
+- From a second terminal
+```bash
+curl -s http://127.0.0.1:5000/ | grep -o "<h1>.*</h1>"
+```
+
+![Testing From Terminal](<Screenshot 2026-07-19 at 7.19.57 AM.png>)
+
+Stop it with `Ctrl+c`. systemd takes over next.
+
+- Keep the backend running:
+```bash
+sudo useradd --system --no-create-home --shell /sbin/nologin appuser
+```
+```bash
+sudo chown -R appuser:appuser /opt/demo-backend
+```
+```bash
+sudo vim /etc/systemd/system/demo-backend.service
+```
+```ini
+[Unit]
+Description=Demo backend behind Nginx
+After=network.target
+
+[Service]
+Type=simple
+User=appuser
+ExecStart=/usr/bin/python3 /opt/demo-backend/app.py
+Restart=on-failure
+RestartSec=2
+
+# The app never needs the filesystem or a public socket
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable --now demo-backend
+```
+```bash
+sudo systemctl status demo-backend --no-pager
+```
+
+```bash
+ss -tlnp | grep 5000
+```
+
+- Let Nginx open outbound connections (SELinux)
+
+On RHEL family systems SELinux blocks `nginx` from connecting to anything by default. Skipping this step is the single most common cause of `502 Bad Gateway` on a config that is otherwise correct.
+
+```bash
+sudo setsebool -P httpd_can_network_connect 1
+getsebool httpd_can_network_connect        # httpd_can_network_connect --> on
+```
+
+- The proxy server block
+```bash
+sudo vim /etc/nginx/conf.d/reverse-proxy.conf
+```
 ```nginx
+upstream demo_backend {
+    server 127.0.0.1:5000;
+    keepalive 16;                 # pool of idle connections to reuse
+}
+ 
 server {
     listen 80;
-    server_name proxy.local;
-
+    server_name proxy.test;
+ 
     location / {
-        proxy_pass http://127.0.0.1:5000;
-
+        proxy_pass http://demo_backend;
+ 
         # Pass original request context to the backend
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-
+ 
+        # Which address of this VM the client actually dialled
+        proxy_set_header X-Server-Addr     $server_addr:$server_port;
+ 
         proxy_connect_timeout 10s;
         proxy_read_timeout    30s;
         proxy_send_timeout    30s;
-
-        # HTTP/1.1 keep-alive to the upstream
+ 
+        # HTTP/1.1 keepalive to the upstream
         proxy_http_version 1.1;
         proxy_set_header Connection "";
     }
-
-    access_log /var/log/nginx/proxy.local_access.log;
-    error_log  /var/log/nginx/proxy.local_error.log;
+ 
+    # Health endpoint answered by Nginx itself. Never touches the backend.
+    location = /healthz {
+        access_log off;
+        return 200 "nginx ok\n";
+        add_header Content-Type text/plain;
+    }
+ 
+    location ~ /\. {
+        deny all;
+    }
+ 
+    access_log /var/log/nginx/proxy.test_access.log;
+    error_log  /var/log/nginx/proxy.test_error.log;
 }
 ```
 
 Why these headers matter:
+ 
+- `X-Real-IP` and `X-Forwarded-For`: your logs and analytics need the real client IP, not Nginx's. Without them, every entry shows `127.0.0.1`.
+- `X-Forwarded-Proto`: tells the backend whether the original request was HTTP or HTTPS. This is exactly how the backend learns TLS was terminated at the edge. Flask's `request.is_secure`, Django's `SECURE_PROXY_SSL_HEADER`, and most frameworks read it.
+- `Host $host`: without it the backend receives `demo_backend` as its hostname, which breaks absolute URLs, redirects, and virtual host routing.
+- `proxy_http_version 1.1` with `Connection ""`: reuses TCP connections to the backend instead of opening a new one per request. The empty `Connection` header is what stops Nginx from sending `Connection: close` upstream and defeating the `keepalive` pool.
+- `X-Server-Addr`: not a standard header, added here purely so the page can show which address of the VM the request landed on. Real deployments rarely need it.
 
-- `X-Real-IP` / `X-Forwarded-For`: your logs and analytics need the real client IP, not Nginx's. Without them, every entry shows `127.0.0.1`.
-- `X-Forwarded-Proto`: tells the backend whether the original request was HTTP or HTTPS. This is exactly how the backend learns TLS was terminated at the edge (Section 5.1 §5) — Flask's `request.is_secure`, Django's `SECURE_PROXY_SSL_HEADER`, and most frameworks read it.
-- `proxy_http_version 1.1` + `Connection ""`: reuses TCP connections to the backend instead of opening a new one per request.
+`listen 80;` with no address binds every interface in the VM, which is what lets the host reach it. Keep it that way. Do **not** narrow it to `127.0.0.1`.
 
 ```bash
-echo "127.0.0.1  proxy.local" | sudo tee -a /etc/hosts
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Test: `http://proxy.local/` — served by the Python backend through Nginx.
+- Reach the VM from your host:
+
+- Open the firewall, inside the VM. Port 80 only, never 5000:
+
+```bash
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-all
+```
+
+- Find the VM's address, inside the VM:
+```bash
+hostname -I
+ip -4 addr show | grep -v 127.0.0.1 | grep inet
+```
+
+- **Map the name on the host**, so `proxy.test` resolves there the same way it does in the VM:
+
+  - Linux or macOS: `sudo vim /etc/hosts`
+  - Windows: open Notepad **as Administrator**, then open file: `C:\Windows\System32\drivers\etc\hosts`
+```
+192.168.56.10   proxy.test
+```
+---
+#### 6. Test
+
+Inside the VM first. If this fails, nothing on the host will work:
+```bash
+curl -s http://proxy.test/healthz          # nginx ok, proxy alive
+curl -sI http://proxy.test/ | head -3      # 200, Server: nginx
+curl -s http://proxy.test/ | grep -A1 X-Real-IP
+```
+
+- Then browser test, from the host:
+
+`http://proxy.test/healthz`
+
+![Server's Health](<Screenshot 2026-07-19 at 6.28.32 AM.png>)
+
+
+`http://proxy.local/`
+
+![Expected Output](<Screenshot 2026-07-19 at 7.26.41 AM.png>)
+
+
+`http://<VM_IP>:5000/`
+![Connection Refuse](<Screenshot 2026-07-19 at 7.28.44 AM.png>)
+
+The proof that the proxy is doing its job: on the page you get from the host, `X-Real-IP` shows your **host's** address rather than `127.0.0.1`. That value crossed two hops, host to Nginx to backend, because of the `proxy_set_header` lines.
+
+Watch both sides at once:
+
+```bash
+sudo tail -f /var/log/nginx/proxy.test_access.log & sudo journalctl -u demo-backend -f
+```
+---
+#### 7. When it breaks
+
+Host to VM problems first, since they look like Nginx problems and are not:
+
+| Symptom on the host | Cause | Fix |
+|---|---|---|
+| Browser hangs, then times out | VM firewall closed, or NAT with no forwarding rule | Open the http service in firewalld; add the `--natpf1` rule |
+| `Connection refused` immediately | Nothing listening on that host port, wrong port or wrong mode | `ss -tlnp \| grep :80` in the VM, then recheck the network mode table |
+| Name does not resolve | The host `/etc/hosts` was not edited, or was edited without admin rights | `ping proxy.local` must answer with the VM IP; flush the DNS cache |
+| Worked yesterday, dead today | DHCP gave the VM a new IP | `hostname -I` in the VM, update the host file, or move to a private adapter |
+| Works in the VM, not from the host | A server block says `listen 127.0.0.1:80` | Use plain `listen 80;` |
+
+Then the proxy itself:
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| `502 Bad Gateway` | Backend down, or SELinux blocking the connect | `systemctl status demo-backend`; `setsebool -P httpd_can_network_connect 1`; check `sudo ausearch -m avc -ts recent` |
+| `504 Gateway Time-out` | Backend accepted but answered slowly | Raise `proxy_read_timeout`, or fix the slow endpoint |
+| Backend logs show `127.0.0.1` for every client | `X-Real-IP` and `X-Forwarded-For` not set, or the app is not reading them | Add the `proxy_set_header` lines, then configure the app's proxy middleware |
+| Redirects send users to `demo_backend` | The `Host` header was not forwarded | `proxy_set_header Host $host;` |
+| Connection count climbing on the backend | Keepalive was never negotiated | `proxy_http_version 1.1;` **and** `proxy_set_header Connection "";` |
+| `nginx: [emerg] host not found in upstream` | The backend name will not resolve at boot | Use an IP, or add `resolver` for dynamic names |
+
+A useful split test when you cannot tell which side is at fault:
+
+```bash
+curl -sI http://127.0.0.1/ -H "Host: proxy.test"   # in the VM:  Nginx is fine
+curl -sI http://<VM_IP>/   -H "Host: proxy.test"   # on the host: the path is fine
+```
+
+If the first works and the second does not, the problem is the firewall or VM networking, not your config.
+
+
+>Note: The backend now has no public surface at all. Everything a client can reach is decided in one file, which is why the next steps (TLS termination, rate limiting, caching, and adding a second `server` line to the `upstream` block for load balancing) are edits to Nginx alone. The application never learns that any of it happened.
 
 ---
-
 ### Part 4: Nginx as a Load Balancer
 
 A load balancer distributes requests across multiple backends, preventing any single server from being overwhelmed and providing fault tolerance: if one backend fails, Nginx routes to the healthy ones.
@@ -1662,7 +2133,6 @@ log_format upstream '$remote_addr - $host [$time_local] '
 ```
 
 ---
-
 ### Part 6: Clean Up Nginx Test Processes
 
 ```bash
@@ -1670,8 +2140,7 @@ kill $(lsof -t -i:5000) $(lsof -t -i:5001) $(lsof -t -i:5002) $(lsof -t -i:5003)
 ```
 
 ---
-
-## Lab 5.1.C: Apache Tomcat — Java Application Server
+## Lab 5.1.C: Apache Tomcat - Java Application Server
 
 Tomcat is the deployment target for the Java `.war` produced by the CI/CD pipeline in **Section 5.4**. This lab installs Tomcat, runs it as a systemd service, deploys a test WAR, and puts Nginx in front of it.
 
