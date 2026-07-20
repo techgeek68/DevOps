@@ -466,10 +466,12 @@ Verify:
 
 - To verify from the Host Computer, you must use the Server's IP address.
 
-You should see the Apache test page.
-![Apache Server Test Page](<images/Screenshot 2026-07-16 at 1.04.41 PM.png>)
+You should see the Apache test page:
 
-Key configuration files:
+![Apache Server Test Page](<images/Apache Webserver Default Page.png>)
+
+---
+Major configuration files:
 
 ```bash
 cat /etc/httpd/conf/httpd.conf       # Main configuration
@@ -887,11 +889,14 @@ Test in the browser:
 ```bash
 http:IP_Address_of_Your_Server
 ```
-![Homepage](<images/Screenshot 2026-07-17 at 7.00.20 AM.png>)
+![Homepage](<images/Homepage of Static Site Hosted From Apache Webserver.png>)
 
-![About](<images/Screenshot 2026-07-17 at 9.13.03 AM.png>)
+---
+![About](<images/About of Static Site Hosted From Apache Webserver.png>)
 
-![Notes](<images/Screenshot 2026-07-17 at 9.13.15 AM.png>)
+---
+![Notes](<images/Notes of Static Site Hosted From Apache Webserver.png>)
+
 ---
 ### Part 3: Name Based Virtual Hosts
 
@@ -1006,11 +1011,14 @@ sudo sh -c 'echo "<Your_Server_IP>  myapp.local  www.myapp.local" >> /etc/hosts'
   <Your_Server_IP>  myapp.local  www.myapp.local
   ```
 
-Test: `http://myapp.local/`
+Test on the browser: 
 
-![VirtualHost](<images/Screenshot 2026-07-17 at 9.42.08 AM.png>)
+`http://myapp.local/`
 
-To host more sites, repeat the pattern: each site gets its own directory and its own `.conf` file in `/etc/httpd/conf.d/`.
+![Virtual Host](<Testing Virtual Host.png>)
+
+---
+> To host more sites, repeat the pattern: each site gets its own directory and its own `.conf` file in `/etc/httpd/conf.d/`.
 
 ---
 ### Part 4: HTTPS with a Self-Signed Certificate
@@ -1274,11 +1282,11 @@ Test: `https://www.brewhouse.com.np`
 
 The browser warns because the cert is self-signed; proceed past it and confirm the padlock shows TLS is active.
 
-![Browser Warning](<images/Screenshot 2026-07-17 at 11.49.37 AM.png>)
+![Browser Warning](<images/Warning HTTPS.png>)
 
-![Proceed](<images/Screenshot 2026-07-17 at 11.50.05 AM.png>)
+![Procced Warning HTTPS](<images/Proceed Warning HTTPS.png>)
 
-![Accessing Website](<images/Screenshot 2026-07-17 at 11.50.30 AM.png>)
+![Cafe Website https](<images/HTTPS Cafe Site Apache.png>)
 
 ---
 **Let's Encrypt for production (Production domain required):**
@@ -1434,7 +1442,7 @@ echo "<Your_Server_IP> mytestwebphp" | sudo tee -a /etc/hosts
 
 Test: `http://mytestwebphp`
 
-![php site accessing through browser](<images/Screenshot 2026-07-17 at 12.40.27 PM.png>)
+![php site accessing through browser](<images/PHP Website.png>)
 
 ---
 ### Part 6: Python Website with mod_wsgi
@@ -1645,8 +1653,10 @@ echo "<Your_Server_IP>  pysite.test" | sudo tee -a /etc/hosts
 ```text
 http://pysite.test/
 ```
-![Expected Output](<images/Screenshot 2026-07-17 at 10.06.16 PM.png>)
 
+![Python Based Website](<images/Python Based Website.png>)
+
+---
 >A 403 Forbidden is almost always a wrong SELinux context or wrong ownership.
 
 ---
@@ -1831,7 +1841,7 @@ echo "<Your_Server_IP>  mysite.test" | sudo tee -a /etc/hosts
 
 Test: `http://mysite.test`
 
-![Expected Output](<images/Screenshot 2026-07-19 at 2.19.50 AM.png>)
+![Nginx Static Website](<Nginx Static Website.png>)
 
 ---
 ### Part 3: Nginx as a Reverse Proxy
@@ -2063,8 +2073,10 @@ python3 /opt/demo-backend/app.py
 ```bash
 curl -s http://127.0.0.1:5000/ | grep -o "<h1>.*</h1>"
 ```
+![Testing Proxy Server](<Testing Proxy Server Through Terminal.png>)
 
 Stop it with `Ctrl+c`. systemd takes over next.
+
 
 - Keep the backend running
 ```bash
@@ -2265,15 +2277,17 @@ Then browser test, from the host:
 
 `http://proxy.test/healthz`
 
-![Server Health](<images/Screenshot 2026-07-19 at 9.17.42 AM.png>)
+![Server Health](<Reverse Proxy Server Health.png>)
 
+---
 `http://proxy.test/`
 
-![Website Accessed](<images/Screenshot 2026-07-19 at 9.11.16 AM.png>)
+![Reverse Proxy Server](<Reverse Proxy Webpage.png>)
 
+---
 `http://<VM_IP>:5000/`
 
-![Access Denied](<images/Screenshot 2026-07-19 at 9.18.38 AM.png>)
+![Try Accessing Main Server](<Reverse Proxy Trying Accessing Main Server Directly.png>)
 
 The proof that the proxy is doing its job: on the page you get from the host, `X-Real-IP` shows your host's address rather than `127.0.0.1`. That value crossed two hops, host to Nginx to backend, because of the `proxy_set_header` lines.
 
@@ -2357,7 +2371,7 @@ Three VMs. Every command is marked with the machine it runs on. Substitute your 
 | Node 1 | `node1` | `10.10.X.X` |
 | Node 2 | `node2` | `10.10.X.X` |
 
-![Infrastructure](<Load Balancer Lab Prerequisites.png>)
+![Infrastructure](<images/Load Balancer Lab Prerequisites.png>)
 
 Set the hostnames, one per machine:
 ```bash
@@ -2680,13 +2694,13 @@ curl -s  http://lb.test/lb-health          # lb ok, balancer alive
 curl -sI http://lb.test/ | head -3         # 200, Server: nginx
 ```
 
-
 - Then from the host browser: `http://lb.test/`, and reload. The page alternates between node1 and node2.
 
-![Serverd from Node1](<Screenshot 2026-07-20 at 9.04.00 AM.png>)
 
+![Page Served from Node 1](<Webpage of Node 1.png>)
 ---
-![Served from Node2](<Screenshot 2026-07-20 at 9.04.14 AM.png>)
+
+![Page Served from Node 2](<Webpage of Node 2.png>)
 
 
 - Watch the routing decision as it happens:
