@@ -1015,7 +1015,7 @@ Test on the browser:
 
 `http://myapp.local/`
 
-![Virtual Host](<Testing Virtual Host.png>)
+![Virtual Host](<images/Testing Virtual Host.png>)
 
 ---
 > To host more sites, repeat the pattern: each site gets its own directory and its own `.conf` file in `/etc/httpd/conf.d/`.
@@ -1841,7 +1841,7 @@ echo "<Your_Server_IP>  mysite.test" | sudo tee -a /etc/hosts
 
 Test: `http://mysite.test`
 
-![Nginx Static Website](<Nginx Static Website.png>)
+![Nginx Static Website](<images/Nginx Static Website.png>)
 
 ---
 ### Part 3: Nginx as a Reverse Proxy
@@ -2277,17 +2277,17 @@ Then browser test, from the host:
 
 `http://proxy.test/healthz`
 
-![Server Health](<Reverse Proxy Server Health.png>)
+![Server Health](<images/Reverse Proxy Server Health.png>)
 
 ---
 `http://proxy.test/`
 
-![Reverse Proxy Server](<Reverse Proxy Webpage.png>)
+![Reverse Proxy Server](<images/Reverse Proxy Webpage.png>)
 
 ---
 `http://<VM_IP>:5000/`
 
-![Try Accessing Main Server](<Reverse Proxy Trying Accessing Main Server Directly.png>)
+![Try Accessing Main Server](<images/Reverse Proxy Trying Accessing Main Server Directly.png>)
 
 The proof that the proxy is doing its job: on the page you get from the host, `X-Real-IP` shows your host's address rather than `127.0.0.1`. That value crossed two hops, host to Nginx to backend, because of the `proxy_set_header` lines.
 
@@ -2697,10 +2697,10 @@ curl -sI http://lb.test/ | head -3         # 200, Server: nginx
 - Then from the host browser: `http://lb.test/`, and reload. The page alternates between node1 and node2.
 
 
-![Page Served from Node 1](<Webpage of Node 1.png>)
+![Page Served from Node 1](<images/Webpage of Node 1.png>)
 ---
 
-![Page Served from Node 2](<Webpage of Node 2.png>)
+![Page Served from Node 2](<images/Webpage of Node 2.png>)
 
 
 - Watch the routing decision as it happens:
