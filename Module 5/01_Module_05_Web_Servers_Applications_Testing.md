@@ -2983,176 +2983,317 @@ kill $(lsof -t -i:5000) $(lsof -t -i:5001) $(lsof -t -i:5002) $(lsof -t -i:5003)
 
 Tomcat is the deployment target for the Java `.war` produced by the CI/CD pipeline in **Section 5.4**. This lab installs Tomcat, runs it as a systemd service, deploys a test WAR, and puts Nginx in front of it.
 
-### Part 1: Install Java (OpenJDK)
+
+- Install Java (OpenJDK)
 
 Tomcat 10.1.x requires Java 11 or later. We use Tomcat 10.1.x in this course; OpenJDK 17 (current LTS) is recommended.
 
 ```bash
-sudo dnf install java-17-openjdk java-17-openjdk-devel -y
-java -version
-javac -version
-dirname $(dirname $(readlink -f $(which java)))    # Note this JAVA_HOME path
+sudo dnf install java-latest-openjdk java-latest-openjdk-devel -y
 ```
-
----
-
-### Part 2: Create a Dedicated Tomcat User
-
 ```bash
-# System user, no login shell, home at /opt/tomcat
+java -version
+```
+```bash
+dirname $(dirname $(readlink -f $(which java)))
+```
+> Note this `JAVA_HOME` path
+
+- Create a Dedicated Tomcat User:
+> System user, no login shell, home at /opt/tomcat
+```bash
 sudo useradd -r -m -U -d /opt/tomcat -s /bin/false tomcat
+```
+```bash
 id tomcat
 ```
 
----
-
-### Part 3: Download and Install Tomcat
+- Install Tomcat
 
 Check the current stable release at `tomcat.apache.org` before running these commands; the version will change over time.
 
 ```bash
-TOMCAT_VERSION=10.1.44
-
-wget https://dlcdn.apache.org/tomcat/tomcat-10/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz
-ls -lh apache-tomcat-${TOMCAT_VERSION}.tar.gz
-
-sudo mkdir -p /opt/tomcat
-sudo tar -xzf apache-tomcat-${TOMCAT_VERSION}.tar.gz -C /opt/tomcat --strip-components=1
-ls /opt/tomcat/
+sudo dnf install tomcat tomcat-webapps tomcat-admin-webapps -y
 ```
-
-You should see: `bin/  conf/  lib/  logs/  temp/  webapps/  work/`
-
----
-
-### Part 4: Set Permissions
-
+> `tomcat` = engine only, `tomcat-webapps` = adds ROOT welcome page, `tomcat-admin-webapps` = adds manager/host-manager consoles (needs a user in tomcat-users.xml) — install all three for this lab.
 ```bash
-sudo chown -R tomcat:tomcat /opt/tomcat
-sudo chmod +x /opt/tomcat/bin/*.sh
-ls -l /opt/tomcat/bin/startup.sh
+tomcat version
 ```
-
----
-
-### Part 5: Create a systemd Service Unit
-
-Running Tomcat under systemd means it starts at boot, restarts on failure, and integrates with `systemctl` and `journalctl`. Create `/etc/systemd/system/tomcat.service`:
-
-```ini
-[Unit]
-Description=Apache Tomcat Web Application Container
-After=network.target
-
-[Service]
-Type=forking
-User=tomcat
-Group=tomcat
-
-Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk"
-Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
-Environment="CATALINA_HOME=/opt/tomcat"
-Environment="CATALINA_BASE=/opt/tomcat"
-Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
-Environment="JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom"
-
-ExecStart=/opt/tomcat/bin/startup.sh
-ExecStop=/opt/tomcat/bin/shutdown.sh
-
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Confirm the exact `JAVA_HOME` with `dirname $(dirname $(readlink -f $(which java)))`, then:
-
 ```bash
-sudo systemctl daemon-reload
-sudo systemctl enable --now tomcat
+sudo systemctl enable tomcat --now
+```
+```bash
 sudo systemctl status tomcat
-sudo tail -f /opt/tomcat/logs/catalina.out       # Look for "Server startup in [N] milliseconds"
 ```
 
-If Tomcat fails to start, check: (1) `JAVA_HOME` correct (`ls $JAVA_HOME/bin/java`); (2) `tomcat` owns `/opt/tomcat` (`ls -la /opt/tomcat/`); (3) port 8080 free (`ss -tlnp | grep 8080`).
-
----
-
-### Part 6: Open Firewall and Verify
-
+- Open Firewall and Verify
 ```bash
 sudo firewall-cmd --permanent --add-port=8080/tcp
+```
+```bash
 sudo firewall-cmd --reload
 ```
 
-Test: `http://server-ip:8080` — you should see the Tomcat welcome page.
+Test in the browser: `http://server-ip:8080`
+>You should see the Tomcat welcome page.
+
+![Tomcat Server Welcome Page](<images/Tomcat Server Welcome Page.png>)
+---
+- Configure the Tomcat Manager Application
+
+The Manager app provides a web UI and an HTTP API for deploying, undeploying, and reloading WARs. The CI/CD pipeline in Section 5.4 deploys through this same API. 
+
+- Configure `tomcat-users.xml`
+```bash
+sudo vim /etc/tomcat/tomcat-users.xml
+```
+- Replace entire file contents with:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <role rolename="manager-status"/>
+
+  <user username="devops" password="DevOps@123" roles="manager-gui,manager-script,manager-status"/>
+
+</tomcat-users>
+```
+
+>`manager-gui` grants the web interface; `manager-script` grants the HTTP API used by CI deploy plugins. By default the Manager restricts access to localhost. To allow it from your network (for remote CI deployments), 
+
+- Validate before moving on:
+```bash
+sudo dnf install libxml2 -y
+```
+```bash
+sudo xmllint --noout /etc/tomcat/tomcat-users.xml && echo "XML OK"
+```
+
+- Allow remote access: Manager app
+```bash
+sudo vim /var/lib/tomcat/webapps/manager/META-INF/context.xml
+```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiResourceLocking="false" privileged="true">
+  <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+                    sameSiteCookies="strict" />
+  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|10\.\d+\.\d+\.\d+|::ffff:10\.\d+\.\d+\.\d+" />
+  <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
+</Context>
+```
+
+- Allow remote access: Host Manager app (Same pattern as above)
+```bash
+sudo vim /var/lib/tomcat/webapps/host-manager/META-INF/context.xml
+```
+```text
+Same xml as above.
+```
 
 ---
-
-### Part 7: Configure the Tomcat Manager Application
-
-The Manager app provides a web UI and an HTTP API for deploying, undeploying, and reloading WARs. The CI/CD pipeline in Section 5.4 deploys through this same API. Edit `/opt/tomcat/conf/tomcat-users.xml` and add before `</tomcat-users>`:
-
-```xml
-<role rolename="manager-gui"/>
-<role rolename="manager-script"/>
-<user username="devops"
-      password="DevOps@2026!"
-      roles="manager-gui,manager-script"/>
-```
-
-`manager-gui` grants the web interface; `manager-script` grants the HTTP API used by CI deploy plugins. By default the Manager restricts access to localhost. To allow it from your network (for remote CI deployments), edit `/opt/tomcat/webapps/manager/META-INF/context.xml` and, **for lab use only**, comment out the address valve:
-
-```xml
-<!--
-<Valve className="org.apache.catalina.valves.RemoteAddrValve"
-       allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
--->
-```
-
+> Change it according to you Server's Network.
+>RemoteAddrValve"
+>         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1|X\.X\.X\.\X" />
+---
 ```bash
 sudo systemctl restart tomcat
 ```
 
-Test the Manager at `http://server-ip:8080/manager/html` and log in with the `devops` credentials.
+Test the Manager at `http://server-ip:8080/manager/html` and log in with the `username: devops` `Password: DevOps@123` credentials.
 
+![Tomcat Web Application Manager](<images/Tomcat Web Application Manager.png>)
 ---
-
-### Part 8: Deploy a WAR File
+- Deploy a WAR File
 
 A WAR (Web Application Archive) is a ZIP-format package containing a complete Java web application.
 
-**Method 1 — copy to `webapps/` (simplest for labs):**
+- Method 1: Copy to `webapps/` (simplest for labs)
 
 ```bash
-wget https://tomcat.apache.org/tomcat-10.1-doc/appdev/sample/sample.war -O /tmp/sample.war
-sudo cp /tmp/sample.war /opt/tomcat/webapps/
-sudo chown tomcat:tomcat /opt/tomcat/webapps/sample.war
-sudo tail -f /opt/tomcat/logs/catalina.out       # Watch auto-deploy
+mkdir -p /tmp/sample-war
+```
+```bash
+cd /tmp/sample-war
+vim index.jsp
+```
+```jsp
+<%@ page contentType="text/html; charset=UTF-8" session="false" trimDirectiveWhitespaces="true" %>
+<%@ page import="java.lang.management.ManagementFactory" %>
+<%@ page import="java.lang.management.MemoryMXBean" %>
+<%@ page import="java.lang.management.MemoryUsage" %>
+<%@ page import="java.net.InetAddress" %>
+<%@ page import="java.time.ZonedDateTime" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+
+<%!
+    // Declaration block: these become servlet fields, initialized once at
+    // class load rather than rebuilt on every request.
+
+    private static final int SEGMENTS = 20;
+    private static final long MB = 1024L * 1024L;
+
+    // DateTimeFormatter is immutable and thread safe, unlike SimpleDateFormat,
+    // which had to be reallocated per request to avoid corrupting output.
+    private static final DateTimeFormatter STAMP =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z");
+
+    private static final MemoryMXBean MEMORY = ManagementFactory.getMemoryMXBean();
+
+    // Values that cannot change for the life of the JVM. Resolving the
+    // hostname is a blocking name-service call, so it is cached rather than
+    // repeated on every hit.
+    private static final String HOSTNAME = resolveHostname();
+    private static final String JVM_VERSION = System.getProperty("java.version");
+    private static final int CPUS = Runtime.getRuntime().availableProcessors();
+
+    private static String resolveHostname() {
+        try {
+            return InetAddress.getLocalHost().getHostName();
+        } catch (Exception e) {
+            return "unknown-host";
+        }
+    }
+%>
+
+<%
+    // Status pages must never be cached by a proxy or the browser.
+    response.setHeader("Cache-Control", "no-store");
+
+    MemoryUsage heap = MEMORY.getHeapMemoryUsage();
+    long usedMem = heap.getUsed() / MB;
+    long committedMem = heap.getCommitted() / MB;
+    long maxMem = heap.getMax() > 0 ? heap.getMax() / MB : committedMem;
+
+    int usedPercent = maxMem > 0 ? (int) (usedMem * 100L / maxMem) : 0;
+
+    // Ceiling division without floating point.
+    int litSegments = (usedPercent * SEGMENTS + 99) / 100;
+
+    boolean warn = usedPercent >= 70;
+    boolean critical = usedPercent >= 90;
+    String accent = critical ? "#c4443a" : (warn ? "#d9a13b" : "#d9603b");
+
+    String now = ZonedDateTime.now().format(STAMP);
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= HOSTNAME %> / status</title>
+<style>
+:root{--bg:#12100e;--rule:#262220;--dim:#6b645c;--dimmer:#4a443e;--fg:#f0ebe4;--idle:#2b2724;--accent:<%= accent %>}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:13px/1.4 ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;padding:48px 32px;-webkit-font-smoothing:antialiased}
+.panel{max-width:720px;margin:0 auto}
+.masthead{border-top:2px solid var(--accent);padding-top:14px;display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:36px;font-size:11px;letter-spacing:2px}
+.masthead .ref{color:var(--dim);letter-spacing:1px}
+.masthead .state{color:var(--accent)}
+.host{font-size:34px;line-height:1;margin-bottom:8px;word-break:break-all}
+.stamp{font-size:12px;color:var(--dim);margin-bottom:40px}
+.readout{display:flex;justify-content:space-between;gap:16px;font-size:11px;letter-spacing:1px;color:var(--dim);padding:10px 0;border-bottom:1px solid var(--rule)}
+.readout b{color:var(--fg);font-weight:inherit;letter-spacing:0;font-variant-numeric:tabular-nums}
+.gauge{display:flex;gap:3px;margin:28px 0 40px}
+.gauge i{flex:1;height:28px;background:var(--idle)}
+.gauge i.lit{background:var(--accent)}
+.colophon{font-size:11px;letter-spacing:1px;color:var(--dimmer);border-top:1px solid var(--rule);padding-top:14px}
+@media(max-width:480px){body{padding:32px 20px}.host{font-size:24px}.gauge i{height:20px}}
+</style>
+</head>
+<body>
+<div class="panel">
+
+<div class="masthead">
+<div class="state">STATUS / <%= critical ? "PRESSURE" : (warn ? "ELEVATED" : "NOMINAL") %></div>
+<div class="ref">DVP-401 &middot; 5.1.C</div>
+</div>
+
+<div class="host"><%= HOSTNAME %></div>
+<div class="stamp"><%= now %></div>
+
+<div class="readout"><span>HEAP USED</span><b><%= usedMem %> MB</b></div>
+<div class="readout"><span>HEAP COMMITTED</span><b><%= committedMem %> MB</b></div>
+<div class="readout"><span>HEAP MAX</span><b><%= maxMem %> MB</b></div>
+<div class="readout"><span>UTILIZATION</span><b><%= usedPercent %>%</b></div>
+<div class="readout"><span>PROCESSORS</span><b><%= CPUS %></b></div>
+
+<div class="gauge">
+<%
+    // Single buffered write instead of 20 template round trips through out.
+    StringBuilder gauge = new StringBuilder(SEGMENTS * 22);
+    for (int i = 0; i < SEGMENTS; i++) {
+        gauge.append(i < litSegments ? "<i class=lit></i>" : "<i></i>");
+    }
+    out.write(gauge.toString());
+%>
+</div>
+
+<div class="colophon">
+<%= application.getServerInfo() %> &nbsp;/&nbsp; JVM <%= JVM_VERSION %> &nbsp;/&nbsp; SERVLET <%= application.getMajorVersion() %>.<%= application.getMinorVersion() %>
+</div>
+
+</div>
+</body>
+</html>
 ```
 
-Test: `http://server-ip:8080/sample/`
-
-**Method 2 — Manager API (how the CI pipeline deploys):**
-
+- Package it:
 ```bash
-curl -u devops:DevOps@2026! \
+jar -cvf /tmp/sample.war *
+```
+
+- Deploy:
+```bash
+sudo cp /tmp/sample.war /var/lib/tomcat/webapps/
+```
+```bash
+sudo chown tomcat:tomcat /var/lib/tomcat/webapps/sample.war
+```
+- Live logs:
+```bash
+sudo journalctl -u tomcat -f
+```
+
+- Then open in browser: `http://<Server_IP>:8080/sample/`
+![Deployed Sample App in Tomcat](<images/Tomcat Sample App.png>)
+---
+- Method 2: Tomcat Manager Text API (How the CI pipeline deploys)
+
+This is the Tomcat Manager Text API, a scriptable HTTP interface to deploy/list/undeploy applications without touching a browser. It's how automated tools (CI/CD, scripts) manage Tomcat, since there's no UI involved, just plain HTTP responses.
+
+- Deploy:
+```bash
+curl -u devops:DevOps@123 \
      -T /tmp/sample.war \
      "http://localhost:8080/manager/text/deploy?path=/myapp&update=true"
-# Success: OK - Deployed application at context path [/myapp]
 ```
+>This curl command is exactly how the CI deploy step in Section 5.4 interacts with Tomcat.
 
-This curl command is exactly how the CI deploy step in Section 5.4 interacts with Tomcat.
-
+- List all deployed apps:
 ```bash
-# List and undeploy
-curl -u devops:DevOps@2026! http://localhost:8080/manager/text/list
-curl -u devops:DevOps@2026! "http://localhost:8080/manager/text/undeploy?path=/myapp"
+curl -u devops:DevOps@123 http://localhost:8080/manager/text/list
 ```
+
+- Test the deployed app:
+```bash
+curl -I http://localhost:8080/myapp/
+```
+
+- Undeploy:
+```bash
+curl -u devops:DevOps@123 "http://localhost:8080/manager/text/undeploy?path=/myapp"
+```
+
+![Tomcat Manager Text API](<images/Tomcat Manager Text API.png>)
 
 ---
-
 ### Part 9: Nginx as Reverse Proxy in Front of Tomcat (Production Pattern)
 
 In production Tomcat is never exposed directly on port 8080. Nginx sits in front, terminates TLS, and proxies to Tomcat — the edge-termination pattern from Section 5.1 §5, and the target the CI/CD pipeline builds toward. Create `/etc/nginx/conf.d/tomcat-proxy.conf`:
