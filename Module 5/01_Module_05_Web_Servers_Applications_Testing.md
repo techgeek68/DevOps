@@ -1859,6 +1859,70 @@ browser ──80──▶ 192.168.56.10 ──┼──▶ nginx (proxy.test) �
 
 Every step runs inside the VM unless it is marked on the host.
 
+- Configuration Syntax:
+
+```nginx
+upstream <UPSTREAM_NAME> {
+    [<LB_METHOD>;]                          # least_conn | ip_hash | random | hash <key>
+    server <ADDRESS>[:<PORT>] [weight=<N>] [max_fails=<N>] [fail_timeout=<TIME>] [backup] [down];
+    keepalive <N>;
+}
+
+server {
+    listen <PORT>;
+    server_name <DOMAIN>;
+
+    location <PATH_PREFIX> {
+        proxy_pass <SCHEME>://<UPSTREAM_NAME>;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header <HEADER_FIELD>    <VALUE>;
+
+        proxy_connect_timeout <TIME>;
+        proxy_read_timeout    <TIME>;
+        proxy_send_timeout    <TIME>;
+
+        proxy_http_version <1.0|1.1>;
+        proxy_set_header Connection "";
+    }
+
+    location = <EXACT_URI> {
+        access_log <off|PATH>;
+        return <CODE> ["<TEXT>" | <URL>];
+        add_header <HEADER_FIELD> <VALUE> [always];
+    }
+
+    location ~ <REGEX> {
+        deny <all | ADDRESS | CIDR>;
+        [allow <all | ADDRESS | CIDR>;]
+    }
+
+    access_log <PATH> [<FORMAT>];
+    error_log  <PATH> [<LEVEL>];
+}
+```
+
+| Directive | Syntax | Context | Notes |
+|---|---|---|---|
+| `upstream` | `upstream name { ... }` | `http` | Name is referenced as a host in `proxy_pass` |
+| `server` (upstream) | `server address [parameters];` | `upstream` | Address may be host:port, IP:port, or `unix:` socket |
+| `keepalive` | `keepalive connections;` | `upstream` | Idle connections cached **per worker**, not a total cap |
+| `proxy_send_timeout` | `proxy_send_timeout time;` | `http`, `server`, `location` | Between two successive writes to upstream |
+| `return` | `return code [text \| URL];` or `return URL;` | `server`, `location`, `if` | Text body allowed only with a non-redirect code |
+| `add_header` | `add_header field value [always];` | `http`, `server`, `location`, `if in location` | Inherited only if the current level defines **no** `add_header` of its own |
+| `deny` / `allow` | `deny address \| CIDR \| unix: \| all;` | `http`, `server`, `location`, `limit_except` | Rules evaluated in order; first match wins |
+| `access_log off` | `access_log off;` | any log context | Disables, doesn't merely redirect |
+
+- In the `/healthz` block, `add_header` after `return` still applies `add_header` isn't sequential, it's applied at response emit time. But `add_header` is skipped for most 4xx/5xx unless you append `always`.
+
+- `location = /healthz` (exact match) is evaluated before any prefix or regex location, so it short circuits `location /` regardless of file order. The `~ /\.` regex location, by contrast, beats `location /` only because regex outranks a plain prefix match.
+
+
+- **Complete Example: Nginx as a Reverse Proxy Server**
+
 - Build the backend
 ```bash
 sudo mkdir -p /opt/demo-backend
@@ -2148,7 +2212,7 @@ sudo vim /etc/nginx/conf.d/reverse-proxy.conf
 ```nginx
 upstream demo_backend {
     server 127.0.0.1:5000;
-    keepalive 16;                 # pool of idle connections to reuse
+    keepalive 16;
 }
 
 server {
@@ -2203,6 +2267,8 @@ server {
 
 ```bash
 sudo nginx -t
+```
+```bash
 sudo systemctl reload nginx
 ```
 
@@ -2591,9 +2657,7 @@ sudo grep nginx /var/log/audit/audit.log
 > Three modes exist: `Enforcing` blocks and logs, `Permissive` logs only, `Disabled` does neither. Permissive is a diagnostic, not a fix.
 
 ---
-- The load balancer server block
-
-On the **load balancer**:
+- The load balancer server block, On the **load balancer**:
 
 ```bash
 sudo vim /etc/nginx/conf.d/loadbalancer.conf
@@ -2684,13 +2748,14 @@ Reload, not restart. Reload lets the old workers finish the requests they are ho
 10.10.X.X   lb.test
 ```
 
----
-## 5. Test
+- Test
 
 From the **load balancer**, or any client on the network. If this fails, nothing from the host will work:
 
 ```bash
 curl -s  http://lb.test/lb-health          # lb ok, balancer alive
+```
+```bash
 curl -sI http://lb.test/ | head -3         # 200, Server: nginx
 ```
 
@@ -2702,7 +2767,7 @@ curl -sI http://lb.test/ | head -3         # 200, Server: nginx
 
 ![Page Served from Node 2](<images/Webpage of Node 2.png>)
 
-
+---
 - Watch the routing decision as it happens:
 
 ```bash
@@ -2716,8 +2781,7 @@ sudo tail -f /var/log/nginx/lb_access.log     # on the load balancer
 sudo tail -f /var/log/nginx/backend_access.log # on each node
 ```
 
----
-## 6. Test the failover
+- Test the failover
 
 This is the part worth doing slowly. On **node1**:
 
@@ -3109,6 +3173,7 @@ sudo systemctl restart tomcat
 Test the Manager at `http://server-ip:8080/manager/html` and log in with the `username: devops` `Password: DevOps@123` credentials.
 
 ![Tomcat Web Application Manager](<images/Tomcat Web Application Manager.png>)
+
 ---
 - Deploy a WAR File
 
@@ -3296,54 +3361,574 @@ curl -u devops:DevOps@123 "http://localhost:8080/manager/text/undeploy?path=/mya
 ---
 ### Part 9: Nginx as Reverse Proxy in Front of Tomcat (Production Pattern)
 
-In production Tomcat is never exposed directly on port 8080. Nginx sits in front, terminates TLS, and proxies to Tomcat — the edge-termination pattern from Section 5.1 §5, and the target the CI/CD pipeline builds toward. Create `/etc/nginx/conf.d/tomcat-proxy.conf`:
+In production Tomcat is never exposed directly on port 8080. Nginx sits in front, terminates TLS, and proxies to Tomcat the edge termination pattern from Section 5.1 §5, and the target the CI/CD pipeline builds toward. Create `/etc/nginx/conf.d/tomcat-proxy.conf`:
 
 ```nginx
 server {
-    listen 80;
-    server_name java.local;
+    listen <PORT>;
+    server_name <DOMAIN>;
 
-    location / {
-        proxy_pass http://127.0.0.1:8080;
+    location <PATH_PREFIX> {
+        proxy_pass <SCHEME>://<BACKEND_HOST>:<BACKEND_PORT>;
 
         proxy_set_header Host              $host;
         proxy_set_header X-Real-IP         $remote_addr;
         proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
 
-        proxy_http_version 1.1;
+        proxy_http_version <1.0|1.1>;
         proxy_set_header Connection "";
 
-        proxy_connect_timeout 10s;
-        proxy_read_timeout    60s;    # Java apps can be slow to start; allow longer
+        proxy_connect_timeout <TIME>;
+        proxy_read_timeout    <TIME>;
     }
 
-    access_log /var/log/nginx/tomcat_access.log;
-    error_log  /var/log/nginx/tomcat_error.log;
+    access_log <PATH_TO_ACCESS_LOG>;
+    error_log  <PATH_TO_ERROR_LOG> [<LEVEL>];
 }
 ```
 
+- **Complete example: Tomcat 9 + Request Ledger + Nginx**
+
+>Tomcat 9, Servlet 4.0, `javax.servlet`
+
+- Install Java
 ```bash
-echo "127.0.0.1  java.local" | sudo tee -a /etc/hosts
-sudo nginx -t
-sudo systemctl reload nginx
+sudo dnf install java-latest-openjdk java-latest-openjdk-devel -y
+```
+```bash
+java -version
 ```
 
-Test: `http://java.local/sample/` — Tomcat now reached through Nginx on port 80.
+- Install Tomcat
+```bash
+sudo dnf install tomcat tomcat-webapps tomcat-admin-webapps -y
+```
+```bash
+java -cp /usr/share/java/tomcat/catalina.jar org.apache.catalina.util.ServerInfo
+```
+```bash
+sudo rm -rf /var/lib/tomcat/webapps/examples
+```
 
+- Configure the connector and proxy valve
+```bash
+sudo cp /etc/tomcat/server.xml /etc/tomcat/server.xml.orig
+```
+```bash
+sudo vim /etc/tomcat/server.xml
+```
+
+Bind the HTTP connector to loopback:
+```xml
+<Connector port="8080" protocol="HTTP/1.1"
+           address="127.0.0.1"
+           connectionTimeout="20000"
+           redirectPort="8443" />
+```
+
+Add the proxy valve inside `<Host name="localhost" ...>`, immediately above `</Host>`:
+```xml
+<Valve className="org.apache.catalina.valves.RemoteIpValve"
+       internalProxies="127\.0\.0\.1"
+       remoteIpHeader="x-forwarded-for"
+       protocolHeader="x-forwarded-proto"
+       protocolHeaderHttpsValue="https" />
+ 
+<Valve className="org.apache.catalina.valves.ErrorReportValve"
+       showReport="false" showServerInfo="false" />
+```
+
+- Manager credentials:
+```bash
+openssl rand -base64 24 
+```
+> Generate a cryptographically secure 24-byte random string encoded in Base64.
+> Run twice, keep both [Copy and paste in text editor]
+```bash
+sudo vim /etc/tomcat/tomcat-users.xml
+```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<tomcat-users xmlns="http://tomcat.apache.org/xml"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://tomcat.apache.org/xml tomcat-users.xsd"
+              version="1.0">
+
+  <role rolename="manager-gui"/>
+  <role rolename="manager-script"/>
+  <role rolename="manager-status"/>
+
+  <user username="ops-console" password="PASTE_FIRST_RandomlyCreated_VALUE"  roles="manager-gui,manager-status"/>
+  <user username="ci-deploy"   password="PASTE_SECOND_RandomlyCreated_VALUE" roles="manager-script"/>
+
+</tomcat-users>
+```
+
+```bash
+sudo dnf install libxml2 -y
+```
+```bash
+sudo xmllint --noout /etc/tomcat/tomcat-users.xml && echo "XML OK"
+```
+```bash
+sudo stat -c '%a %U:%G %n' /etc/tomcat/tomcat-users.xml
+```
+> Expect `640 root:tomcat`
+
+- Manager access control
+```bash
+sudo vim /var/lib/tomcat/webapps/manager/META-INF/context.xml
+```
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiResourceLocking="false" privileged="true">
+  <CookieProcessor className="org.apache.tomcat.util.http.Rfc6265CookieProcessor"
+                   sameSiteCookies="strict" />
+  <Valve className="org.apache.catalina.valves.RemoteAddrValve"
+         allow="127\.\d+\.\d+\.\d+|::1|0:0:0:0:0:0:0:1" />
+  <Manager sessionAttributeValueClassNameFilter="java\.lang\.(?:Boolean|Integer|Long|Number|String)|org\.apache\.catalina\.filters\.CsrfPreventionFilter\$LruCache(?:\$1)?|java\.util\.(?:Linked)?HashMap"/>
+</Context>
+```
+```bash
+sudo vim /var/lib/tomcat/webapps/host-manager/META-INF/context.xml
+```
+Same `<Valve>` line. Loopback only. 
+
+- Start Tomcat
+```bash
+sudo systemctl enable tomcat --now
+sudo systemctl status tomcat
+```
+```bash
+ss -ltnp | grep 8080
+```
+> Expect `127.0.0.1:8080`. No firewall rule for 8080.
+
+
+- Verify the base install
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/
+```
+>Expected output `200`.
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/manager/html
+```
+>Expected output `401`.
+
+- Build the application
+```bash
+mkdir -p ~/ledger-war/WEB-INF && cd ~/ledger-war
+```
+```bash
+cat > WEB-INF/web.xml << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+ 
+  <display-name>Request Ledger</display-name>
+ 
+  <welcome-file-list>
+    <welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+ 
+  <session-config>
+    <session-timeout>10</session-timeout>
+    <cookie-config>
+      <http-only>true</http-only>
+    </cookie-config>
+  </session-config>
+ 
+</web-app>
+EOF
+```
+```bash
+cat > index.jsp << 'EOF'
+<%@ page contentType="text/html; charset=UTF-8" session="false" trimDirectiveWhitespaces="true" %>
+<%@ page import="java.time.LocalDateTime" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
+<%@ page import="java.util.ArrayDeque" %>
+<%@ page import="java.util.ArrayList" %>
+<%@ page import="java.util.Deque" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.concurrent.atomic.AtomicLong" %>
+<%!
+    private static final int MAX_ROWS = 10;
+    private static final DateTimeFormatter CLOCK = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final AtomicLong POSTED = new AtomicLong();
+    private static final Deque<Hit> LEDGER = new ArrayDeque<Hit>();
+ 
+    private static final class Hit {
+        final long seq;
+        final String at;
+        final String client;
+        final String scheme;
+        final String xff;
+        Hit(long seq, String at, String client, String scheme, String xff) {
+            this.seq = seq;
+            this.at = at;
+            this.client = client;
+            this.scheme = scheme;
+            this.xff = xff;
+        }
+    }
+ 
+    private static void post(Hit h) {
+        synchronized (LEDGER) {
+            LEDGER.addFirst(h);
+            while (LEDGER.size() > MAX_ROWS) {
+                LEDGER.removeLast();
+            }
+        }
+    }
+ 
+    private static List<Hit> page() {
+        synchronized (LEDGER) {
+            return new ArrayList<Hit>(LEDGER);
+        }
+    }
+ 
+    private static String esc(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return "none";
+        }
+        StringBuilder out = new StringBuilder(raw.length() + 16);
+        for (int i = 0; i < raw.length(); i++) {
+            char c = raw.charAt(i);
+            if (c == '&')       { out.append("&amp;"); }
+            else if (c == '<')  { out.append("&lt;"); }
+            else if (c == '>')  { out.append("&gt;"); }
+            else if (c == '"')  { out.append("&quot;"); }
+            else if (c == '\'') { out.append("&#39;"); }
+            else if (c < 0x20)  { out.append('?'); }
+            else                { out.append(c); }
+        }
+        return out.toString();
+    }
+%>
+<%
+    post(new Hit(POSTED.incrementAndGet(),
+                 LocalDateTime.now().format(CLOCK),
+                 request.getRemoteAddr(),
+                 request.getScheme(),
+                 request.getHeader("X-Forwarded-For")));
+    List<Hit> rows = page();
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Request Ledger</title>
+<style>
+  :root{
+    --ink:#1d2127; --faded:#8c8371; --rule:#c2d2df;
+    --margin:#a4362a; --paper:#f8f4e9; --desk:#ded8c9;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:44px 14px 72px;
+    background:var(--desk);
+    color:var(--ink);
+    font:15px/1.5 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .book{
+    position:relative;
+    max-width:760px; margin:0 auto;
+    padding:26px 30px 30px 74px;
+    background:var(--paper);
+    background-image:repeating-linear-gradient(to bottom,
+      transparent 0 31px, var(--rule) 31px 32px);
+    background-repeat:no-repeat;
+    background-size:100% 320px;
+    background-position:0 133px;
+    border:1px solid #cec5b0;
+    box-shadow:0 1px 0 rgba(255,255,255,.7) inset, 0 12px 26px rgba(40,32,16,.20);
+  }
+  .book::before,.book::after{
+    content:""; position:absolute; top:0; bottom:0;
+    border-left:1px solid var(--margin);
+  }
+  .book::before{left:54px; opacity:.5}
+  .book::after {left:58px; opacity:.22}
+ 
+  .folio{
+    display:flex; align-items:baseline; justify-content:space-between;
+    border-bottom:2px solid var(--ink); padding-bottom:9px;
+  }
+  h1{margin:0; font-size:18px; font-weight:600; letter-spacing:.15em; text-transform:uppercase}
+  .folio span{
+    font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    letter-spacing:.1em; color:var(--faded); text-transform:uppercase;
+  }
+  .legend{margin:9px 0 17px; font-size:12.5px; color:var(--faded)}
+ 
+  table{width:100%; border-collapse:collapse}
+  thead th{
+    font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    letter-spacing:.12em; text-transform:uppercase; color:var(--faded);
+    text-align:left; padding:0 8px 9px 0; border-bottom:1px solid var(--ink);
+  }
+  tbody td{
+    height:32px; line-height:32px; padding:0 8px 0 0;
+    border:0; vertical-align:bottom; font-variant-numeric:tabular-nums;
+  }
+  td.seq{width:58px; color:var(--margin); font:600 13px/32px ui-monospace,Menlo,Consolas,monospace}
+  td.at {width:92px; font:13px/32px ui-monospace,Menlo,Consolas,monospace}
+  td.ip {width:158px; font:13px/32px ui-monospace,Menlo,Consolas,monospace}
+  td.sc {width:64px; font-size:12.5px; color:var(--faded); text-transform:uppercase; letter-spacing:.06em}
+  td.via{font-size:12px; color:var(--faded); word-break:break-all}
+  tbody tr:first-child td{color:#000}
+  tbody tr:first-child td.seq{color:var(--margin)}
+  tbody tr:first-child td.seq::before{content:"\203A\00a0"}
+ 
+  .rule-off{
+    margin-top:24px; padding-top:10px; border-top:2px solid var(--ink);
+    display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;
+    font:12px/1.7 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    color:var(--faded);
+  }
+  .rule-off b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums}
+  @media (max-width:560px){
+    .book{padding-left:56px}
+    .book::before{left:38px} .book::after{left:42px}
+    td.via{display:none} thead th:last-child{display:none}
+  }
+</style>
+</head>
+<body>
+  <div class="book">
+ 
+    <div class="folio">
+      <h1>Request Ledger</h1>
+      <span>Folio 01 &nbsp;/&nbsp; Volatile</span>
+    </div>
+ 
+    <p class="legend">
+      Postings are held in the servlet instance and are lost on restart or redeploy.
+      The <em>client</em> column is whatever <code>getRemoteAddr()</code> reports after the
+      valve chain has run.
+    </p>
+ 
+    <table>
+      <thead>
+        <tr>
+          <th>No.</th><th>Time</th><th>Client</th><th>Scheme</th><th>X-Forwarded-For</th>
+        </tr>
+      </thead>
+      <tbody>
+<% for (Hit h : rows) { %>
+        <tr>
+          <td class="seq"><%= h.seq %></td>
+          <td class="at"><%= esc(h.at) %></td>
+          <td class="ip"><%= esc(h.client) %></td>
+          <td class="sc"><%= esc(h.scheme) %></td>
+          <td class="via"><%= esc(h.xff) %></td>
+        </tr>
+<% } %>
+      </tbody>
+    </table>
+ 
+    <div class="rule-off">
+      <span>Posted since start &nbsp;<b><%= POSTED.get() %></b></span>
+      <span>Retained &nbsp;<b><%= rows.size() %></b> of <%= MAX_ROWS %></span>
+      <span>HEAD requests are posted too</span>
+    </div>
+ 
+  </div>
+</body>
+</html>
+EOF
+```
+
+- Package
+```bash
+jar --create --file /tmp/ledger.war -C ~/ledger-war .
+```
+```bash
+unzip -l /tmp/ledger.war
+cd
+```
+> Both `index.jsp` and `WEB-INF/web.xml` must be listed.
+
+- Deploy via the Manager text API
+```bash
+umask 077
+```
+```bash
+cat > ~/.tomcat-netrc <<'EOF'
+machine 127.0.0.1 login ci-deploy password PASTE_SECOND_VALUE
+EOF
+```
+```bash
+curl -sS --netrc-file ~/.tomcat-netrc \
+     -T /tmp/ledger.war \
+     "http://127.0.0.1:8080/manager/text/deploy?path=/ledger&update=true"
+```
+> Expected output: OK - Deployed application at context path [/ledger]
+
+- Verify the deployment
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8080/ledger/
+```
+```bash
+curl -s http://127.0.0.1:8080/ledger/ | grep -o 'Posted since start[^<]*<b>[0-9]*'
+```
+
+- Install Nginx
+```bash
+sudo dnf install nginx -y
+```
+
+- Catchall vhost
+```bash
+sudo vim /etc/nginx/conf.d/00-catchall.conf
+```
+```nginx
+server_tokens off;
+ 
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+    return 444;
+}
+```
+Anything arriving by raw IP or an unknown Host gets the connection dropped instead of a page that names the distribution.
+
+- Application vhost
+```bash
+sudo vim /etc/nginx/conf.d/10-ledger.conf
+```
+```nginx
+upstream tomcat_backend {
+    server 127.0.0.1:8080;
+    keepalive 16;
+}
+ 
+server {
+    listen 80;
+    server_name javaapp.test;
+ 
+    location ~ ^/(manager|host-manager)(/|$) {
+        return 404;
+    }
+ 
+    location / {
+        proxy_pass http://tomcat_backend;
+ 
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+ 
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+ 
+        proxy_connect_timeout 5s;
+        proxy_send_timeout    60s;
+        proxy_read_timeout    60s;
+    }
+ 
+    access_log /var/log/nginx/tomcat_access.log;
+    error_log  /var/log/nginx/tomcat_error.log warn;
+}
+```
+
+- Hostname, firewall, SELinux on Server:
+```bash
+echo "127.0.0.1  javaapp.test" | sudo tee -a /etc/hosts
+```
+```bash
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+```
+```bash
+sudo setsebool -P httpd_can_network_connect 1
+```
+
+- On the Host Machine:
+```bash
+echo "<Server_IP>  javaapp.test" | sudo tee -a /etc/hosts
+```
+
+- Start Everything:
+```bash
+sudo nginx -t
+sudo systemctl enable nginx --now
+sudo systemctl restart tomcat
+```
+
+- Verification:
+```bash
+ss -ltnp | grep 8080
+```
+>Connector is loopback only, 127.0.0.1:8080, never 0.0.0.0:8080
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://javaapp.test/ledger/
+```
+> App answers through the proxy, `200`
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://javaapp.test/manager/html
+```
+> Admin contexts are not published on port 80, `404`
+
+```bash
+curl -s http://javaapp.test/ledger/ | grep -A1 'class="ip"'
+```
+```bash
+curl -sS -o /dev/null -w '%{http_code}\n' http://<Server_IP>/
+```
+> Raw IP is droppedcurl: (52) Empty reply from server
+
+From a second machine on the LAN:
+```bash
+curl -s http://javaapp.test/ledger/ | grep -A1 'class="ip"' | head -2
+```
+> That machine's address, e.g. 10.10.33.126, not 127.0.0.1
+
+
+- Header injection, both sides of the proxy:
+
+> Directly at Tomcat, where the header survives: escaping must engage
+```bash
+curl -s -H 'X-Forwarded-For: <script>alert(1)</script>' \
+     http://127.0.0.1:8080/ledger/ | grep -o '&lt;script&gt;[^<]*'
+# -> &lt;script&gt;alert(1)
+ ```
+> Through the proxy: the header is overwritten before Tomcat sees it
+ ```bash
+curl -s -H 'X-Forwarded-For: <script>alert(1)</script>' \
+     http://javaapp.test/ledger/ | grep -c 'script'
+# -> 0
+```
+The proxy test returning nothing is a pass. Nginx replaces the client value, so there is no injected string left to escape. Escaping is proven by the first command, not the second.
+
+
+Test in the browser: `http://javaapp.test/ledger/`
+> Tomcat now reached through Nginx on port 80.
+
+![Tomcat Nginx Ledger](<images/Complete Example Tomcat Request Ledger Nginx.png>)
+
+---
 ---
 # Section 5.2: Delivery Friendly Applications and the Twelve Factor Model
 
 ## 1. What Makes an Application Friendly to Automated Delivery
 
-Section 5.1 deployed servers. This section builds the **reference application** those servers will run — and does so deliberately, because most delivery pain is designed into the application long before the pipeline is written. An application is "delivery-friendly" when a machine, with no human in the loop, can configure it, test it, and build it identically every time. Three properties make this possible.
+Section 5.1 deployed servers. This section builds the **reference application** those servers will run and does so deliberately, because most delivery pain is designed into the application long before the pipeline is written. An application is "delivery friendly" when a machine, with no human in the loop, can configure it, test it, and build it identically every time. Three properties make this possible.
 
-### 1.1 Environment-Sourced Configuration
+### 1.1 Environment Sourced Configuration
 
-Configuration that varies between environments — database URLs, credentials, feature flags, the port to listen on — must come from the **environment**, not from files baked into the code.
+Configuration that varies between environments: database URLs, credentials, feature flags, the port to listen on must come from the environment, not from files baked into the code.
 
-- **Why:** the *same build artefact* must run in development, staging, and production. If configuration is compiled in, each environment needs a different build, and "the thing you tested" is no longer "the thing you shipped."
-- **How:** read config from environment variables (or a secrets manager) at startup; commit a documented list of the variables, never their values; provide safe defaults only for genuinely non-secret settings.
+- **Why:** the same build artefact must run in development, staging, and production. If configuration is compiled in, each environment needs a different build, and "the thing you tested" is no longer "the thing you shipped."
+
+- **How:** read config from environment variables (or a secrets manager) at startup; commit a documented list of the variables, never their values; provide safe defaults only for genuinely non secret settings.
 
 ```python
 # Good: configuration is read from the environment at startup
@@ -3353,14 +3938,15 @@ PORT         = int(os.environ.get("PORT", "8000")) # non-secret default is accep
 DEBUG        = os.environ.get("DEBUG", "false").lower() == "true"
 ```
 
-The corollary is the *twelve-factor rule of thumb*: could you open-source the repository right now without leaking a single credential? If not, configuration is in the wrong place.
+The corollary is the twelve factor rule of thumb: could you open-source the repository right now without leaking a single credential? If not, configuration is in the wrong place.
 
 ### 1.2 Testable Units
 
 The application must be decomposed so that behaviour can be verified **without** standing up the whole system. That means business logic lives in small functions and classes with explicit inputs and outputs, separated from I/O (HTTP handlers, database calls, the filesystem). Dependencies are injected rather than reached for globally, so a test can substitute a fake.
 
 - A pure function `calculate_total(items) -> Decimal` is trivially testable.
-- The same logic buried inside an HTTP handler that also reads the database and writes a response is not — you can only test it by running a server and a database.
+
+- The same logic buried inside an HTTP handler that also reads the database and writes a response is not you can only test it by running a server and a database.
 
 Testable units are what make the **test pyramid** in Section 5.3 possible; an application without them can only ever be tested end-to-end, slowly and flakily.
 
@@ -3369,14 +3955,15 @@ Testable units are what make the **test pyramid** in Section 5.3 possible; an ap
 Building the application twice from the same source must produce functionally identical artefacts, on any machine, with no manual steps.
 
 - **Pin dependencies** to exact versions with a lockfile (`requirements.txt` + hashes, `package-lock.json`, `pom.xml` with fixed versions). "Latest" is not repeatable.
-- **Isolate the build** from the host — a container image or a clean virtual environment — so a developer laptop and a CI runner produce the same result.
+
+- **Isolate the build** from the host a container image or a clean virtual environment so a developer laptop and a CI runner produce the same result.
+
 - **One command** builds everything: `make build`, `docker build`, or an equivalent. If the build lives only in someone's shell history, it is not repeatable.
 
 Repeatable builds are the precondition for the pipeline caching in Section 5.4: you can only safely reuse a cached artefact if identical inputs are guaranteed to produce identical outputs.
 
 ---
-
-## 2. The Twelve-Factor App: The Enduring and the Dated
+## 2. The Twelve Factor App: The Enduring and the Dated
 
 The **twelve-factor methodology** (Heroku, 2011) codified how to build applications for automated delivery. More than a decade on, some factors are foundational and some reflect the platform of their era. A mature engineer knows which is which.
 
@@ -3384,33 +3971,39 @@ The **twelve-factor methodology** (Heroku, 2011) codified how to build applicati
 
 These remain correct and underlie everything in this module:
 
-- **III. Config in the environment** — configuration from the environment, strictly separated from code (Section 1.1 above).
-- **X. Dev/prod parity** — keep environments as similar as possible so tests are predictive.
-- **VI. Processes are stateless** — the app holds no sticky in-process state; session and cache state live in a backing store (this is what made stateless load balancing viable in Lab 5.1.B).
-- **IV. Backing services are attached resources** — a database, cache, or queue is reached by a URL from config and can be swapped without code changes.
-- **V. Strictly separate build, release, run** — a build stage produces an artefact, a release stage binds it to config, and the run stage executes it; releases are immutable and numbered.
-- **XI. Logs as event streams** — write to stdout/stderr and let the platform route logs; do not manage log files inside the app (note how the reference app below logs to stdout, while Nginx in Section 5.1 handled *its own* access logs at the edge).
+- **III. Config in the environment**: Configuration from the environment, strictly separated from code (Section 1.1 above).
+
+- **X. Dev/prod parity**: Keep environments as similar as possible so tests are predictive.
+
+- **VI. Processes are stateless**: The app holds no sticky in-process state; session and cache state live in a backing store (this is what made stateless load balancing viable in Lab 5.1.B).
+
+- **IV. Backing services are attached resources**: A database, cache, or queue is reached by a URL from config and can be swapped without code changes.
+
+- **V. Strictly separate build, release, run**: A build stage produces an artefact, a release stage binds it to config, and the run stage executes it; releases are immutable and numbered.
+
+- **XI. Logs as event streams**: Write to stdout/stderr and let the platform route logs; do not manage log files inside the app (note how the reference app below logs to stdout, while Nginx in Section 5.1 handled *its own* access logs at the edge).
 
 ### 2.2 The Dated (or Debated) Elements
 
-These need reinterpretation in a container- and Kubernetes-centric world:
+These need reinterpretation in a container and Kubernetes centric world:
 
-- **The "one codebase, one app" mapping** predates the modern monorepo, where many deployable services share a single repository. The principle (a codebase maps to a *release lineage*) survives; the strict one-repo-per-app reading does not.
-- **Factor XII, "run admin tasks as one-off processes,"** assumed a Heroku-style `run` command. Today the same intent is met by Kubernetes Jobs, init containers, or migration steps in the pipeline — the *mechanism* is dated, the *idea* (admin tasks are first-class, versioned, and repeatable) endures.
-- **"Port binding" (VII)** assumed the app exports HTTP by binding a port directly. Behind a container orchestrator and a service mesh, port binding is mediated by the platform; the app still listens on a port from config (Section 1.1), but "self-contained web server" is now the platform's job as much as the app's.
-- **Concurrency via the process model (VIII)** — "scale out by adding processes" is still sound, but async runtimes and autoscaling controllers have made the picture richer than "add more unix processes."
+- **The "one codebase, one app" mapping** predates the modern monorepo, where many deployable services share a single repository. The principle (a codebase maps to a *release lineage*) survives; the strict one repo per app reading does not.
 
-The through-line: twelve-factor's *goals* — statelessness, environment config, build/release/run separation, disposability — are exactly the delivery-friendly properties of Section 1. Its *prescriptions* sometimes show their 2011 origins.
+- **Factor XII, "run admin tasks as one off processes,"** assumed a Heroku style `run` command. Today the same intent is met by Kubernetes Jobs, init containers, or migration steps in the pipeline the *mechanism* is dated, the *idea* (admin tasks are first class, versioned, and repeatable) endures.
+
+- **"Port binding" (VII)** assumed the app exports HTTP by binding a port directly. Behind a container orchestrator and a service mesh, port binding is mediated by the platform; the app still listens on a port from config (Section 1.1), but "self contained web server" is now the platform's job as much as the app's.
+
+- **Concurrency via the process model (VIII)**: "scale out by adding processes" is still sound, but async runtimes and autoscaling controllers have made the picture richer than "add more unix processes."
+
+The through line: twelve factor's *goals*: Statelessness, environment config, build/release/run separation, disposability are exactly the delivery friendly properties of Section 1. Its *prescriptions* sometimes show their 2011 origins.
 
 ---
-
 # Laboratory Exercise
 
 ---
-
 ## Lab 5.2: Build the Reference Application
 
-Build a small, delivery-friendly HTTP service that Sections 5.3 and 5.4 will test and ship. It has one non-trivial piece of business logic (an order-total calculation) deliberately separated from its HTTP layer, so it can be unit-tested in isolation.
+Build a small, delivery friendly HTTP service that Sections 5.3 and 5.4 will test and ship. It has one non trivial piece of business logic (an order total calculation) deliberately separated from its HTTP layer, so it can be unit tested in isolation.
 
 ### Part 1: Project Layout
 
@@ -3418,17 +4011,17 @@ Build a small, delivery-friendly HTTP service that Sections 5.3 and 5.4 will tes
 refapp/
 ├── refapp/
 │   ├── __init__.py
-│   ├── pricing.py        # pure business logic — no I/O
-│   └── app.py            # HTTP layer (Flask) — thin, delegates to pricing
+│   ├── pricing.py        # pure business logic, no I/O
+│   └── app.py            # HTTP layer (Flask), thin, delegates to pricing
 ├── tests/
 │   ├── test_pricing.py   # unit tests (Section 5.3)
 │   └── test_api.py       # integration tests (Section 5.3)
-├── requirements.txt      # pinned dependencies — repeatable builds
+├── requirements.txt      # pinned dependencies, repeatable builds
 ├── Dockerfile            # isolated, repeatable build
 └── Makefile              # one command each: build, test, run
 ```
 
-### Part 2: The Testable Unit — `refapp/pricing.py`
+### Part 2: The Testable Unit - `refapp/pricing.py`
 
 ```python
 from decimal import Decimal, ROUND_HALF_UP
@@ -3449,7 +4042,7 @@ def order_total(items: list[tuple[Decimal, int]]) -> Decimal:
 
 Every function here has explicit inputs and outputs and touches no network, database, or filesystem. This is the "testable unit" of Section 1.2.
 
-### Part 3: Environment-Sourced Configuration — `refapp/app.py`
+### Part 3: Environment Sourced Configuration - `refapp/app.py`
 
 ```python
 import os
@@ -3482,10 +4075,10 @@ if __name__ == "__main__":
 
 The HTTP layer is thin: it parses the request, calls `order_total`, and serialises the result. All logic worth testing lives in `pricing.py`.
 
-### Part 4: Repeatable Build — pinned deps, Dockerfile, Makefile
+### Part 4: Repeatable Build - pinned deps, Dockerfile, Makefile
 
 ```
-# requirements.txt — exact versions only
+# requirements.txt - exact versions only
 Flask==3.0.3
 gunicorn==22.0.0
 pytest==8.2.0
@@ -3516,7 +4109,7 @@ run:
 	GREETING="Reference App" PORT=8000 python -m refapp.app
 ```
 
-### Part 5: Verify the Delivery-Friendly Properties
+### Part 5: Verify the Delivery Friendly Properties
 
 ```bash
 make build          # repeatable: same inputs -> same image
@@ -3531,27 +4124,20 @@ curl -s -X POST localhost:8000/total \
 The **same image** ran as "Staging" purely by changing an environment variable — no rebuild. This image is what Section 5.4's pipeline will build once and promote across environments. In production it sits behind Nginx exactly as in Lab 5.1.B, with TLS terminated at the edge (Section 5.1 §5).
 
 ---
-
 # Section 5.3: Testing Strategy
 
----
-
-# Theory
-
----
 
 ## 1. Testing as a First-Class Engineering Concern
 
 A test suite is not a chore bolted on at the end; it is part of the system's design. The reference application in Section 5.2 was *built* to be testable — logic separated from I/O, dependencies injected, config externalised — precisely so a fast, layered suite is possible. The strategy questions that follow are engineering decisions with real trade-offs: how to shape the suite, how to keep services compatible, how to manage test data, and what to do with a test that fails at random.
 
 ---
-
 ## 2. The Test Pyramid
 
 The test pyramid describes the healthy *proportion* of tests by scope. Cost and speed rise as you move up; the number of tests should fall.
 
 ```
-          /\        End-to-end        few, slow, brittle
+          /\        End to end        few, slow, brittle
          /  \       (full system)     high confidence, high cost
         /----\
        /      \     Integration       some, medium speed
@@ -3568,18 +4154,17 @@ The test pyramid describes the healthy *proportion* of tests by scope. Cost and 
 The anti-pattern is the **ice-cream cone** — many end-to-end tests, few units. It is slow, flaky, and gives vague failures. Effort belongs at the base.
 
 ---
-
 ## 3. Contract Testing
 
 When services talk to each other, end-to-end tests across all of them are slow and fragile. **Contract testing** verifies each side against a shared, versioned **contract** (the expected request/response shape) *independently*:
 
 - The **consumer** test asserts "I send this request and expect this response shape," producing a contract.
+
 - The **provider** test replays that contract against the real provider and asserts it still honours it.
 
 Neither test needs both services running at once, so they stay in the fast integration tier rather than the slow end-to-end tier. Contract testing is what lets independently deployed services evolve without a combinatorial explosion of cross-service tests — the provider learns it has broken a consumer *before* deploying, from its own pipeline. Tools such as Pact implement this consumer-driven pattern.
 
 ---
-
 ## 4. Test Data Management
 
 Tests need data, and where that data comes from determines whether the suite is fast, deterministic, and isolated.
@@ -3592,32 +4177,31 @@ Tests need data, and where that data comes from determines whether the suite is 
 Good test-data hygiene is a direct enabler of the pipeline **parallelism** in Section 5.4: only tests that own their data can safely run at the same time.
 
 ---
-
-## 5. Quarantining a Flaky Test — an Engineering Decision
+## 5. Quarantining a Flaky Test: an Engineering Decision
 
 A **flaky test** passes and fails on the same code without any change. Flakiness is corrosive: once developers see red builds that "just need a re-run," they start ignoring failures, and a genuine regression slips through behind the noise.
 
-The disciplined response is to **quarantine** the test — a deliberate, tracked decision, not a silent deletion:
+The disciplined response is to **quarantine** the test - a deliberate, tracked decision, not a silent deletion:
 
-1. **Detect** flakiness (e.g. the test fails then passes on retry, or a flaky-test detector flags it across runs).
+1. **Detect** flakiness (e.g. the test fails then passes on retry, or a flaky test detector flags it across runs).
+
 2. **Quarantine:** move it out of the blocking suite so it no longer fails the build, but keep running it in a non-blocking lane so its signal isn't lost.
-3. **Ticket it:** file a tracked issue with an owner and a deadline. Quarantine is a loan against reliability, not a graveyard.
-4. **Fix the root cause** — usually a timing/ordering dependency, shared mutable state, or reliance on an external service — then **return the test to the blocking suite**.
 
-The trade-off is explicit: quarantining trades a small, *known* loss of coverage for a large gain in signal quality, because a suite everyone trusts and heeds is worth more than a suite that is nominally complete but routinely ignored. What you must never do is leave a test quarantined and untracked — that is how coverage quietly rots.
+3. **Ticket it:** file a tracked issue with an owner and a deadline. Quarantine is a loan against reliability, not a graveyard.
+ 
+4. **Fix the root cause** usually a timing/ordering dependency, shared mutable state, or reliance on an external service - then **return the test to the blocking suite**.
+
+The trade off is explicit: quarantining trades a small, *known* loss of coverage for a large gain in signal quality, because a suite everyone trusts and heeds is worth more than a suite that is nominally complete but routinely ignored. What you must never do is leave a test quarantined and untracked - that is how coverage quietly rots.
 
 ---
-
 # Laboratory Exercise
 
 ---
-
 ## Lab 5.3: A Layered Test Suite for the Reference Application
 
-Add unit and integration tests to the `refapp` project from Lab 5.2, then wire in a flaky-test example and quarantine it.
+Add unit and integration tests to the `refapp` project from Lab 5.2, then wire in a flaky test example and quarantine it.
 
-### Part 1: Unit Tests (the base) — `tests/test_pricing.py`
-
+### Part 1: Unit Tests (the base) - `tests/test_pricing.py`
 ```python
 from decimal import Decimal
 import pytest
@@ -3636,10 +4220,9 @@ def test_negative_quantity_rejected():
         line_total(Decimal("10.00"), -1)
 ```
 
-These run in milliseconds, need no server or database, and pinpoint the failing function. You can add dozens more cheaply — the wide base of the pyramid.
+These run in milliseconds, need no server or database, and pinpoint the failing function. You can add dozens more cheaply - the wide base of the pyramid.
 
-### Part 2: Integration Test (the middle) — `tests/test_api.py`
-
+### Part 2: Integration Test (the middle) - `tests/test_api.py`
 ```python
 import json
 from refapp.app import create_app
@@ -3704,62 +4287,57 @@ pytest -q -m "not quarantine"
 pytest -q -m "quarantine" || true
 ```
 
-The flaky test no longer fails the build, but it is still tracked (issue `REF-142`) and still executed for visibility. The next step in a real project is to fix the timing dependency — for example, inject a clock the test can control — and move the test back under the gate.
+The flaky test no longer fails the build, but it is still tracked (issue `REF-142`) and still executed for visibility. The next step in a real project is to fix the timing dependency for example, inject a clock the test can control and move the test back under the gate.
 
 ---
-
 # Section 5.4: Pipeline Speed as a Product Feature
 
----
-
-# Theory
-
----
 
 ## 1. Speed Is a Feature, Not a Nicety
 
-The layered suite of Section 5.3 only helps if developers actually wait for it. A pipeline that takes forty minutes is a pipeline people route around — they merge on green-ish, batch changes, and stop trusting the gate. Fast feedback changes behaviour: small changes, merged often, verified while the context is still in the developer's head. So pipeline duration is treated as a **product feature** with a target (for example, "under ten minutes to first signal") and is measured over time like any other. Three levers deliver it: caching, parallelism, and selective scheduling.
+The layered suite of Section 5.3 only helps if developers actually wait for it. A pipeline that takes forty minutes is a pipeline people route around - they merge on green-ish, batch changes, and stop trusting the gate. Fast feedback changes behaviour: small changes, merged often, verified while the context is still in the developer's head. So pipeline duration is treated as a **product feature** with a target (for example, "under ten minutes to first signal") and is measured over time like any other. Three levers deliver it: caching, parallelism, and selective scheduling.
 
 ---
-
 ## 2. Caching
 
 Most of a pipeline's time is spent redoing work whose inputs did not change. Caching reuses prior results keyed on their inputs.
 
-- **Dependency caches.** Restore `pip`, `npm`, or Maven downloads keyed on the **lockfile hash**. The cache is reused only while dependencies are unchanged and rebuilt automatically when the lockfile changes. This is safe precisely because Section 5.2 made builds repeatable — identical inputs guarantee identical dependencies.
-- **Build-layer caches.** Docker layer caching reuses image layers whose instructions and inputs are unchanged. Ordering the `Dockerfile` so rarely-changed steps (installing dependencies) come *before* frequently-changed steps (copying source) maximises cache hits — which is exactly why the Lab 5.2 `Dockerfile` copies `requirements.txt` and installs *before* copying the application code.
-- **The cache-key discipline.** A cache is only correct if its key captures every input that affects the output. Too broad a key serves stale results; too narrow a key never hits. Key on content hashes, not on "latest."
+- **Dependency caches.** Restore `pip`, `npm`, or Maven downloads keyed on the **lockfile hash**. The cache is reused only while dependencies are unchanged and rebuilt automatically when the lockfile changes. This is safe precisely because Section 5.2 made builds repeatable - identical inputs guarantee identical dependencies.
+
+- **Build layer caches.** Docker layer caching reuses image layers whose instructions and inputs are unchanged. Ordering the `Dockerfile` so rarely-changed steps (installing dependencies) come *before* frequently changed steps (copying source) maximises cache hits which is exactly why the Lab 5.2 `Dockerfile` copies `requirements.txt` and installs *before* copying the application code.
+
+- **The cache key discipline.** A cache is only correct if its key captures every input that affects the output. Too broad a key serves stale results; too narrow a key never hits. Key on content hashes, not on "latest."
 
 ---
-
 ## 3. Parallelism
 
 Independent work should run at the same time rather than in sequence.
 
-- **Parallel jobs.** Lint, unit tests, and a type check share no state and can run as three simultaneous jobs; total wall-clock time becomes the slowest one, not their sum.
-- **Test sharding.** A large unit suite is split across N runners (for example, by test file) and executed concurrently. This only works because Section 5.3's tests own their own data and share no state — sharding a suite full of order-dependent tests produces random failures.
-- **Fan-out / fan-in.** Build once, then fan out to run many test shards against that single artefact, then fan in to a deploy step that runs only if every shard passed. The reference image is built one time and reused, never rebuilt per shard.
+- **Parallel jobs.** Lint, unit tests, and a type check share no state and can run as three simultaneous jobs; total wall clock time becomes the slowest one, not their sum.
+
+- **Test sharding.** A large unit suite is split across N runners (for example, by test file) and executed concurrently. This only works because Section 5.3's tests own their own data and share no state sharding a suite full of order dependent tests produces random failures.
+
+- **Fan out / fan in.** Build once, then fan out to run many test shards against that single artefact, then fan in to a deploy step that runs only if every shard passed. The reference image is built one time and reused, never rebuilt per shard.
 
 Parallelism has a floor: adding runners past the point where the longest single job dominates buys nothing, and it costs money. Parallelise until the critical path is a single irreducible job.
 
 ---
-
 ## 4. Selective Scheduling
 
 The fastest work is the work you correctly skip. Selective scheduling runs only what a given change could affect.
 
-- **Path-based triggers.** A change touching only documentation need not run the full build-and-test pipeline; a change under `refapp/pricing.py` must. Pipelines can gate whole stages on which paths changed.
-- **Affected-target selection.** Build systems that understand the dependency graph (Bazel, Nx, Turborepo) compute the set of targets downstream of a change and test only those. In a monorepo this is the difference between testing one service and testing forty.
+- **Path based triggers.** A change touching only documentation need not run the full build and test pipeline; a change under `refapp/pricing.py` must. Pipelines can gate whole stages on which paths changed.
+
+- **Affected target selection.** Build systems that understand the dependency graph (Bazel, Nx, Turborepo) compute the set of targets downstream of a change and test only those. In a monorepo this is the difference between testing one service and testing forty.
+
 - **Test impact analysis.** More advanced setups map which tests exercise which code and, on a given change, run only the covering tests in the fast gate — deferring the full suite to a scheduled run.
 
-The safeguard is honesty about the dependency graph: selective scheduling is only safe when "what this change affects" is computed correctly. When in doubt the system must fall back to running more, not less — a fast pipeline that ships a regression is not fast, it is broken. A common, safe pattern is *selective on every push, exhaustive on merge to main and on a nightly schedule*.
+The safeguard is honesty about the dependency graph: selective scheduling is only safe when "what this change affects" is computed correctly. When in doubt the system must fall back to running more, not less a fast pipeline that ships a regression is not fast, it is broken. A common, safe pattern is *selective on every push, exhaustive on merge to main and on a nightly schedule*.
 
 ---
-
 # Laboratory Exercise
 
 ---
-
 ## Lab 5.4: A Fast Pipeline for the Reference Application
 
 Assemble a CI pipeline for `refapp` that applies all three levers, builds the image once, runs the layered suite from Section 5.3, and deploys the WAR-equivalent artefact to the environment stood up in Section 5.1. The example uses GitHub Actions syntax; the concepts map directly to GitLab CI, Jenkins, or any modern runner.
@@ -3833,7 +4411,8 @@ jobs:
 What each lever contributes here: **caching** (`cache: pip`, `cache-from: gha`) skips re-downloading and re-building unchanged inputs; **parallelism** (`unit` and `lint` run together, `unit` shards across two runners); **selective scheduling** (`paths-ignore` skips docs-only pushes, `if: github.ref == 'refs/heads/main'` deploys only from main). The image is built exactly once in `build` and the deploy consumes that single artefact — the "build once, promote everywhere" principle from Section 5.2, closing the loop back to the servers configured in Section 5.1.
 
 ---
-
 *End of Module 5: Web Servers, Applications, and Testing Strategy.*
 
-*This module deployed web and application services (Section 5.1), built a delivery-friendly reference application governed by externalised config, testable units, and repeatable builds (Section 5.2), placed it under a layered test suite (Section 5.3), and delivered it through a pipeline treated as a product feature (Section 5.4) — fulfilling the module objective in support of CLO 5.*
+*This module deployed web and application services (Section 5.1), built a delivery friendly reference application governed by externalised config, testable units, and repeatable builds (Section 5.2), placed it under a layered test suite (Section 5.3), and delivered it through a pipeline treated as a product feature (Section 5.4) fulfilling the module objective in support of CLO 5.*
+
+---
