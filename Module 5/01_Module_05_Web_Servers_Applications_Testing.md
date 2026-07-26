@@ -2137,7 +2137,7 @@ python3 /opt/demo-backend/app.py
 ```bash
 curl -s http://127.0.0.1:5000/ | grep -o "<h1>.*</h1>"
 ```
-![Testing Proxy Server](<Testing Proxy Server Through Terminal.png>)
+![Testing Proxy Server](<images/Testing Proxy Server Through Terminal.png>)
 
 Stop it with `Ctrl+c`. systemd takes over next.
 
