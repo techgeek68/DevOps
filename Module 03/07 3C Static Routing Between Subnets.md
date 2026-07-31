@@ -2,7 +2,12 @@
 
 **Module 3: Networking Fundamentals**
 **Time:** 60 to 90 minutes
-**Machines:** three VMs
+**Machines:** three VMs — two endpoint hosts and one router
+
+**Maps to syllabus Lab 3C:** connect two machines on separate segments using static routes and evidence the routing table before and after.
+**Read first:** Module 3 sections 3.3 (Routing) and 3.10 (NAT, Addressing, and CIDR in Practice).
+
+> **The two machines the syllabus means are `vm-a` and `vm-b`.** Each sits on its own segment (`vm-a` on `net-1`, `vm-b` on `net-2`) with no shared link, which is precisely "two machines on separate segments." `vm-r` is not a third endpoint; it is the router that connects them, the piece of infrastructure a static route on each host points at. The address ranges here (`10.10.1.0/24` and `10.10.2.0/24`) are deliberately kept clear of the `10.0.0.0/16` VPC ranges used in Lab 3B, so the two labs never share an address by accident.
 
 ---
 

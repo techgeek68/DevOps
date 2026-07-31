@@ -4,6 +4,11 @@
 **Time:** 45 minutes
 **Equipment:** paper and a pen. No VM, no cloud account, no terminal until the very end.
 
+**Maps to syllabus Lab 3B:** given a fixed address block, calculate the mask, broadcast address, and usable host range, then design a three tier segmented network on paper for later physical realization in Module 8.
+**Read first:** Module 3 section 3.10 (NAT, Addressing, and CIDR in Practice).
+
+> **ABET alignment.** This design exercise supports **ABET Student Outcome (1)**: an ability to identify, formulate, and solve complex engineering problems by applying principles of engineering, science, and mathematics. The subnetting arithmetic is the mathematics; the three tier layout is the engineering problem it is applied to.
+
 ---
 
 > Do the arithmetic by hand first, then verify with a tool. Reversing that order teaches you nothing, because a calculator that hands you the answer never shows you where the boundary is. The whole value of this lab is that you will be able to do it in your head during a design review, while someone is waiting for you to answer.
@@ -79,6 +84,18 @@ ipcalc 192.168.1.130/26
 ```
 
 > `/30` is worth noticing. Two usable addresses out of four, which is exactly enough for a point to point link between two routers and nothing else. That is what it exists for, and you will see it again the first time you configure a VPN tunnel.
+
+**Answer key. Check only after you have committed each row to paper.**
+
+| Given | Mask | Network | Broadcast | Usable range | Hosts |
+|---|---|---|---|---|---|
+| 192.168.1.130/26 | 255.255.255.192 | 192.168.1.128 | 192.168.1.191 | 192.168.1.129 to 192.168.1.190 | 62 |
+| 10.0.5.200/27 | 255.255.255.224 | 10.0.5.192 | 10.0.5.223 | 10.0.5.193 to 10.0.5.222 | 30 |
+| 172.16.4.77/28 | 255.255.255.240 | 172.16.4.64 | 172.16.4.79 | 172.16.4.65 to 172.16.4.78 | 14 |
+| 192.168.10.19/30 | 255.255.255.252 | 192.168.10.16 | 192.168.10.19 | 192.168.10.17 to 192.168.10.18 | 2 |
+| 10.20.30.40/25 | 255.255.255.128 | 10.20.30.0 | 10.20.30.127 | 10.20.30.1 to 10.20.30.126 | 126 |
+
+> Note the `/30` row: `192.168.10.19` is the **broadcast** address, not a host. That off by one is exactly the kind that quietly breaks a real point to point link, so read the row rather than assuming the address you were handed is assignable.
 
 ---
 ---
