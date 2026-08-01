@@ -1,6 +1,6 @@
-# Lab 1A: Measure DORA, Honestly
+# Lab 1A: Measure DORA
 
----
+
 > *No terminal is needed for this lab. A calculator, a spreadsheet, and a GitHub account are enough.*
 ---
 ### Objective
@@ -18,7 +18,7 @@ This is the same analysis a DevOps engineer runs when joining a new team, evalua
 
 ### Prerequisites
 - Completed Part A of Module 1 (Foundations)
-- Read Part B Section 4 of Module 1 (DORA Metrics)
+- Read Part B Section 4 of Module 1 (DORA Metrics). Note that DORA's framework was expanded in 2024 from four metrics to five, adding Deployment Rework Rate alongside Deployment Frequency, Lead Time for Changes, Change Failure Rate, and Failed Deployment Recovery Time. Confirm Section 4 covers all five before starting this lab, since Step 4 below assumes familiarity with rework rate as a named DORA metric, not an improvised category.
 - A GitHub repository to commit your report to (create a new one called `devops-labs` if you do not have one already)
 
 ---
@@ -39,7 +39,7 @@ You **cannot** meaningfully measure the other three from public data:
 |---|---|
 | Change Failure Rate | Requires internal incident tracking; public patch releases are an unreliable proxy |
 | Failed Deployment Recovery Time | Requires deployment timestamps and incident resolution timestamps from internal systems |
-| Rework Rate | Requires knowing which deployments were unplanned fixes versus planned work |
+| Deployment Rework Rate | Requires knowing which deployments were unplanned fixes for a production incident versus planned work |
 
 Understanding *why* these cannot be observed is as important as measuring the ones that can. A DevOps engineer who quotes DORA numbers without understanding the limitations of the underlying data is making decisions on incomplete evidence.
 
@@ -157,15 +157,15 @@ You might be tempted to use patch releases as a proxy for failures (if v2.4.1 ap
 
 You might be tempted to use the time between a bug report and its closure. Explain why this understates or overstates recovery time. Consider: issue creation and closure dates do not reflect when the failure was *detected* in production, when the team *started* working on it, or when the fix was actually *deployed*. FDRT requires deployment timestamps and incident management data that live in internal systems like PagerDuty, Datadog, or the CI/CD platform's deploy logs.
 
-**Rework Rate**
+**Deployment Rework Rate**
 
-Explain why there is no reliable public proxy at all. Consider: rework rate requires knowing the *intent* behind a deployment. Was this deployment planned feature work, or was it an unplanned fix for something that broke in a previous deployment? That classification exists in the team's issue tracker and sprint planning tool, not in the release tag name.
+Explain why there is no reliable public proxy at all. Consider: rework rate requires knowing the *intent* behind a deployment. Was this deployment planned feature work, or was it unplanned work triggered specifically by a user facing bug or incident in production? That classification exists in the team's issue tracker and incident record, tied back to the specific deployment that caused the problem, not in the release tag name. This is also the newest of the five DORA metrics, formalized in 2024, so do not expect to find it named this way in older sources.
 
 ---
 ### Step 5: Set Up Your Repository and Write the Report
 
 ```bash
-# If you do not already have a devops-labs repo
+# If you do not already have a devops labs repo
 mkdir ~/devops-labs
 cd ~/devops-labs
 git init
@@ -178,9 +178,7 @@ cd labs/lab-1a
 
 Create a file called `dora-baseline-report.md` in your `labs/lab-1a` folder. Your report must follow this structure:
 
----
----
----
+
 # DORA Baseline Report
 
 **Repository Analyzed:** [full GitHub URL]
@@ -196,7 +194,7 @@ Create a file called `dora-baseline-report.md` in your `labs/lab-1a` folder. You
 | Lead Time for Changes | | | Yes (approximate) |
 | Change Failure Rate | Not measurable | N/A | No |
 | Failed Deployment Recovery Time | Not measurable | N/A | No |
-| Rework Rate | Not measurable | N/A | No |
+| Deployment Rework Rate | Not measurable | N/A | No |
 
 ---
 ## Deployment Frequency
@@ -234,7 +232,7 @@ Create a file called `dora-baseline-report.md` in your `labs/lab-1a` folder. You
 ### Failed Deployment Recovery Time
 [Your paragraph: what it measures, what data source is needed, why issue timestamps are an inadequate proxy, what instrumentation a team would add]
 
-### Rework Rate
+### Deployment Rework Rate
 [Your paragraph: what it measures, why no public proxy exists at all, what internal systems would track it]
 
 ---
@@ -248,8 +246,6 @@ If you were the DevOps engineer on this team and had access to their internal sy
 
 **How you would instrument it:** [1 to 2 sentences: name the tool and the data source. Be specific.]
 
----
----
 ---
 ### Step 6: Commit and Push the Report
 
@@ -273,7 +269,7 @@ Verify the report is visible on GitHub before marking this lab complete.
 
 - A completed `dora-baseline-report.md` committed to your `devops-labs` GitHub repository
 - Deployment frequency and lead time measured with supporting data tables
-- Three written paragraphs explaining why change failure rate, FDRT, and rework rate cannot be measured from public data
+- Three written paragraphs explaining why change failure rate, FDRT, and deployment rework rate cannot be measured from public data
 - A specific instrumentation recommendation with a named tool
 
 ---

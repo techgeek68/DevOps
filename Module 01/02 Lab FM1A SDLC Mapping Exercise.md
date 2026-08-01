@@ -23,7 +23,9 @@ Read Section F.1 of this module before starting.
 Choose one of the following application scenarios:
  
 - Student course registration portal
+
 - Food delivery app connecting restaurants, riders, and customers
+
 - Online library catalog with book borrowing and reservation features
 Fill in the table below. For each phase, write what specifically happens for your chosen app, who is responsible, and at least one DevOps tool or practice that applies.
  
@@ -41,7 +43,10 @@ Fill in the table below. For each phase, write what specifically happens for you
 **Expected Output**
  
 - Completed table for all seven phases reflecting your chosen application, not generic descriptions
+
 - Short reflection answering both questions:
+
   1. Which phase is most expensive to get wrong and why?
+
   2. What changes in deployment if automation is removed?
 ---

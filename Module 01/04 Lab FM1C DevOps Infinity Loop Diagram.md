@@ -22,12 +22,17 @@ Draw the DevOps infinity loop with all eight stages in the correct order:
 ```
 Plan > Code > Build > Test > Release > Deploy > Operate > Monitor
 ```
+
 Your diagram must include:
  
 1. All eight stages are labeled in order
+
 2. At least two tools are labeled at each stage from the table below
+
 3. Arrows showing the continuous cyclic flow, including the feedback arrow from Monitor back to Plan
+
 4. One sentence annotation at each stage describing what happens there
+
 
 **Tool reference**
  
@@ -60,10 +65,5 @@ A diagram image (PNG, JPG, or PDF), a Mermaid code block that renders correctly,
 - Labeling stages without annotations. Annotations show understanding of what happens at each stage, not just the names.
 
 - Using only one tool per stage.
----
----
-**Extension task (optional)**
- 
-For each tool you labeled, add a one line note explaining what it does at that specific stage. This turns the diagram into a study reference card for the rest of the course.
- 
+
 ---
