@@ -170,7 +170,8 @@ mkdir ~/devops-labs
 cd ~/devops-labs
 git init
 git remote add origin https://github.com/<your-username>/devops-labs.git
-
+```
+```bash
 # Create the folder for this lab
 mkdir -p labs/lab-1a
 cd labs/lab-1a
@@ -178,7 +179,7 @@ cd labs/lab-1a
 
 Create a file called `dora-baseline-report.md` in your `labs/lab-1a` folder. Your report must follow this structure:
 
-
+---
 # DORA Baseline Report
 
 **Repository Analyzed:** [full GitHub URL]
@@ -186,7 +187,7 @@ Create a file called `dora-baseline-report.md` in your `labs/lab-1a` folder. You
 **Data Window:** [date range you examined]
 
 ---
-## Summary Table
+## Summary
 
 | DORA Metric | Measured Value | DORA Level | Observable from Public Data? |
 |---|---|---|---|
@@ -271,6 +272,84 @@ Verify the report is visible on GitHub before marking this lab complete.
 - Deployment frequency and lead time measured with supporting data tables
 - Three written paragraphs explaining why change failure rate, FDRT, and deployment rework rate cannot be measured from public data
 - A specific instrumentation recommendation with a named tool
+
+---
+## Sample Output:
+
+---
+### DORA Baseline Report:
+
+**Repository Analyzed:** https://github.com/cli/cli
+**Analysis Date:** 2026-08-02
+**Data Window:** 2026-05-04 to 2026-08-02 (releases) / 2026-05-11 to 2026-07-31 (PR sample)
+
+---
+### Summary
+
+| DORA Metric | Measured Value | DORA Level | Observable from Public Data? |
+|---|---|---|---|
+| Deployment Frequency | 1 release every 18 days | Medium | Yes |
+| Lead Time for Changes | 13.3 days average | Medium | Yes (approximate) |
+| Change Failure Rate | Not measurable | N/A | No |
+| Failed Deployment Recovery Time | Not measurable | N/A | No |
+| Deployment Rework Rate | Not measurable | N/A | No |
+
+---
+### Deployment Frequency
+
+**Raw data:** 5 releases published between 2026-05-04 and 2026-08-02 (v2.93.0, v2.94.0, v2.95.0, v2.96.0, v2.97.0)
+
+**Calculation:**
+```
+5 releases / 90 days = 0.056 releases per day
+90 / 5 = 18 days between releases (average)
+```
+
+**Result:** ~1 release every 18 days → Medium
+
+**Observation:** cli/cli ships on a steady but not fast cadence, roughly two to three releases a month. The gap is consistent rather than bursty, which points to a scheduled release train rather than continuous deployment. That fits a CLI tool distributed through package managers (Homebrew, apt, winget), where every release has to propagate through multiple external channels, not just get pushed to a server.
+
+---
+### Lead Time for Changes
+
+**PRs analyzed:**
+
+| PR | Open to Merge | Merge to Release | Total |
+|---|---|---|---|
+| #13967 Fix skill picker label wrapping | 5.9 days | 0.5 days | 6.5 days |
+| #13723 Allow downloading release assets without auth | 1.9 days | 6.0 days | 7.9 days |
+| #13823 Add named field columns to item-list | 14.2 days | 8.2 days | 22.4 days |
+| #13393 fix(copilot): hint when exec fails | 1.0 days | 15.2 days | 16.2 days |
+| #13541 feat: add discussion command set | 13.3 days | 0.1 days | 13.3 days |
+| **Average** | **7.3 days** | **6.0 days** | **13.3 days** |
+
+**Result:** 13.3 days average → Medium
+
+**Observation:** The two segments are close to evenly split, which means neither review time nor release cadence is the sole bottleneck. #13823 sat as a merged PR for over a week before the next release picked it up, purely because it landed right after a release went out. That's a release-train artifact, not a sign the team is slow: a PR merged the day before a scheduled release ships almost instantly (#13541, 0.1 days), while one merged the day after can wait weeks. Maintainers here also work on GitHub's normal schedule rather than as unpaid volunteers, so the multi-week review times seen on some pure community projects don't fully apply.
+
+---
+### Why the Other Three Metrics Cannot Be Measured from Public Data
+
+### Change Failure Rate
+
+Change Failure Rate measures the percentage of deployments to production that result in a degraded service and require remediation, such as a hotfix, rollback, or patch. Measuring it properly requires a deployment log tied to an incident tracker, so each production change can be checked against whether it triggered an incident. Public GitHub data offers no such link. A patch release like v2.88.1 following v2.88.0 by two days looks like a plausible failure signal, but cli/cli's own changelog shows plenty of patch releases that are dependency bumps, documentation fixes, or small usability tweaks with no incident behind them at all. Without the team's own incident record, there's no way to tell a failure-driven patch from a routine one, so counting patch releases as failures would overstate the rate and counting only releases labeled as security fixes would understate it. A team wanting to measure this properly would instrument their CI/CD pipeline to tag each deployment with a unique ID, then link that ID to their incident management system (PagerDuty, Opsgenie, or even a structured incident-response GitHub label) so every incident can be traced back to the deployment that caused it.
+
+### Failed Deployment Recovery Time
+
+Failed Deployment Recovery Time measures how long it takes a team to restore service after a failed change reaches production. It requires two precise timestamps: when the failure was detected in production, and when the fix was deployed and verified. Neither timestamp is visible in issue or PR metadata. A GitHub issue's creation date reflects when someone noticed and reported a problem, which can lag well behind when monitoring actually detected it. The issue's closing date reflects when a maintainer marked it resolved, which can happen before the fix is actually deployed, or well after, if the issue sits closed pending a release. Using issue open-to-close time as a proxy would blend triage delay, review time, and release cadence into one number that doesn't represent recovery time at all. Measuring FDRT properly requires deployment timestamps from the CI/CD system and detection/resolution timestamps from an observability platform like Datadog, Grafana, or a PagerDuty incident timeline, correlated against the specific deployment event that caused the failure.
+
+### Deployment Rework Rate
+
+Deployment Rework Rate has no reliable public proxy at all, because it depends on the intent behind a change rather than anything visible in a commit or release tag. The metric asks what fraction of deployments were unplanned work forced by a production incident, as opposed to planned feature or maintenance work. A commit message or PR title doesn't reliably say which category it falls into, and open source maintainers don't consistently label PRs as "incident response" versus "planned." That classification lives in a team's internal issue tracker and incident record, where a ticket is explicitly tagged as caused by a production incident and linked forward to the deployment that fixed it. Since this metric was only formalized as part of the DORA framework in 2024, most projects, cli/cli included, don't structure their public history around it at all. A team measuring this internally would tag each deployment at merge time as planned or incident-driven directly in their issue tracker (e.g., a required "incident-fix" label enforced by their PR template), then compute the ratio from that tagged history rather than trying to infer it after the fact.
+
+---
+### If This Were My Team
+
+**Chosen metric:** Change Failure Rate
+
+**Why:** It's the metric most directly tied to customer-facing risk, and unlike FDRT or Rework Rate it can be instrumented with a single missing link (deployment to incident tagging) rather than requiring a full incident management overhaul.
+
+**How you would instrument it:** Tag every GitHub Actions deployment job with a unique deployment ID written to a deployments table, and require every incident opened in the team's incident tool (e.g., PagerDuty) to reference the deployment ID it was traced back to. Change Failure Rate then becomes a simple query: incidents linked to a deployment ID divided by total deployments in the same window.
 
 ---
 ### Common Issues
