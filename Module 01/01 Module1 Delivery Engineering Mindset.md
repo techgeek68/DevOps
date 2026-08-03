@@ -50,9 +50,10 @@ A team building a fitness tracking app would document requirements like step cou
 
 Before committing budget and engineers, the team evaluates whether the project is actually achievable. This is not a formality. Projects get cancelled or descoped here when the numbers do not work out.
 
---
+---
 > Questions answered Can we afford to build and run this? Do we have engineers with the right skills? Are there legal or regulatory constraints? Is the timeline realistic?
---
+---
+
 **Example:** 
 
 A startup building a smart home security app must confirm it can afford hardware integration testing, comply with IoT security standards in each target country, and hire embedded systems engineers before locking in a launch date.
