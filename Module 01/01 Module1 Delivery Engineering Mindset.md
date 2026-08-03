@@ -32,6 +32,7 @@ DevOps does not replace the SDLC. It accelerates it. When you automate a pipelin
 
 ## The Seven Phases
 
+---
 #### Phase 1: Requirement Collection
 
 The team gathers and documents what the software must do. This is the most expensive phase to get wrong. A missed or misunderstood requirement discovered after the code is written costs ten times more to fix than one caught here.
@@ -44,16 +45,19 @@ The team gathers and documents what the software must do. This is the most expen
 
 A team building a fitness tracking app would document requirements like step counting, heart rate monitoring, sleep tracking, and Bluetooth sync with wearable devices. Each requirement becomes a user story in Jira: "As a user, I want to see my daily step count on the home screen so I can track my progress without opening a sub-menu."
 
+---
 #### Phase 2: Feasibility Study
 
 Before committing budget and engineers, the team evaluates whether the project is actually achievable. This is not a formality. Projects get cancelled or descoped here when the numbers do not work out.
 
-**Questions answered:** Can we afford to build and run this? Do we have engineers with the right skills? Are there legal or regulatory constraints? Is the timeline realistic?
-
+--
+> Questions answered Can we afford to build and run this? Do we have engineers with the right skills? Are there legal or regulatory constraints? Is the timeline realistic?
+--
 **Example:** 
 
 A startup building a smart home security app must confirm it can afford hardware integration testing, comply with IoT security standards in each target country, and hire embedded systems engineers before locking in a launch date.
 
+---
 #### Phase 3: System Design
 
 Requirements are translated into a technical blueprint. This includes system architecture (how the pieces fit together), database schema (how data is structured and stored), API specifications (how services communicate), UI wireframes (what users see), and infrastructure design (where everything runs).
@@ -64,6 +68,7 @@ Requirements are translated into a technical blueprint. This includes system arc
 
 For a ride sharing app, architects choose a microservices architecture with separate services for users, trips, pricing, and notifications. They design the database tables, draw the API contracts between services, and produce wireframes for the booking and payment flows. All of this is documented before a single line of code is written.
 
+---
 #### Phase 4: Coding
 
 Developers implement the application based on the approved design. In modern teams, this does not mean one long period of coding followed by a handoff. It means short cycles: write a small piece, commit it, have it reviewed, merge it, repeat.
@@ -74,6 +79,7 @@ Developers implement the application based on the approved design. In modern tea
 
 Backend developers build REST APIs in Python. Frontend developers build the browser interface in React. Database queries run against PostgreSQL. All code lives in Git, and every change goes through a pull request before it merges.
 
+---
 #### Phase 5: Testing
 
 The QA team verifies that the software works correctly, handles edge cases, stays fast under load, and meets the original requirements. In modern DevOps, testing is not a separate phase that happens at the end. Tests run automatically on every code change, continuously throughout development.
@@ -88,6 +94,7 @@ The QA team verifies that the software works correctly, handles edge cases, stay
 | Performance | Behavior under load | k6, JMeter |
 | Security | Known vulnerabilities in code and dependencies | Semgrep, Trivy |
 
+---
 #### Phase 6: Deployment
 
 The tested application is released to the production environment, where real users access it. In traditional teams, this meant a manual process handled by operations engineers, often late at night, following a long checklist. In DevOps, deployment is automated through a pipeline and can happen multiple times per day.
@@ -98,6 +105,7 @@ The tested application is released to the production environment, where real use
 
 A GitHub Actions pipeline triggers on every merge to the main branch. It builds a Docker image, runs the test suite, scans for vulnerabilities, signs the image, and deploys it to a Kubernetes cluster. The whole process takes about eight minutes and requires no human steps.
 
+---
 #### Phase 7: Maintenance
 
 After deployment, the team keeps the software running, secure, and aligned with evolving user needs. This never ends.
@@ -180,7 +188,7 @@ The name comes from the visual: requirements flow downward into design, design f
 
 The market changes. Users change their minds. Technologies evolve. In Waterfall, a requirement discovered to be wrong in week nine of coding requires going all the way back to phase one. By the time the product ships, it may be solving a problem that no longer exists.
 
-**Real case:** 
+#### Real Case:
 
 The UK National Health Service launched a national IT programme in 2003, planned using a Waterfall approach. Requirements were locked before technology or clinical workflows were fully understood. The programme was cancelled in 2011 after spending over 10 billion pounds without delivering the core systems. The root cause: massive upfront requirements commitments that could not adapt to changing clinical needs.
 
@@ -205,6 +213,7 @@ The Agile Manifesto (2001) established four core values:
 
 *Plan > build > demo > reflect, then repeat. The backlog reprioritizes instead of triggering paperwork.*
 
+---
 ### How a sprint works:
 
 1. **Sprint Planning:** 
@@ -223,6 +232,7 @@ At the end of the sprint, the team demos working software to stakeholders and co
 
 The team reflects on their process and agrees on one or two concrete improvements to make in the next sprint.
 
+---
 ### Example: E-commerce site, built with Agile:
 
 | Sprint | Delivered | Stakeholder Feedback |
@@ -233,7 +243,7 @@ The team reflects on their process and agrees on one or two concrete improvement
 
 Notice that feedback from Sprint 1 becomes a story in Sprint 2. There is no formal change request process. The backlog simply gets reprioritized.
 
-
+---
 ### When Agile works best:
 
 - Requirements are expected to evolve or are not fully understood upfront, which describes most modern software.
@@ -313,12 +323,14 @@ The DevOps lifecycle is represented as an infinite loop to show that it never en
 Plan > Code > Build > Test > Release > Deploy > Operate > Monitor > (back to Plan)
 ```
 
+---
 #### Stage 1: Plan
 
 Teams define requirements, prioritize features, and break work into small, traceable tasks. Every piece of work ties to a user story. Commit messages reference ticket numbers so a change can be traced from the original requirement all the way to the production deployment.
 
 **Tools:** Jira, GitHub Issues, Confluence.
 
+---
 #### Stage 2: Code
 
 Developers write code on short lived feature branches and commit frequently. Small, focused commits are easier to review, easier to test, and easier to roll back if something goes wrong. Long running branches cause painful merge conflicts and delayed integration.
@@ -343,6 +355,7 @@ Push to remote and open a pull request
 git push origin feat/user-password-reset
 ```
 
+---
 #### Stage 3: Build
 
 On every push or pull request, a CI pipeline triggers automatically. It compiles the code, runs unit tests, runs static analysis, scans for known vulnerabilities, and produces a build artifact such as a container image or a JAR file. If any step fails, the pipeline stops immediately and notifies the developer.
@@ -368,6 +381,7 @@ push to branch
 
 *Triggered on every push. If any gate fails, the pipeline halts and reports back at once.*
 
+---
 #### Stage 4: Test
 
 Automated quality gates run at multiple levels. Tests are not a phase that happens at the end of development. They run continuously throughout.
@@ -384,18 +398,24 @@ Automated quality gates run at multiple levels. Tests are not a phase that happe
 
 Shifting left means running these tests earlier and earlier in the pipeline. A security vulnerability found during development costs a fraction of one found after deployment.
 
+---
 #### Stage 5: Release
 
 Releasing is the decision to make a tested build available in production. Two related but distinct practices govern how that decision is made:
 
-- **Continuous Delivery:** every passing build produces a release candidate that could be deployed to production. A human approves the final promotion to production.
+- **Continuous Delivery:**
 
-- **Continuous Deployment:** every passing build deploys to production automatically, with no human step required.
+Every passing build produces a release candidate that could be deployed to production. A human approves the final promotion to production.
+
+- **Continuous Deployment:** 
+
+Every passing build deploys to production automatically, with no human step required.
 
 Most organizations practice Continuous Delivery. Fully automated Continuous Deployment is common at high maturity organizations with very high test coverage and mature rollback capabilities. Release is also where the concepts of deploying and releasing separate: code can be deployed to production while the user facing feature stays hidden behind a feature flag until the business decides to turn it on.
 
 **Tools:** GitHub Actions, ArgoCD, GitHub Environments.
 
+---
 #### Stage 6: Deploy
 
 Deployment is the technical act of getting the released build running in the production environment. The strategy chosen controls how much risk each deployment carries:
@@ -415,17 +435,19 @@ Deployment is the technical act of getting the released build running in the pro
 
 **Tools:** GitHub Actions, Jenkins, ArgoCD, Helm, Terraform, Ansible.
 
+---
 #### Stage 7: Operate
 
 Once deployed, the application must be kept running. This includes configuration management, patching, scaling, and incident response. In a mature DevOps setup, all infrastructure is defined as code. No engineer makes manual changes directly to production servers. Every change goes through version control, code review, and the pipeline.
 
 **Tools:** Ansible, Terraform, Kubernetes.
 
+---
 #### Stage 8: Monitor
 
 Observability tools collect metrics, logs, and traces from the running system. Dashboards and alerts give the team visibility into what the system is doing right now, what happened at a specific moment in the past, and where a slow request spent its time.
 
-The three pillars of observability:
+**The three pillars of observability:**
 
 **Fig. F.3e · The three pillars of observability**
 
