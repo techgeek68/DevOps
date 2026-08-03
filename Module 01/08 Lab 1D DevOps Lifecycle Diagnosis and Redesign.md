@@ -1,6 +1,7 @@
 # Lab 1D: DevOps Lifecycle Diagnosis and Redesign
 
-> *Lab 1C introduces configuration drift hands on. Lab 1D brings together the main ideas from Module 1 in one applied design exercise.*
+
+> Lab 1C introduces configuration drift hands on. Lab 1D brings together the main ideas from Module 1 in one applied design exercise.
 
 ### Objective
 

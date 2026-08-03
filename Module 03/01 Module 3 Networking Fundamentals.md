@@ -433,7 +433,6 @@ Your own machine and resolver might already have a stale answer cached, or might
 `ping` resolves a name and then immediately tries to reach it, so a failure tells you nothing about which of the two steps broke. `dig` answers the resolution question alone. Separate the two questions before you try to answer either.
 
 ---
-
 ## 3.5 Load Balancing
 
 ### What Is a Load Balancer?
@@ -592,7 +591,6 @@ Three failed requests within 30 seconds mark that backend unavailable for the ne
 **What makes a good health endpoint.** A health check should verify that the process can serve traffic, and stop there. If `/health` also checks the database, a brief database blip marks every instance unhealthy at once and the load balancer removes the entire fleet, converting a degraded dependency into a full outage. Keep a shallow liveness check for the load balancer and put dependency checks somewhere else, such as a separate readiness endpoint or your monitoring system. This is exactly the distinction Kubernetes draws between liveness and readiness probes, which you will meet again in the Kubernetes module.
 
 ---
-
 ## 3.7 Firewalls and Security Groups
 ---
 ### What Is a Firewall?
@@ -717,7 +715,6 @@ The stateless nature of NACLs has a consequence people meet exactly once and nev
 | Typical use | Everyday service access control | Coarse subnet level blocks |
 
 ---
-
 ### `iptables`
 
 `iptables` is the lower level Linux firewall framework that `firewalld` builds on top of. On newer systems, `iptables` commands are translated to `nftables` rules. You will encounter `iptables` directly on older systems and in Docker networking, where Docker adds its own rules to manage container networking.
@@ -1032,13 +1029,11 @@ The network address, the broadcast address, plus three additional addresses AWS 
 It is the default in every tutorial, which means it is also the default in the VPC your colleague built, the one the acquired company built, and the one your VPN vendor uses internally. The day you need to peer two of them, you cannot. Allocate deliberately: one distinct range per environment and per region, written down in one place before anything is provisioned.
 
 ---
-
 # Part 2: Linux and Cloud Networking Reference
 
 > This part is your existing working reference, kept in full. Everything that follows is preserved from your earlier notes, with corrections added as callouts where a command or file location has changed since it was written. Nothing has been removed.
 
 ---
-
 ## 3.11 Networking Concepts
 
 **Network Communication Types**
@@ -1148,7 +1143,6 @@ It’s what helps your computer find websites by turning names like example.com 
 <img width="778" height="149" alt="Screenshot 2025-10-28 at 8 25 59 AM" src="https://github.com/user-attachments/assets/732c4d65-2791-4bde-b9ca-83d9e7833d66" />
 
 ---
-
 ## 3.12 IPv4 Classful Addressing & Special Ranges
 
 While modern networks use CIDR (Classless Inter Domain Routing), understanding historical classful addressing helps interpret legacy systems and documentation.
@@ -1181,7 +1175,6 @@ Other reserved ranges:
 - 255.255.255.255 (Local broadcast)
 
 ---
-
 ## 3.13 Linux Networking Commands
 
 **Interface Configuration**
@@ -1326,7 +1319,6 @@ Example:
 <img width="918" height="569" alt="Screenshot 2025-10-28 at 9 31 30 AM" src="https://github.com/user-attachments/assets/6de30bea-f948-451e-afc2-6f04983588e9" />
 
 ---
-
 ## 3.14 Network Interface Configuration
 
 **Using `ifconfig` (Legacy, so Avoid in New Systems)**
@@ -1367,7 +1359,6 @@ Note:
  - Always use `ip` for scripting and automation unless supporting legacy systems.
 
 ---
-
 ## 3.15 Configuring IP, Gateway, DNS (Persistent Configuration)
 
 **Method 1: NetworkManager CLI (nmcli)**
@@ -1532,7 +1523,6 @@ Editing file: `vim xxxxxxx.nmconnection`
 <img width="1035" height="166" alt="Screenshot 2025-10-28 at 11 35 50 AM" src="https://github.com/user-attachments/assets/05786fb9-dce4-4cfa-a9b2-8c92575756fa" />
 
 ---
-
 ## 3.16 DNS Details
 
 Viewing DNS Configuration:
@@ -1577,8 +1567,6 @@ sudo systemctl restart NetworkManager    # Restart NetworkManager
 
 
 ---
-
-
 ## 3.17 Routing & Gateway
 
 Viewing Routing Table:
@@ -1761,8 +1749,6 @@ gcloud compute firewall-rules list
 
 
 ---
-
-
 ## 3.20 Container & Kubernetes Networking
 
 **Docker**
@@ -1803,7 +1789,6 @@ kubectl describe networkpolicy allow-nginx
 > Use least privilege policies only allow required ports and traffic between containers/pods.
 
 ---
-
 ## 3.21 Infrastructure as Code (IaC) for Networking
 
 **Example: Terraform AWS Security Group**
@@ -1916,7 +1901,6 @@ gcloud compute firewall-rules list
 > Aggregate logs and alerts centrally (e.g., ELK, Datadog, Splunk).
 
 ---
-
 ## 3.23 Cleanup & Reversion
 
 - If you added a temporary IP:
@@ -1938,7 +1922,6 @@ nmcli connection up eth0
 ```
 
 ---
-
 ## 3.24 Legacy vs Modern
 
 | Function | Legacy Tool(s) | Modern Preferred |
@@ -1954,7 +1937,6 @@ nmcli connection up eth0
 
 
 ---
-
 ## 3.25 References
 
 - RFC 1918 – Address Allocation for Private Internets
@@ -1975,13 +1957,11 @@ nmcli connection up eth0
 - RFC 8446 (TLS 1.3), RFC 6598 (Carrier Grade NAT range)
 
 ---
-
 # Part 3: Labs
 
 > **Before you start:** take a snapshot of every VM you touch in these labs. Lab 3A deliberately breaks networking on a machine you are connected to, and the fastest recovery from a mistake is a rollback, not a rescue. If you are working over SSH, keep a console session open through your hypervisor as well. Deleting a default route over the same SSH connection you are relying on is a lesson everyone learns exactly once.
 
 ---
-
 ## Lab 3A: Diagnose a Broken DNS and Routing Scenario
 
 **Goal:** work a broken system from Layer 3 upward using `ping`, `traceroute`, `ip route`, `ss`, and `dig`, and produce a written record of what each command told you and why you ran it in that order.
@@ -1989,7 +1969,6 @@ nmcli connection up eth0
 **Machine:** one RHEL 9, Rocky 9, or Fedora VM with working networking and a snapshot taken.
 
 ---
-
 ### Step 1: Record the healthy baseline
 
 You cannot recognize broken if you never looked at working. Capture this first and keep it.
@@ -2006,7 +1985,6 @@ dig +short redhat.com
 Save the output. It is your reference for the rest of the lab.
 
 ---
-
 ### Step 2: Break it
 
 Run the breakage script below, or have a partner run it while you look away. Each fault produces a different symptom, and the point of the lab is to distinguish them.
@@ -2034,7 +2012,6 @@ firewall-cmd --reload
 Fault 1 is a Layer 3 problem. Fault 2 is a Layer 7 name resolution problem that will look like a Layer 3 problem if you are careless. Fault 3 is a Layer 4 problem. They will overlap and confuse each other, which is the entire point, because that is what a real incident feels like.
 
 ---
-
 ### Step 3: Diagnose bottom to top
 
 Work the layers in order. Do not skip a step because you think you already know the answer.
@@ -2134,7 +2111,6 @@ sudo firewall-cmd --reload
 Test again from the other machine. It answers.
 
 ---
-
 ### Step 4: The deliverable
 
 Write up the incident as a table. This is the actual output of the lab, and it is the habit that transfers to your job.
@@ -2151,13 +2127,11 @@ Two questions to answer in prose at the end, in a few sentences each:
 2. You saw both `Connection refused` and a hanging timeout in this lab. Explain what each one tells you about where the packet went, and why that difference is the fastest thing you can learn in the first thirty seconds of an incident.
 
 ---
-
 ## Lab 3B: Subnetting and a Three Tier VPC Design (On Paper)
 
 **Goal:** do the arithmetic by hand, then design an address plan you will build for real in Module 8. No VMs, no cloud account. A pen is sufficient.
 
 ---
-
 ### Part 1: Given 192.168.1.0/26
 
 Calculate, showing your working:
@@ -2188,7 +2162,6 @@ Block size is `256 - 192 = 64`, so /26 subnets of this network begin at .0, .64,
 Now do the same for `192.168.1.130/26` without looking back. Block size 64; 130 falls in the block that starts at 128. Network 192.168.1.128, broadcast 192.168.1.191, usable .129 to .190, 62 hosts. Check yourself with `ipcalc 192.168.1.130/26`.
 
 ---
-
 ### Part 2: Design a three tier VPC layout in 10.0.0.0/16
 
 You are given `10.0.0.0/16`: 65,536 addresses, far more than you need, which is the point. The goal is not to use it all. It is to divide it so the tiers are separable, the boundaries are obvious to a human reading a route table, and there is room left over.
@@ -2234,13 +2207,11 @@ Total consumed: six /24 subnets out of the 256 available in a /16. Roughly 98 pe
 Keep this page. In Module 8 you will build it in Terraform and compare what you designed against what you had to change.
 
 ---
-
 ## Lab 3C: Two VMs on Different Subnets, Connected with Static Routes
 
 **Goal:** make two hosts on different subnets talk to each other through a Linux router you configure yourself, and see `ip route` change before and after. This is the lab that turns routing from a diagram into something you have actually done.
 
 ---
-
 ### Topology
 
 Three VMs. The router has an interface on each subnet; the hosts have one each.
@@ -2254,7 +2225,6 @@ Three VMs. The router has an interface on each subnet; the hosts have one each.
 In VirtualBox, create two internal networks named `net-1` and `net-2`. Give VM-A one adapter on `net-1`, VM-B one adapter on `net-2`, and VM-R two adapters, one on each. Keep each VM's existing NAT adapter for internet access; it does not participate in this lab.
 
 ---
-
 ### Step 1: Address the interfaces
 
 On **VM-A** (substitute your real interface name from `ip -br link`):
@@ -2281,7 +2251,6 @@ sudo ip link set enp0s9 up
 ```
 
 ---
-
 ### Step 2: `ip route` before
 
 On VM-A:
@@ -2310,7 +2279,6 @@ Read that message carefully. It is not a timeout and it is not a refusal. The ke
 Run the same three commands on VM-B and record them too.
 
 ---
-
 ### Step 3: Turn VM-R into a router
 
 A Linux host with two interfaces does not forward between them by default. Two things must be true.
@@ -2341,7 +2309,6 @@ sudo firewall-cmd --get-active-zones
 > The `trusted` zone is correct for an isolated lab and wrong for anything else. In production you would write an explicit forwarding policy allowing only the flows you intend. The point here is to see that IP forwarding and firewall policy are two separate gates, and traffic must pass both.
 
 ---
-
 ### Step 4: Add the static routes
 
 VM-R knows both networks, because it has an interface on each. VM-A and VM-B do not. Tell them.
@@ -2361,7 +2328,6 @@ sudo ip route add 10.10.1.0/24 via 10.10.2.1 dev enp0s8
 Both routes are required. A route is a one way instruction: without the second one, VM-A's packet reaches VM-B and VM-B's reply has nowhere to go. The symptom of a missing return route is a ping that hangs rather than failing fast, and diagnosing that from VM-A alone is impossible, which is a lesson in itself.
 
 ---
-
 ### Step 5: `ip route` after
 
 On VM-A:
@@ -2395,7 +2361,6 @@ ip route get 10.10.2.10
 ```
 
 ---
-
 ### Step 6: Make it persistent
 
 Everything above is lost at reboot, which is correct behaviour for `ip` commands and a nasty surprise if you assumed otherwise. Persist the route with NetworkManager on VM-A:
@@ -2409,7 +2374,6 @@ ip route show
 Reboot the VM and run `ip route show` again. If the route is still there, you have done this properly.
 
 ---
-
 ### Deliverables
 
 1. `ip route show` from VM-A and VM-B, before and after, four outputs total
@@ -2427,59 +2391,45 @@ sudo sysctl -w net.ipv4.ip_forward=0    # on VM-R
 ```
 
 ---
-
 # Common Mistakes at This Level
 
 **Diagnosing top down instead of bottom up.** 
 
 Jumping straight into application logs before confirming basic reachability wastes time. Always confirm Layer 3 and Layer 4 first.
 
+---
 **Treating TTL as a value you only think about when first creating a record.** 
 
 TTL needs active management around any planned infrastructure change, not just at creation time.
 
+---
 **Defaulting to sticky sessions instead of fixing the underlying architecture.** 
 
 Sticky sessions are a workaround for stateful application servers, not a goal in themselves. The better long term fix is almost always moving session state to a shared store.
 
+---
 **Writing one giant security group rule instead of several specific ones.**
 
 A rule allowing all traffic from `0.0.0.0/0` on all ports is sometimes added "temporarily" for convenience during testing and then forgotten. Default deny only protects you if the specific rules you add stay tightly scoped.
 
+---
 **Sizing a subnet for today's needs with no room for growth.** 
 
 Address space is cheap to allocate generously up front and expensive to redesign later once real resources depend on it.
 
+---
 **Overlapping CIDR ranges across VPCs, accounts, and the office network.**
 
 The cost is not paid on the day you allocate the range. It is paid on the day two networks need to be peered and cannot be, and by then real workloads depend on both.
 
+---
 **Debugging a name resolution problem with `ping` instead of `dig`.**
 
 `ping` merges two questions, resolution and reachability, into one result. Separate them before trying to answer either.
 
+---
 **Testing only from localhost.**
 
 `curl http://localhost` succeeding proves the process is running. It proves nothing about the firewall, the security group, or the bind address. A service bound to `127.0.0.1` passes every local test and is unreachable from every other machine on earth.
-
----
-
-# What Changed Since These Notes Were Written
-
-Corrections applied to the existing material, each verified against current upstream documentation.
-
-| Item | What the old notes said | Current state |
-|---|---|---|
-| DNS cache flush | `systemd-resolve --flush-caches` | The binary was renamed `resolvectl` in systemd 239. Use `resolvectl flush-caches`. The old name survives only as a deprecated symlink. |
-| RHEL interface config | `/etc/sysconfig/network-scripts/ifcfg-*` presented as the RHEL method | Deprecated since RHEL 9, Fedora 36, Rocky 9, where NetworkManager keyfiles in `/etc/NetworkManager/system-connections/` are the default. RHEL 10 and Rocky 10 **remove** `network-scripts` and `ifcfg` support entirely. Convert with `nmcli connection migrate`. |
-| TLS key exchange | "asymmetric encryption (typically RSA or ECDHE)" | TLS 1.3 removed RSA key exchange. Every TLS 1.3 handshake uses an ephemeral (EC)DHE exchange for forward secrecy. RSA remains only as a signature algorithm. |
-| Nginx HTTP/2 | `listen 443 ssl http2;` | Deprecated as of Nginx 1.25.1. Use `listen 443 ssl;` plus a separate `http2 on;` directive. The old form warns on every `nginx -t`. |
-| Nginx ciphers | `ssl_ciphers HIGH:!aNULL:!MD5;` | Too permissive by current guidance; `HIGH` still admits CBC suites. Use the Mozilla intermediate profile (ECDHE with AEAD only) and note that `ssl_ciphers` has no effect on TLS 1.3. Generate for your exact version at `ssl-config.mozilla.org`. |
-| `tcp_tw_recycle` | Widely recommended in older material for TIME_WAIT | Removed from the Linux kernel in 4.12. It broke clients behind NAT. `net.ipv4.tcp_tw_reuse` remains valid; connection pooling is the real fix. |
-| `traceroute` privileges | "Requires root privileges" | Default UDP mode generally runs unprivileged on modern Linux. ICMP mode (`-I`) needs root or `cap_net_raw`. `mtr` is the better tool for intermittent loss. |
-| `iptables` | Presented as the live firewall framework | On RHEL 8+ and Fedora, `iptables` is a compatibility shim over `nftables`. Rules written by `firewalld` may not appear in `iptables -L` at all. Inspect with `nft list ruleset`. |
-| Azure docs link | `docs.microsoft.com` | Redirected to `learn.microsoft.com`. |
-
-Everything else in the existing notes checked out against current Red Hat, Nginx, AWS, and systemd documentation and has been kept as written.
 
 ---

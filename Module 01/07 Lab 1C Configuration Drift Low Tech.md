@@ -1,6 +1,7 @@
 # Lab 1C: Configuration Drift, the Low Tech Version
 
-> *This lab requires two Linux VMs, or two terminal sessions on one VM with separate directories simulating two machines. No cloud account, no Terraform, no cost.*
+
+> This lab requires two Linux VMs, or two terminal sessions on one VM with separate directories simulating two machines. No cloud account, no Terraform, no cost.
 
 ### Objective
 
@@ -46,14 +47,16 @@ SSH into your first VM, or open a terminal for Machine A, and perform these step
 ```bash
 # Install nginx
 sudo dnf install -y nginx
-
+```
+```bash
 # Allow nginx to bind to port 8080 under SELinux
 # (port 8080 is labeled for caching proxies by default, not for a server to listen on)
 sudo dnf install -y policycoreutils-python-utils
 if ! sudo semanage port -a -t http_port_t -p tcp 8080 2>/dev/null; then
     sudo semanage port -m -t http_port_t -p tcp 8080
 fi
-
+```
+```bash
 # Create a simple server block for this lab
 cat << 'EOF' | sudo tee /etc/nginx/conf.d/lab1c.conf > /dev/null
 server {
@@ -65,7 +68,8 @@ server {
     }
 }
 EOF
-
+```
+```bash
 # Validate config
 sudo nginx -t
 
@@ -73,6 +77,7 @@ sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 
+```bash
 # Verify
 curl http://localhost:8080
 ```
@@ -82,7 +87,6 @@ Do not save these steps in a script. Do not document them anywhere. Just type th
 That is the point. Manual infrastructure changes are often made quickly and correctly, but without a durable, reviewable, version controlled record of how the machine reached its current state.
 
 ---
-
 ## Step 2: Machine B, the Scripted Way
 
 On your second VM, or in a second terminal, create a script:
@@ -158,7 +162,6 @@ The second run should produce the same end state. That is the key idea: the scri
 Note that this is still a simple shell script, not a full declarative system. It is more reproducible than manual work, but not as strong as proper infrastructure as code.
 
 ---
-
 ## Step 3: Introduce Drift
 
 Now simulate what happens three weeks later when someone makes a quick manual change to Machine A only.
@@ -167,7 +170,11 @@ On Machine A, edit the config by hand:
 
 ```bash
 sudo sed -i 's/server_name _;/server_name testing.local;/' /etc/nginx/conf.d/lab1c.conf
+```
+```bash
 sudo nginx -t
+```
+```bash
 sudo systemctl restart nginx
 ```
 
@@ -176,7 +183,6 @@ Do not make this change on Machine B. Do not update any script. Do not write it 
 This is the drift event.
 
 ---
-
 ## Step 4: Compare the Two Machines
 
 Now answer these questions by checking the machines, not from memory.
@@ -220,7 +226,6 @@ For one Nginx file, that is manageable. For a real server with many packages, se
 Yes. Run the script.
 
 ---
-
 ## Step 5: Write the Reflection
 
 Create `labs/lab-1c/drift-reflection.md` in your `devops-labs` repository and answer:
@@ -236,24 +241,33 @@ Create `labs/lab-1c/drift-reflection.md` in your `devops-labs` repository and an
 5. In Module 9, you will do this same exercise with Terraform against real AWS infrastructure. Based on this lab, what do you expect `terraform plan` to show you that the manual approach could not? Write your prediction. You will compare it later.
 
 ---
-
 ## Step 6: Commit
 
 If you created the script on Machine B, copy it into your repository first so it is tracked.
 
 ```bash
 mkdir -p ~/devops-labs/labs/lab-1c
+```
+```bash
 cp ~/setup-nginx.sh ~/devops-labs/labs/lab-1c/setup-nginx.sh
-
+```
+```bash
 cd ~/devops-labs
+```
+```bash
 git add labs/lab-1c/drift-reflection.md
+```
+```bash
 git add labs/lab-1c/setup-nginx.sh
+```
+```bash
 git commit -m "feat(lab-1c): add configuration drift exercise and reflection"
+```
+```bash
 git push origin main
 ```
 
 ---
-
 ## Expected Output
 
 - `labs/lab-1c/setup-nginx.sh` committed to your repository
@@ -261,7 +275,6 @@ git push origin main
 - A prediction about what Terraform will show in Module 9 that the manual approach could not
 
 ---
-
 ## Notes
 
 ### About SELinux and port 8080
@@ -285,7 +298,11 @@ sudo nginx -t
 
 Then inspect the Nginx service status with `sudo systemctl status nginx`.
 
+---
 ### About the Terraform version of this lab
+
 Older course materials may place a Terraform drift detection exercise earlier in the course. That exercise now lives in Module 9 because it depends on Terraform knowledge you do not yet have.
 
 This low tech version exists so you experience the drift problem first with almost no tooling, then solve it properly with real IaC tooling later.
+
+---

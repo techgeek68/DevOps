@@ -1,7 +1,8 @@
 # Module 2: Linux and Systems Fundamentals
 
 > **What this module is for.** Every later module in this course assumes you can drive a Linux host without hesitation. Containers are Linux kernel features. Kubernetes nodes are Linux hosts. Terraform provisioners, Ansible modules, CI runners, and observability agents all land on Linux. If the shell, systemd, permissions, networking, and SSH are not second nature, everything after this point becomes guesswork.
->
+
+---
 > **How this module is organised.**
 > * **Part 1:** Virtualization, hypervisors, and why Linux is the default platform. This is the conceptual setup for Module 6 (containers).
 > * **Part 2:** The core of Linux for DevOps. Filesystem hierarchy, commands, text processing, archiving, users and permissions, packages, editors, shell environment, Bash scripting, scheduling, logs, processes and performance, networking, firewalls, disks, tmux, and SSH.
@@ -9,17 +10,15 @@
 > * **Part 4:** Errata and version notes as of July 2026. Read this before you follow any command in Part 2 on a brand new Fedora 44 or RHEL 10 host.
 > * **Part 5:** Labs 2A through 2E. The theory is assessed through these, not separately.
 >
+---
 > **Reference platform for this module:** Fedora Server 44 or RHEL 10. Ubuntu 24.04 LTS equivalents are given where the two families diverge.
 
 ---
----
-
 # Part 1: Virtualization and Why Linux
 
 ---
 > **What Part 1 does.** It establishes the platform before you start typing commands on it. You will finish it knowing what a hypervisor is, where a Type 1 differs operationally from a Type 2, how a container differs from a virtual machine, and why Linux rather than anything else is the substrate the whole industry standardised on. Part 2 then puts you on the command line, and Part 3 returns to systemd in depth. The VM versus container comparison here is deliberately short: it is the setup for Module 6, where containers are the subject rather than the contrast.
 ---
-
 ## Hypervisors:
 
 ### Type 1 vs Type 2
@@ -62,7 +61,6 @@ However, in practice, KVM is almost always used together with QEMU, a separate u
 For DevOps work, what matters practically is that KVM/QEMU is the dominant hypervisor in Linux based production infrastructure. When you provision a virtual machine in your on premises data center or see bare metal virtualization running on RHEL or Fedora, KVM is almost certainly what is running underneath. Proxmox, the enterprise virtualization platform, runs on top of KVM. This is also the reason RHEL systems include native tools like `virsh` and `virt-manager` for managing KVM VMs directly.
 
 ---
-
 ## Why Linux Dominates DevOps
 
 This is not an accident or a tribal preference. There are specific technical reasons Linux became the default platform for servers, containers, and DevOps tooling, and understanding them helps you make better decisions about when to use what.
@@ -100,7 +98,6 @@ This means containers run with zero overhead on Linux. On Windows and macOS, run
 For a DevOps engineer, this means Linux is not just a preference for production workloads. It is a technical requirement for anything involving containers at scale.
 
 ---
----
 # Part 2: Linux for DevOps
 
 ## 1. Fundamental Linux Commands
@@ -115,7 +112,6 @@ When you log in to a Linux system, the shell prompt tells you who you are and wh
 ---
 <img width="754" height="236" alt="Screenshot 2026-06-21 at 7 00 08 AM" src="https://github.com/user-attachments/assets/d3a4f6a4-87b1-4db2-b018-09539c075d10" />
 
----
 ---
 ### System Information Commands
 
@@ -162,7 +158,6 @@ cat /proc/cpuinfo
 who                        
 ```
 ---
----
 ### Changing the Hostname
 
 * Syntax:
@@ -180,7 +175,6 @@ hostname
 ---
 <img width="818" height="226" alt="Screenshot 2026-06-17 at 7 43 36 PM" src="https://github.com/user-attachments/assets/4e8fa739-d45e-4010-961a-7e8e03337f88" />
 
----
 ---
 ### Linux Filesystem Hierarchy
 
@@ -216,7 +210,6 @@ hostname
 ---
 <img width="692" height="431" alt="Screenshot 2026-06-18 at 1 30 31 PM" src="https://github.com/user-attachments/assets/94ec8458-1d2d-46f3-a5ca-95bf5527d128" />
 
----
 ---
 ### Filesystem Navigation
 
@@ -266,7 +259,6 @@ locate sshd_config
 ---
 <img width="815" height="437" alt="Screenshot 2026-06-17 at 7 53 43 PM" src="https://github.com/user-attachments/assets/3b736567-971e-4314-9b14-d03d4c502f52" />
 
----
 ---
 ### File Viewing
 
@@ -320,7 +312,7 @@ tail -n 20 /etc/passwd
 ```bash
 tail -f /var/log/messages
 ```
----
+
 ---
 ### File Operations
 
@@ -337,6 +329,7 @@ touch emptyfile
 ```bash
 vi emptyfile
 ```
+---
 > Open file in vi editor (press **i** to insert, Esc, then **:wq** to save)
 ---
 * Copy file to /tmp/
@@ -401,7 +394,6 @@ tree SoftTech
 <img width="821" height="292" alt="Screenshot 2026-06-17 at 8 18 12 PM" src="https://github.com/user-attachments/assets/72a18207-e6d8-4819-bc85-f4ac525e9a94" />
 
 ---
----
 ### Hidden Files and Special Characters
 
 >Examples:
@@ -458,7 +450,6 @@ cat backup\ file
 <img width="715" height="299" alt="Screenshot 2026-06-18 at 8 46 37 AM" src="https://github.com/user-attachments/assets/1a31cdab-c041-49f6-ac3a-95b75d024e82" />
 
 ---
----
 ### Path Specifications
 
 `Path Specifications` define how file and directory locations are expressed in Linux. Understanding paths is essential for navigating the filesystem and executing commands correctly.
@@ -480,7 +471,6 @@ A relative path starts from the current directory:
 ---
 <img width="714" height="348" alt="Screenshot 2026-06-18 at 8 51 01 AM" src="https://github.com/user-attachments/assets/f58d6ba9-af1f-4634-8578-aefa6382ff25" />
 
----
 ---
 ## 2. Getting Help in Linux
 
@@ -543,7 +533,6 @@ info mv
 ```
 Navigation: `n` next node, `p` previous node, `u` up to parent, `q` quit.
 
----
 ---
 ### Finding Commands
 
@@ -736,7 +725,6 @@ pwd > /dev/null 2>&1
 ---
 <img width="814" height="425" alt="Screenshot 2026-06-18 at 10 31 29 AM" src="https://github.com/user-attachments/assets/72feeccc-1eeb-42da-b443-41f66426c51d" />
 
----
 ---
 ### tee
 
@@ -5205,7 +5193,6 @@ sudo firewall-cmd --reload
 sudo systemctl restart sshd
 ```
 ---
----
 ### 18.4 SSH Client Configuration
 
 `~/.ssh/config` lets you define connection shortcuts, so instead of typing full connection details every time, you just use an alias.
@@ -5248,7 +5235,6 @@ ssh db-tunnel      # Opens a shell on db.example.com AND sets up the tunnel
 The config file should have `600` permissions, or SSH may ignore it. Rules match top to bottom, so specific `Host` entries should sit above any wildcard (`Host *`) defaults.
 
 ---
----
 ### 18.5 Key Based Authentication
 
 Key based authentication is more secure than passwords. A key pair consists of:
@@ -5259,7 +5245,6 @@ Key based authentication is more secure than passwords. A key pair consists of:
 
 Authentication works by the server sending a random challenge; your client signs it with your private key, and the server verifies the signature using your public key. Only the holder of the matching private key can produce a valid signature.
 
----
 ---
 **Generating keys:**
 
@@ -5287,7 +5272,6 @@ ssh-keygen -t rsa -b 4096 -C "vagrant@localhost.localdomain" -f ~/.ssh/id_rsa
 <img width="808" height="77" alt="Screenshot 2026-07-08 at 12 54 56 PM" src="https://github.com/user-attachments/assets/3161cac2-df75-458f-bd74-3743be2b6532" />
 
 ---
----
 **Generated files:**
 
   - Private Key: `~/.ssh/id_ed25519` (keep this secret)
@@ -5296,7 +5280,6 @@ ssh-keygen -t rsa -b 4096 -C "vagrant@localhost.localdomain" -f ~/.ssh/id_rsa
     
 <img width="749" height="75" alt="Screenshot 2026-07-08 at 12 47 07 PM" src="https://github.com/user-attachments/assets/cee8b0ec-9472-4634-8c05-b5f1ba8b8cc9" />
 
----
 ---
 **Set permissions:**
 
@@ -5320,7 +5303,6 @@ chmod 600 ~/.ssh/authorized_keys      # Authorized keys: owner read/write only
 
 <img width="808" height="312" alt="Screenshot 2026-07-08 at 1 04 47 PM" src="https://github.com/user-attachments/assets/b5fce8d6-1bd5-4979-a9a9-5805ad9866ef" />
 
----
 ---
 **Copying the public key to a server:**
 
@@ -5346,7 +5328,6 @@ ssh-copy-id -i ~/.ssh/id_ed25519.pub vagrant@localhost.localdomain
 
 <img width="742" height="919" alt="Screenshot 2026-07-08 at 1 36 14 PM" src="https://github.com/user-attachments/assets/ddd1cf0f-46ab-4c51-aa3c-be6fcdf3a065" />
 
----
 ---
 ### SSH Agent
 
@@ -5466,7 +5447,6 @@ scp -r /local/dir/ user_name@hostname:/path/                     # Recursive dir
 scp -P 2222 file.txt user_name@hostname:/path/                   # Custom port
 ```
 
----
 ---
 ### rsync: Efficient Synchronization
 
@@ -5703,6 +5683,7 @@ When you run `systemctl isolate multi-user.target`, systemd starts all units ass
 
 For a headless server doing DevOps work, `multi-user.target` is the standard final state. You set this with `systemctl set-default multi-user.target`, which tells systemd what to boot into by default.
 
+---
 ### journald: Structured, Centralized Logging
 
 journald is systemd's logging subsystem. It collects log output from every service managed by systemd, from the kernel, and from the bootloader, and stores it in a structured binary format with rich metadata attached to every entry: timestamp (with microsecond precision), the unit that generated the log, the process ID, the user ID, the message priority, and more.
@@ -5736,6 +5717,7 @@ A critical difference from traditional log files: journald logs are binary, not 
 
 For long term storage, many organizations run a log shipper like Filebeat alongside systemd and ship journals to an Elastic Stack or similar centralized logging system, converting the structured binary format to searchable JSON in the process.
 
+---
 ### Socket Activation: Starting Services Only When Needed
 
 Socket activation is a systemd feature that lets a service remain stopped until the first connection arrives on its socket, then starts automatically in response. The socket stays open and listening at all times, managed by systemd itself. If the service crashes, systemd holds the socket and queues incoming connections until the service restarts, which means clients experience a brief delay rather than a connection refused error.
@@ -5771,7 +5753,6 @@ When you enable `myapp.socket`, systemd creates the socket and listens on port 8
 In DevOps environments, socket activation is most commonly used with SSH (sshd.socket can reduce memory usage on hosts that are not frequently SSHed into), with D-Bus activated services, and with some container runtimes. The deeper value of understanding socket activation is what it reveals about how systemd models dependencies: instead of "start service B after service A is running," you can model "start service B when someone actually tries to use it," which is a fundamentally more demand driven, resource efficient approach.
 
 ---
-
 ## Quick Reference: Virtualization and systemd
 
 | Concept | What It Is | Why It Matters |
@@ -5805,17 +5786,16 @@ In DevOps environments, socket activation is most commonly used with SSH (sshd.s
 **Watching container logs instead of journald for containerized services managed by systemd.** When a container is managed by a systemd service unit (common with Podman's `podman generate systemd` output or with rootless containers on RHEL), the container's standard output and standard error both flow into journald. You can read them with `journalctl -u <container-service-name>` rather than needing `podman logs` or `docker logs` at all.
 
 ---
----
----
-
-# Part 4: Errata and Version Notes, July 2026
+# Part 4: Errata and Version Notes
 
 The commands in Part 2 were written against an earlier platform baseline. They still work, but several defaults have moved. Read this section before you take any of the earlier material as current, and treat it as an example of the maintenance burden that documentation carries in this field.
 
+---
 ## Reference platform
 
 Fedora Linux 44 shipped on 28 April 2026, on kernel 6.19. RHEL 10 is the current enterprise release. Either is acceptable for the labs. Fedora 43 and RHEL 9 also work; where behaviour differs, it is called out below.
 
+---
 ## `dnf` is now DNF5
 
 Since Fedora 41, `/usr/bin/dnf` is **DNF5**, a rewrite in C++, not the old Python DNF4. Everything in Section 7 still runs, because the common subcommands were kept compatible, but two things changed that matter in practice:
@@ -5825,14 +5805,17 @@ Since Fedora 41, `/usr/bin/dnf` is **DNF5**, a rewrite in C++, not the old Pytho
 
 RHEL 10 still ships DNF4. Do not assume plugin parity between your Fedora lab box and your RHEL production box.
 
+---
 ## `ifcfg` files are gone
 
 Section 14 lists `/etc/sysconfig/network-scripts/` as the interface configuration directory for older RHEL and CentOS. Treat "older" as "obsolete": the `ifcfg` format was deprecated in RHEL 9 and **removed** in RHEL 10 and Rocky Linux 10. NetworkManager keyfiles in `/etc/NetworkManager/system-connections/` are the only supported persistent format. The new section on `nmcli` above replaces that row of the table.
 
+---
 ## The installer no longer creates a profile for every NIC
 
 Fedora 44 changed Anaconda so that it writes a NetworkManager profile only for the devices you configured during installation. On earlier releases, every detected NIC got a default DHCP profile. If you add a second adapter to a Fedora 44 VM after installation, expect `nmcli connection show` to list nothing for it, and expect to create the profile yourself. Lab 2A is written on that assumption.
 
+---
 ## `sshd` socket activation is not the Fedora default
 
 The socket activation discussion in Part 3 uses `sshd.socket` as an illustration. The concept is correct, but the defaults differ by distribution, and getting this wrong locks you out of a host:
@@ -5842,12 +5825,14 @@ The socket activation discussion in Part 3 uses `sshd.socket` as an illustration
 
 This is worth remembering as a general principle: when the port a daemon listens on does not match its config file, ask who owns the socket.
 
+---
 ## OpenSSH is now split into `sshd` and `sshd-session`
 
 From OpenSSH 9.8 onward, the listener process re executes a separate `sshd-session` binary per connection. This is a hardening change, and it means that when you read `ps` output or write SELinux and audit rules, you will see two distinct process names where you used to see one. It does not change any command in Section 18.
 
 Also from that era: DSA keys are disabled by default and are being removed outright. Only ED25519 and RSA (4096 bit, SHA2 signatures) are worth generating. Prefer ED25519.
 
+---
 ## Node.js versions in the "install from source" example
 
 The example in Section 7 originally installed Node.js 22 and called it the current LTS. That was true when it was written. It has been corrected in place to Node.js 24, and the state of the release lines as of July 2026 is:
@@ -5860,17 +5845,17 @@ The example in Section 7 originally installed Node.js 22 and called it the curre
 
 Node.js 20 reached end of life on 30 April 2026. Check `nodejs.org/en/about/previous-releases` each time you run this rather than trusting the version pinned in these notes, which is exactly what the note at the end of that section already tells you to do. Note also that from Node.js 27 the odd and even convention ends: releases become annual and every major version is promoted to LTS.
 
+---
 ## `netstat` is not installed
 
 Section 13 lists `netstat` alongside `ss`. On a minimal Fedora 44 or RHEL 10 install, `net-tools` is not present, so `netstat`, `ifconfig`, and `route` do not exist at all. Use `ss`, `ip addr`, and `ip route`. Assume the same on any container base image.
 
+---
 ## `iptables` on RHEL 10
 
 `firewalld` remains the right tool and everything in Section 15 holds. Underneath, the backend is `nftables`, and the `iptables` compatibility shims are on their way out of the enterprise distributions. Write `firewall-cmd` rules and let firewalld generate the kernel rules. If you find yourself writing raw `iptables` rules on a new host, you have almost certainly taken a wrong turn.
 
 ---
----
-
 # Part 5: Labs
 
 Five labs. They build on each other: 2A produces the VM that 2B, 2C, 2D, and 2E all run on. Do them in order.
@@ -5878,8 +5863,6 @@ Five labs. They build on each other: 2A produces the VM that 2B, 2C, 2D, and 2E 
 **Deliverable format for every lab.** A markdown file per lab in your course repository, under `module-02/`, containing every command you ran, the output you got (paste it, or screenshot it), and a short note of what you expected versus what happened whenever those differed. Commands without evidence do not count. A lab report that shows a failure, a diagnosis, and a fix is worth more than one that shows a clean run, because the clean run tells me nothing about whether you understood it.
 
 ---
----
-
 ## Lab 2A: Build the Host
 
 **Goal.** A Fedora Server 44 or RHEL 10 VM with a fixed hostname, a static IP you control, and key based SSH login only. This is the machine you will use for the rest of the module, and, honestly, the rest of the course.
@@ -6066,8 +6049,7 @@ Your report must contain:
 
 ---
 ---
-
-## Lab 2B: The Core Skills Grind
+## Lab 2B: The Linux Core Skills Grind
 
 **Goal.** Fluency. There is no shortcut for this and no clever way to teach it. You run the commands until they are muscle memory. Every task below has a one line answer; the deliverable is the command, its output, and one sentence explaining what the command actually did.
 
@@ -6156,8 +6138,6 @@ ps aux > procs.txt
 One markdown file, forty numbered entries, each with the command, the output, and one sentence of explanation. Explanations that restate the command in English ("this greps the file for nologin") earn nothing. Explain what the system did.
 
 ---
----
-
 ## Lab 2C: A Health Check Script
 
 **Goal.** A Bash script that takes a service name as an argument, checks whether it is running, logs the result with a timestamp, and exits with a meaningful code. Then schedule it with cron.
@@ -6170,6 +6150,7 @@ One markdown file, forty numbered entries, each with the command, the output, an
 4. Every log line goes to `/var/log/healthcheck.log` in the format `2026-07-14T09:15:03+05:45 [OK] nginx is active`. Use ISO 8601 timestamps. Do not invent a date format.
 5. Use `set -euo pipefail`. Quote every variable expansion. Use at least two functions and one conditional block.
 
+---
 ### 2C.2 Reference implementation
 
 ```bash
@@ -6244,6 +6225,7 @@ Points worth noticing, because they are the points being assessed:
 * The script exits `1` after a successful recovery, not `0`. It is reporting on the state it **found**, which is what a monitoring check must do. A check that heals a problem and then reports success hides an incident.
 * `main "$@"` at the bottom keeps argument handling in one place and makes the script sourceable for testing.
 
+---
 ### 2C.3 Install and test
 
 ```bash
@@ -6302,8 +6284,6 @@ sudo tail -f /var/log/healthcheck.log
 The script, the ShellCheck output, the exit code from each of the five test cases, the crontab line, and journal evidence that cron fired it at least twice.
 
 ---
----
-
 ## Lab 2D: The Same Thing as a systemd Timer
 
 **Goal.** Reimplement Lab 2C's schedule as a systemd service plus timer, confirm it fires, read its output with `journalctl`, and then argue for one scheduler over the other.
@@ -6390,7 +6370,7 @@ sudo systemctl stop nginx
 sudo systemctl start healthcheck@nginx.service
 journalctl -u healthcheck@nginx.service -n 20 --no-pager
 ```
-
+---
 ### 2D.4 The three sentences
 
 Write exactly three sentences on when you would choose a timer over cron, or the other way round. A defensible answer looks something like this, and yours should be your own:
@@ -6402,8 +6382,6 @@ Write exactly three sentences on when you would choose a timer over cron, or the
 Both unit files, `systemctl list-timers` output showing the timer scheduled, `journalctl` output covering at least two automatic runs and one deliberately failed run, and your three sentences.
 
 ---
----
-
 ## Lab 2E: Performance Triage
 
 **Goal.** A VM is "slow". You have a shell and nothing else. No dashboards, no APM, no Grafana. Determine whether the bottleneck is CPU, memory, disk, or network, and write up the path you took.
@@ -6442,7 +6420,7 @@ Tear down afterwards:
 ```bash
 for u in lab2e-io lab2e-cpu lab2e-cache lab2e-net; do sudo systemctl stop "$u" 2>/dev/null; done
 ```
-
+---
 ### 2E.2 The method
 
 Work outside in. Never start with `top`; start with a question about which of the four resources is exhausted, and let each tool eliminate one.
@@ -6515,6 +6493,7 @@ sar -n DEV 2 5
 
 `ss -s` reports a couple of hundred established sockets (red herring 3), which looks like a lot on a lab box. Connection **count** is not a bottleneck; throughput and errors are. `sar -n DEV` shows negligible `rxkB/s` and `txkB/s` and no errors or drops. Two hundred idle sockets consume a few hundred kilobytes of kernel memory and no bandwidth. Network is eliminated.
 
+---
 ### 2E.3 The answer
 
 The bottleneck is **disk I/O**. A process is issuing sustained synchronous sequential writes that saturate the virtual disk. `%util` is pinned near 100, `await` is an order of magnitude above normal, the queue depth is deep, and the processes responsible are sitting in `D` state, which is what inflated the load average that made the machine look CPU bound in the first place.
@@ -6527,6 +6506,7 @@ The three red herrings and their dismissals:
 | `free` shows almost no free memory | Looks like memory exhaustion | The memory is page cache. `available` is healthy, `si`/`so` are zero, and there is no OOM activity in `dmesg`. |
 | Roughly 200 established TCP connections | Looks like a connection flood | `sar -n DEV` shows almost no traffic and zero errors or drops. Idle sockets cost nothing. |
 
+---
 ### 2E.4 Deliverable
 
 A diagnostic write up, not a list of commands. It must contain:
@@ -6537,5 +6517,4 @@ A diagnostic write up, not a list of commands. It must contain:
 4. The process responsible, identified by PID and name, with the evidence linking it to the device.
 5. What you would do next in production, given that you have found the cause. Killing the process is one answer. Throttling it with a systemd `IOWeight=` or `IOReadBandwidthMax=` directive, moving the workload to a faster device, or asking whether the writes need to be synchronous at all are better ones, and which is right depends on what the process is for.
 
----
 ---

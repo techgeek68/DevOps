@@ -1,33 +1,23 @@
 # Module 5: Web Servers, Applications, and Testing Strategy
 
-**Module objective.** Deploy web and application services and construct a delivery friendly reference application governed by a layered test suite. *Supports CLO 5.*
 
-**How this module is organised.** The module moves from infrastructure to application to pipeline:
+>**Module objective.** Deploy web and application services and construct a delivery friendly reference application governed by a layered test suite. *Supports CLO 5.*
 
-- **Section 5.1 Web and Application Servers.** 
+---
+>**How this module is organised.** The module moves from infrastructure to application to pipeline:
 
-Where each server sits, the process models of the two dominant web servers, virtual hosts, reverse proxying, and where to terminate TLS.
+>- **Section 5.1 Web and Application Servers.** 
 
-- **Section 5.2 Delivery Friendly Applications and the Twelve Factor Model.** 
+>- **Section 5.2 Delivery Friendly Applications and the Twelve Factor Model.** 
 
-The application properties that make automated delivery possible, and which parts of the twelve factor model still hold.
+>- **Section 5.3 Testing Strategy.** 
 
-- **Section 5.3 Testing Strategy.** 
-
-The test pyramid, contract testing, test data management, and the decision to quarantine a flaky test.
-
-- **Section 5.4 Pipeline Speed as a Product Feature.** 
-
-Caching, parallelism, and selective scheduling.
-
-Sections 5.2 – 5.4 all operate on one **reference application** that is introduced in Section 5.2 and reused throughout, so the module builds a single coherent artefact rather than a set of disconnected exercises.
+>- **Section 5.4 Pipeline Speed as a Product Feature.** 
 
 ---
 # Section 5.1: Web and Application Servers
 
----
-
-# Theory
+## Theory
 
 ---
 ## 1. Web Servers vs. Application Servers
@@ -67,6 +57,7 @@ Nginx uses an **event driven, asynchronous, non blocking** model:
 
 - No new thread or process is created per connection, so memory usage stays low and predictable under high load.
 
+
 ### 2.2 Apache HTTP Server: Multi Processing Modules
 
 Apache uses interchangeable **Multi Processing Modules (MPMs)**. Only one is active at a time.
@@ -79,9 +70,8 @@ Apache uses interchangeable **Multi Processing Modules (MPMs)**. Only one is act
 
 `mpm_event` is the default on Apache 2.4+ installations. It separates keep alive connection management from request processing: a dedicated listener thread monitors idle keep alive connections and only hands them to a worker thread when a new request arrives.
 
-### 2.3 The Contrast
-
-Compare Nginx's event loop to Apache's `mpm_prefork`: one process per connection. Under 5,000 simultaneous connections, that is 5,000 processes each consuming RAM and requiring context switches. Nginx handles the same 5,000 connections inside a handful of worker processes. This is why Nginx is the default at the edge and Apache remains common deeper in the stack, particularly for legacy, `.htaccess`-dependent, or PHP applications.
+---
+> Compare Nginx's event loop to Apache's `mpm_prefork`: one process per connection. Under 5,000 simultaneous connections, that is 5,000 processes each consuming RAM and requiring context switches. Nginx handles the same 5,000 connections inside a handful of worker processes. This is why Nginx is the default at the edge and Apache remains common deeper in the stack, particularly for legacy, `.htaccess`-dependent, or PHP applications.
 
 ---
 ## 3. Virtual Hosts
@@ -89,6 +79,7 @@ Compare Nginx's event loop to Apache's `mpm_prefork`: one process per connection
 A **virtual host** lets one server serve multiple websites, distinguished by the `Host:` HTTP header the client sends. Both dominant servers support it:
 
 - **Name based virtual hosts**: Many sites share one IP address; the server routes by hostname. This is the common case.
+
 - **IP based virtual hosts**: Each site has its own IP address. Used when a site needs a dedicated certificate on its own IP, or protocol level isolation.
 
 In Nginx a virtual host is a `server {}` block keyed on `server_name`. In Apache it is a `<VirtualHost>` block keyed on `ServerName`/`ServerAlias`. The labs in this section configure both.
@@ -99,11 +90,14 @@ In Nginx a virtual host is a `server {}` block keyed on `server_name`. In Apache
 A **reverse proxy** accepts client requests at the edge and forwards them to one or more backend servers. The client communicates only with the proxy; the backends are invisible from outside the network. A reverse proxy enables:
 
 - **TLS termination** in one place (Section 5).
+
 - **Load balancing** across multiple backends.
+
 - **Centralised logging and access control.**
+
 - **Static/dynamic split** the proxy serves static files itself and forwards only dynamic requests.
 
-Both servers can reverse-proxy: Nginx with `proxy_pass`, Apache with `mod_proxy`. In greenfield deployments Nginx is the usual choice at the edge; Apache's `mod_proxy` is chosen mainly when a team is already invested in Apache for the application itself.
+Both servers can reverse proxy: Nginx with `proxy_pass`, Apache with `mod_proxy`. In greenfield deployments Nginx is the usual choice at the edge; Apache's `mod_proxy` is chosen mainly when a team is already invested in Apache for the application itself.
 
 ---
 ## 5. TLS Termination and Where to Terminate
@@ -113,16 +107,23 @@ Both servers can reverse-proxy: Nginx with `proxy_pass`, Apache with `mod_proxy`
 ### 5.1 The Three Patterns
 
 - **Terminate at the edge (most common).** The reverse proxy or load balancer holds the certificate, decrypts, and forwards **plaintext HTTP** to backends over a trusted private network.
+
   - *Pros:* certificates live in one place; backends do no crypto; the edge can inspect, route, cache, and add security headers.
+
   - *Cons:* traffic between edge and backend is unencrypted, so the internal network must be trusted.
 
 - **TLS passthrough.** The edge forwards the encrypted stream untouched; the **backend** terminates TLS.
+
   - *Pros:* end to end encryption; the edge never sees plaintext.
+
   - *Cons:* the edge cannot inspect, route on URL, or cache; every backend must manage certificates.
 
 - **Re-encryption (TLS bridging).** The edge terminates TLS, inspects/routes, then opens a **second** TLS connection to the backend.
+
   - *Pros:* end to end encryption **and** edge inspection.
+
   - *Cons:* two handshakes and double the crypto cost; most operationally complex.
+
 
 ### 5.2 The Decision
 
@@ -152,15 +153,20 @@ Always verify your Java version before installing Tomcat. If the JDK is too old,
 ### Key Tomcat Concepts
 
 - **`CATALINA_HOME`:** The Tomcat installation directory (e.g., `/opt/tomcat`).
+
 - **`webapps/`:** Drop `.war` files here; Tomcat auto-deploys them on startup.
+
 - **`conf/server.xml`:** Main configuration ports, connectors, virtual hosts.
+
 - **`conf/tomcat-users.xml`:** User credentials for the Manager web interface.
+
 - **`logs/catalina.out`:** Main log file; always check this first when troubleshooting.
+
 - **Manager App:** Web GUI at `http://server:8080/manager/html` for deploying and managing applications.
 
-### Security Note
 
-Run Tomcat as a non root user. Create a dedicated `tomcat` system account with no login shell. Never run Tomcat as root a vulnerability in a Java application could give an attacker root access to the entire server.
+---
+> Run Tomcat as a non root user. Create a dedicated `tomcat` system account with no login shell. Never run Tomcat as root a vulnerability in a Java application could give an attacker root access to the entire server.
 
 ---
 ## 7. Web Server Comparison
@@ -179,238 +185,66 @@ Run Tomcat as a non root user. Create a dedicated `tomcat` system account with n
 
 In a full pipeline you will typically use all three: **Nginx** as the public facing edge, **Apache** for PHP-based applications, and **Tomcat** for Java based applications. The Tomcat lab in this section builds the exact deployment target that the CI/CD pipeline in **Section 5.4** delivers into.
 
-### Market Position
-
-Nginx is the most widely deployed web server and reverse proxy. Per W3Techs (April 2026): **Nginx 32.7%, Cloudflare Server 27.7%, Apache 23.7%** of all websites with a known server. These figures move month to month; treat them as an ordering (Nginx ahead of Apache, with Cloudflare's edge proxies now a close second) rather than fixed constants.
-
 ---
+> Nginx is the most widely deployed web server and reverse proxy. Per W3Techs (April 2026): **Nginx 32.7%, Cloudflare Server 27.7%, Apache 23.7%** of all websites with a known server. These figures move month to month; treat them as an ordering (Nginx ahead of Apache, with Cloudflare's edge proxies now a close second) rather than fixed constants.
+
 ---
 # SELinux Reference for Web Servers
 
-SELinux is the most common cause of web-server failures on RHEL/CentOS. The fix is almost always one of three things: a wrong file context, a missing boolean, or an unlabeled port.
+Most web-server failures on RHEL/CentOS trace to one of three causes: wrong file context, missing boolean, or unlabeled port.
 
-## 1. Wrong File Context (most common)
+## 1. File Context
 
-### `ls -Z`: View the SELinux label on files
-- Syntax
-```bash
-ls -Z [OPTIONS] [PATH]
-```
-- Example:
+**`ls -Z PATH`**: View label. Web content should show `httpd_sys_content_t`; `default_t` or `user_home_t` indicates the problem.
 ```bash
 ls -Z /var/www/mysite/
 ```
->Output shows `user:role:type:level`. For web content you want the type `httpd_sys_content_t`. If you see `default_t` or `user_home_t`, that is your problem.
 
-
-### `chcon`: Change context immediately (temporary)
-- Syntax
-```bash
-chcon [-R] -t TYPE PATH
-```
->`-R` recurses into directories, `-t` sets the type. The change is lost on a full filesystem relabel, so treat it as a quick test rather than a fix.
-
-- Example:
+**`chcon -R -t TYPE PATH`**: Temporary fix, lost on relabel.
 ```bash
 sudo chcon -R -t httpd_sys_content_t /var/www/mysite
 ```
 
-### `restorecon`: Reset context from policy (persistent)
-- Syntax:
-```bash
-restorecon [-R] [-v] [-n] PATH
-```
->`-R` recurses, `-v` prints what changed, `-n` is a dry run.
-
-- Example
+**`restorecon -R -v PATH`**: Reset from policy (persistent). Add `-n` for dry run.
 ```bash
 sudo restorecon -Rv /var/www/mysite
 ```
->Dry run first if you want to see what would change:
-```bash
-sudo restorecon -Rvn /var/www/mysite
-```
 
-### `semanage fcontext`: Make a custom path permanent:
-
-If your content lives outside `/var/www`, add a policy rule so `restorecon` knows the correct type.
-
-- Syntax:
-```bash
-semanage fcontext -a -t TYPE "PATH_REGEX"
-```
-
-- Example:
+**`semanage fcontext -a -t TYPE "PATH_REGEX"`**: For paths outside `/var/www`, register the type permanently, then run `restorecon`.
 ```bash
 sudo semanage fcontext -a -t httpd_sys_content_t "/srv/mysite(/.*)?"
-```
-
-Then apply it:
-```bash
 sudo restorecon -Rv /srv/mysite
 ```
 
----
-## 2. Missing Boolean (reverse proxy, DB connections, mod_wsgi)
+## 2. Booleans (proxy, DB, mod_wsgi)
 
-### `getsebool`: Read boolean values
+**`getsebool -a | grep httpd`** or **`getsebool BOOLEAN_NAME`** — read values.
 
-- Syntax:
+**`setsebool -P BOOLEAN_NAME on|off`** — `-P` persists across reboot.
 ```bash
-getsebool -a
-```
-```bash
-getsebool BOOLEAN_NAME
-```
-
-- Example
-```bash
-getsebool -a | grep httpd
-```
-```bash
-getsebool httpd_can_network_connect
+sudo setsebool -P httpd_can_network_connect 1      # reverse proxy
+sudo setsebool -P httpd_can_network_connect_db 1   # direct DB connections
+sudo setsebool -P httpd_execmem 1                  # mod_wsgi daemon mode
+sudo setsebool -P httpd_unified 1                  # Apache write to content dirs
 ```
 
----
-### `setsebool`: Change a boolean
+## 3. Non-Standard Ports
 
-- Syntax
-```bash
-setsebool [-P] BOOLEAN_NAME on|off
-```
->`-P` writes the change to policy so it survives a reboot. Without `-P` it reverts.
-
-- Example: Allow proxying to a backend
-```bash
-sudo setsebool -P httpd_can_network_connect 1
-```
-
-- Example: Allow direct database connections
-```bash
-sudo setsebool -P httpd_can_network_connect_db 1
-```
-
-- Example: Allow mod_wsgi daemon mode
-```bash
-sudo setsebool -P httpd_execmem 1
-```
-
-- Example: Allow Apache to write to its content directories
-```bash
-sudo setsebool -P httpd_unified 1
-```
-
----
-## 3. Non Standard Port
-
-### `semanage port -a`: label a new port
-
-- Syntax
-```bash
-semanage port -a -t TYPE -p PROTOCOL PORT
-```
-> Use `-m` instead of `-a` if the port is already defined under another type.
-
-- Example
+**`semanage port -a -t TYPE -p PROTOCOL PORT`** — label a new port (`-m` if port already defined under another type).
 ```bash
 sudo semanage port -a -t http_port_t -p tcp 8081
 ```
 
-### `semanage port -l`: list labeled ports
-- Syntax
-```bash
-semanage port -l
-```
+**`semanage port -l | grep http_port`**: List labeled ports.
 
-- Example:
-```bash
-sudo semanage port -l | grep http_port
-```
+## 4. Reading Denials
 
----
-## 4. Reading SELinux Denial Logs
-
-### `ausearch`: Query the audit log
-
-- Syntax
-```bash
-ausearch -m MESSAGE_TYPE -ts TIME_SPEC
-```
->`-m avc` filters access-vector-cache denials. `-ts` accepts `recent`, `today`, `boot`, or a timestamp.
-
-- Example:
-```bash
-sudo ausearch -m avc -ts recent | grep httpd
-```
-```bash
-sudo ausearch -m avc -ts boot
-```
----
-### `journalctl -t`: Human readable explanations
-
-- Syntax
-```bash
-journalctl -t IDENTIFIER
-```
-
-- Example
-```bash
-journalctl -t setroubleshoot
-```
----
-### `sealert`: Full analysis with suggested fixes
-
-- Syntax:
-```bash
-sealert -a LOGFILE
-```
-
-- Example:
-```bash
-sudo sealert -a /var/log/audit/audit.log
-```
----
-## Stop and Remove Services (Before Switching Labs)
-
-Switching between Apache and Nginx labs? Stop the unused service so it releases port 80.
-
-### `systemctl disable --now`: Stop and disable in one step
-
-- Syntax
-```bash
-systemctl disable SERVICE --now
-```
->`--now` stops the running unit as well as disabling it at boot.
-
-- Example: Apache
-```bash
-sudo systemctl disable httpd --now
-```
-
-- Example: Nginx
-```bash
-sudo systemctl disable nginx --now
-```
-
-- Example: Tomcat
-```bash
-sudo systemctl disable tomcat --now
-```
-
----
-### `dnf remove`: Uninstall the package
-- Syntax:
-```bash
-dnf remove PACKAGE [-y]
-```
-
-- Example
-```bash
-sudo dnf remove httpd -y
-```
-```bash
-sudo dnf remove nginx -y
-```
+| Tool | Purpose |
+|---|---|
+| `ausearch -m avc -ts recent \| grep httpd` | query audit log for AVC denials |
+| `journalctl -t setroubleshoot` | human-readable explanation |
+| `sealert -a /var/log/audit/audit.log` | full analysis with suggested fixes |
+| `ss -tlnp \| grep :80` | confirm port is free (no output = free) |
 
 ---
 ### `ss`: Confirm the port is actually free

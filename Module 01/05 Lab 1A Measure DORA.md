@@ -1,7 +1,7 @@
 # Lab 1A: Measure DORA
 
 
-> *No terminal is needed for this lab. A calculator, a spreadsheet, and a GitHub account are enough.*
+> No terminal is needed for this lab. A calculator, a spreadsheet, and a GitHub account are enough.
 ---
 ### Objective
 
@@ -18,7 +18,9 @@ This is the same analysis a DevOps engineer runs when joining a new team, evalua
 
 ### Prerequisites
 - Completed Part A of Module 1 (Foundations)
+
 - Read Part B Section 4 of Module 1 (DORA Metrics). Note that DORA's framework was expanded in 2024 from four metrics to five, adding Deployment Rework Rate alongside Deployment Frequency, Lead Time for Changes, Change Failure Rate, and Failed Deployment Recovery Time. Confirm Section 4 covers all five before starting this lab, since Step 4 below assumes familiarity with rework rate as a named DORA metric, not an improvised category.
+
 - A GitHub repository to commit your report to (create a new one called `devops-labs` if you do not have one already)
 
 ---
@@ -55,9 +57,13 @@ Pick one well maintained open source project with an active release history. The
 **Recommended options:**
 
 - `github.com/grafana/grafana`
+
 - `github.com/hashicorp/terraform`
+
 - `github.com/prometheus/prometheus`
+
 - `github.com/kubernetes/kubernetes`
+
 - `github.com/cli/cli` (GitHub CLI, smaller and easier to navigate)
 
 Avoid repositories with no releases in the last six months. If the Releases page is empty, check the README for how the project publishes versions (some use npm, PyPI, or Docker Hub instead of GitHub Releases).
@@ -68,7 +74,9 @@ Record your choice before proceeding.
 ### Step 2: Measure Deployment Frequency
 
 1. Open the repository on GitHub and click **Releases** in the right sidebar.
+
 2. Count the number of releases published in the last **90 days**. Include all types: major, minor, and patch.
+
 3. Calculate the average release frequency:
 
 ```
@@ -100,7 +108,9 @@ Record the raw count and your calculated frequency.
 Lead time measures how long code takes to travel from a developer's commit to a production deployment.
 
 1. Go to the **Pull Requests** tab. Filter by **Closed**. Sort by **Newest**.
+
 2. Select five recently merged PRs. Choose feature or bug fix work. Skip documentation only PRs.
+
 3. For each PR, collect:
    - Date the PR was opened (visible in the PR header)
    - Date the PR was merged (visible in the merge event at the bottom)
@@ -145,8 +155,11 @@ Create a table like this for your five PRs:
 This is the more important half of the lab. For each of the three metrics below, write a paragraph covering:
 
 1. What the metric actually measures (use the definitions from Part B Section 4, DORA Metrics)
+
 2. What data source you would need to measure it properly
+
 3. Why public GitHub data is an inadequate proxy
+
 4. What instrumentation a team would need to add to measure it in their own delivery system
 
 **Change Failure Rate**
@@ -168,6 +181,8 @@ Explain why there is no reliable public proxy at all. Consider: rework rate requ
 # If you do not already have a devops labs repo
 mkdir ~/devops-labs
 cd ~/devops-labs
+```
+```bash
 git init
 git remote add origin https://github.com/<your-username>/devops-labs.git
 ```
@@ -252,13 +267,16 @@ If you were the DevOps engineer on this team and had access to their internal sy
 
 ```bash
 cd ~/devops-labs
-
+```
+```bash
 # Stage the report
 git add labs/lab-1a/dora-baseline-report.md
-
+```
+```bash
 # Commit with a conventional commit message
 git commit -m "feat(lab-1a): add DORA baseline report for [repo name]"
-
+```
+```bash
 # Push to your remote repository
 git push origin main
 ```
