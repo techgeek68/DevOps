@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 300" role="img" aria-label="The DevOps infinite loop with eight stages, Dev on the left, Ops on the right">
+<rect x="0" y="0" width="100%" height="100%" fill="#1c1a17"/>
+
+<!-- subtle Dev / Ops half-tint to reinforce the split -->
+<rect x="0" y="0" width="450" height="300" fill="#d1972f" opacity="0.04"/>
+<rect x="450" y="0" width="450" height="300" fill="#3f9c8b" opacity="0.04"/>
+
+<defs>
+  <linearGradient id="loopgrad" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#d1972f"/>
+    <stop offset="0.5" stop-color="#c0603f"/>
+    <stop offset="1" stop-color="#3f9c8b"/>
+  </linearGradient>
+  <!-- arrow colours sampled from loopgrad at the tip's actual x-position, so they blend instead of reading as a generic flat colour -->
+  <marker id="arrowhead-left" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+    <path d="M0,0 L8,4 L0,8 Z" fill="#ce8c32"/>
+  </marker>
+  <marker id="arrowhead-right" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+    <path d="M0,0 L8,4 L0,8 Z" fill="#59907c"/>
+  </marker>
+</defs>
+
+<!-- infinity path, split into its 8 stage segments so each can carry its own dot/arrow -->
+<g fill="none" stroke="url(#loopgrad)" stroke-width="3" class="anim-dash">
+  <path d="M450,150 C450,60 330,60 250,60"/>
+  <path d="M250,60 C150,60 90,100 90,150" marker-end="url(#arrowhead-left)"/>
+  <path d="M90,150 C90,200 150,240 250,240"/>
+  <path d="M250,240 C330,240 450,240 450,150"/>
+  <path d="M450,150 C450,60 570,60 650,60"/>
+  <path d="M650,60 C750,60 810,100 810,150" marker-end="url(#arrowhead-right)"/>
+  <path d="M810,150 C810,200 750,240 650,240"/>
+  <path d="M650,240 C570,240 450,240 450,150"/>
+</g>
+
+<text x="250" y="24" text-anchor="middle" fill="#d1972f" font-size="12" letter-spacing="2">DEV</text>
+<text x="650" y="24" text-anchor="middle" fill="#3f9c8b" font-size="12" letter-spacing="2">OPS</text>
+
+<!-- stage badges: dot centres sit exactly on the bezier path (computed at t=0.5 of each segment) -->
+<g font-size="11.5" fill="#e7ddcb" font-family="sans-serif">
+
+  <!-- Plan -->
+  <circle cx="380" cy="71" r="9" fill="#d1972f"/>
+  <g transform="translate(380,71)" stroke="#1c1a17" stroke-width="1.2" fill="none">
+    <rect x="-4" y="-5" width="8" height="10" rx="1"/>
+    <line x1="-2" y1="-2" x2="2" y2="-2"/>
+    <line x1="-2" y1="1" x2="2" y2="1"/>
+  </g>
+  <text x="380" y="50" text-anchor="middle">Plan</text>
+
+  <!-- Code -->
+  <circle cx="132" cy="86" r="9" fill="#d1972f"/>
+  <g transform="translate(132,86)" stroke="#1c1a17" stroke-width="1.3" fill="none">
+    <path d="M-2,-4 L-5,0 L-2,4"/>
+    <path d="M2,-4 L5,0 L2,4"/>
+  </g>
+  <text x="115" y="90" text-anchor="end">Code</text>
+
+  <!-- Build -->
+  <circle cx="132" cy="214" r="9" fill="#d1972f"/>
+  <g transform="translate(132,214)" stroke="#1c1a17" stroke-width="1.2" fill="none">
+    <circle r="3"/>
+    <line x1="0" y1="-5" x2="0" y2="-3"/>
+    <line x1="0" y1="3" x2="0" y2="5"/>
+    <line x1="-5" y1="0" x2="-3" y2="0"/>
+    <line x1="3" y1="0" x2="5" y2="0"/>
+    <line x1="-3.5" y1="-3.5" x2="-2" y2="-2"/>
+    <line x1="2" y1="2" x2="3.5" y2="3.5"/>
+    <line x1="3.5" y1="-3.5" x2="2" y2="-2"/>
+    <line x1="-2" y1="2" x2="-3.5" y2="3.5"/>
+  </g>
+  <text x="115" y="234" text-anchor="end">Build</text>
+
+  <!-- Test -->
+  <circle cx="380" cy="229" r="9" fill="#d1972f"/>
+  <g transform="translate(380,229)" stroke="#1c1a17" stroke-width="1.4" fill="none">
+    <path d="M-4,0 L-1,3 L4,-4"/>
+  </g>
+  <text x="380" y="252" text-anchor="middle">Test</text>
+
+  <!-- Release -->
+  <circle cx="520" cy="71" r="9" fill="#3f9c8b"/>
+  <g transform="translate(520,71)" fill="#1c1a17">
+    <path d="M0,-5 L4,4 L-4,4 Z"/>
+  </g>
+  <text x="520" y="50" text-anchor="middle">Release</text>
+
+  <!-- Deploy -->
+  <circle cx="768" cy="86" r="9" fill="#3f9c8b"/>
+  <g transform="translate(768,86)" stroke="#1c1a17" stroke-width="1.3" fill="none">
+    <line x1="0" y1="-4" x2="0" y2="3"/>
+    <path d="M-3,0 L0,3 L3,0"/>
+    <line x1="-4" y1="5" x2="4" y2="5"/>
+  </g>
+  <text x="785" y="90" text-anchor="start">Deploy</text>
+
+  <!-- Operate -->
+  <circle cx="768" cy="214" r="9" fill="#3f9c8b"/>
+  <g transform="translate(768,214)" stroke="#1c1a17" stroke-width="1.1" fill="none">
+    <rect x="-5" y="-5" width="10" height="3"/>
+    <rect x="-5" y="-1" width="10" height="3"/>
+    <rect x="-5" y="3" width="10" height="3"/>
+  </g>
+  <text x="785" y="234" text-anchor="start">Operate</text>
+
+  <!-- Monitor -->
+  <circle cx="520" cy="229" r="9" fill="#3f9c8b"/>
+  <g transform="translate(520,229)" stroke="#1c1a17" stroke-width="1.2" fill="none">
+    <path d="M-5,0 L-2,0 L-1,-4 L1,4 L2,0 L5,0"/>
+  </g>
+  <text x="520" y="252" text-anchor="middle">Monitor</text>
+
+</g>
+
+<circle cx="450" cy="150" r="6" fill="#c0603f"/>
+<text x="450" y="286" text-anchor="middle" fill="#c0603f" font-size="11">Monitor → Plan: the loop never ends</text>
+</svg>
