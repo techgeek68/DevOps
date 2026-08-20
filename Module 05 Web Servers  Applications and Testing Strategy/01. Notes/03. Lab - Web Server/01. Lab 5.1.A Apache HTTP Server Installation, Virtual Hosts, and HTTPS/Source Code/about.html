@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About: DevOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f1ec;
+    --panel: #ffffff;
+    --ink: #2a2622;
+    --muted: #746e66;
+    --rule: #e2ddd3;
+    --signal: #b5622f;
+    --signal-soft: #f4e6dc;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 56px 20px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    display: flex;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 580px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 34px 36px 38px;
+    box-shadow: 0 12px 30px -22px rgba(42, 38, 34, 0.45);
+  }
+
+  .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    margin: 0 0 16px;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 16px;
+    color: var(--ink);
+    font-size: 0.98rem;
+  }
+
+  p.muted { color: var(--muted); }
+
+  code {
+    font-family: 'IBM Plex Mono', monospace;
+    background: var(--bg);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-size: 0.85em;
+  }
+
+  a.back {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    color: var(--ink);
+    text-decoration: none;
+    padding: 8px 15px;
+    border: 1px solid var(--rule);
+    border-radius: 7px;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  a.back:hover,
+  a.back:focus-visible {
+    border-color: var(--signal);
+    background: var(--signal-soft);
+    outline: none;
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="eyebrow">about</div>
+    <h1>Why this box exists</h1>
+    <p>I keep this Apache instance around to try things out before they touch a real environment config changes, a new vhost, a deploy script that might have a typo in it. Low stakes, easy to rebuild.</p>
+    <p class="muted">It runs plain static files out of <code>/var/www/html</code>, no database, no build step. If it's up and this page loads, Apache is doing its job.</p>
+    <a class="back" href="../index.html">Back Home</a>
+  </div>
+</body>
+</html>

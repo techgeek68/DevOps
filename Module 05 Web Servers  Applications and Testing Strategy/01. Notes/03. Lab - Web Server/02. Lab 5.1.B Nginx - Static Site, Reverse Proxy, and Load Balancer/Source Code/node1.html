@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Backend Server — node1</title>
+<style>
+/* per-backend block: color, glow (color+40 alpha), numeral */
+:root{--node:#ff4d2e;--glow:#ff4d2e55;--id:"01"}
+*{margin:0;box-sizing:border-box}
+body{min-height:100vh;padding:6vmin;display:flex;flex-direction:column;justify-content:space-between;
+  background:#0d0d0f;overflow:hidden;color:#f4f4f5;letter-spacing:.02em;
+  background-image:radial-gradient(115vmin 85vmin at 85% 112%,var(--glow),transparent 68%);
+  font:500 clamp(13px,1.4vw,16px)/1.5 ui-monospace,"SF Mono",Menlo,monospace}
+h1{font-size:inherit;font-weight:500;text-transform:uppercase;letter-spacing:.35em;color:#a1a1aa}
+h2{font-size:clamp(1.6rem,6vw,4rem);font-weight:600;max-width:12ch;line-height:1.05;letter-spacing:-.02em}
+b{color:var(--node);font-weight:600}
+p{text-transform:uppercase;letter-spacing:.22em;color:#a1a1aa}
+p::after{content:var(--id);float:right;color:var(--node)}
+i{width:.55em;height:.55em;border-radius:50%;background:var(--node);display:inline-block;
+  margin-right:.7em;animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--node)}70%,100%{box-shadow:0 0 0 .9em transparent}}
+.mark{position:fixed;right:-.07em;bottom:-.3em;font-size:70vmin;line-height:.8;font-weight:700;
+  color:var(--node);opacity:.34;pointer-events:none;user-select:none}
+</style>
+</head>
+<body>
+  <h1>Backend Server</h1>
+  <h2>This is a <b>load balancer</b> test page</h2>
+  <p><i></i>Served by node1</p>
+  <div class="mark">01</div>
+</body>
+</html>

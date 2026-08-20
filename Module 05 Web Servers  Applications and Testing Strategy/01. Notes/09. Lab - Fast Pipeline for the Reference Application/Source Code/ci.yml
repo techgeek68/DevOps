@@ -1,0 +1,63 @@
+# .github/workflows/refapp.yml
+name: refapp
+
+on:
+  push:
+    # Selective scheduling: skip the pipeline for docs-only changes
+    paths-ignore: ["**.md", "docs/**"]
+
+jobs:
+  # ---- Parallel job 1: fast checks, with a dependency cache ----
+  unit:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shard: [1, 2]          # parallelism: shard the unit suite across 2 runners
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"          # caching: keyed on requirements.txt hash
+      - run: pip install -r requirements.txt
+      # Quarantined tests excluded from the gate (Section 5.3)
+      - run: pytest -q -m "not quarantine" --splits 2 --group ${{ matrix.shard }}
+
+  # ---- Parallel job 2: lint, runs at the same time as `unit` ----
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: "pip" }
+      - run: pip install -r requirements.txt && python -m pyflakes refapp
+
+  # ---- Build once; fan-in requires unit + lint to have passed ----
+  build:
+    needs: [unit, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: refapp:${{ github.sha }}
+          cache-from: type=gha       # build-layer cache (Section 2)
+          cache-to: type=gha,mode=max
+
+  # ---- Deploy the single artefact built above (only on main) ----
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          # Same Manager API call demonstrated in Lab 5.1.C, Part 8
+          curl -u "$TOMCAT_USER:$TOMCAT_PASS" \
+               -T build/refapp.war \
+               "http://$TARGET:8080/manager/text/deploy?path=/refapp&update=true"
+        env:
+          TOMCAT_USER: ${{ secrets.TOMCAT_USER }}   # config + secrets from the environment
+          TOMCAT_PASS: ${{ secrets.TOMCAT_PASS }}
+          TARGET:      ${{ vars.DEPLOY_TARGET }}
