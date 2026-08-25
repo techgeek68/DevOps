@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uplink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2fb;
+    --panel: #ffffff;
+    --panelBorder: #e1e8f7;
+    --ink: #131b2e;
+    --inkFaint: #5f6b87;
+    --blue: #2f6fed;
+    --blueSoft: #e4ecfd;
+    --violet: #7c5cff;
+    --violetSoft: #efe9ff;
+    --green: #17a367;
+    --greenSoft: #e2f7ee;
+    --amber: #e08e1f;
+    --amberSoft: #fbeed9;
+    --red: #e0473f;
+    --redSoft: #fbe4e2;
+    --termBg: #101827;
+    --termInk: #d7e4ff;
+    --termGreen: #4fe08a;
+    --termFaint: #7c8aad;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 64px 22px;
+    background:
+      radial-gradient(circle, rgba(47,111,237,0.07) 1px, transparent 1.4px) 0 0 / 28px 28px,
+      var(--bg);
+    font-family: 'Manrope', sans-serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.35;
+    z-index: 0;
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+  .blob.one { width: 360px; height: 360px; background: var(--blue); top: -80px; left: -100px; }
+  .blob.two { width: 320px; height: 320px; background: var(--violet); bottom: -100px; right: -80px; animation-delay: 2s; }
+
+  @keyframes drift { to { transform: translate(30px, 24px); } }
+
+  .field { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .field svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .wire { fill: none; stroke: var(--blue); stroke-width: 1.4; stroke-dasharray: 6 8; opacity: 0.22; }
+  .dev {
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    fill: none;
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.5;
+    animation: floatY 7s ease-in-out infinite;
+  }
+  .dev.blue { stroke: var(--blue); }
+  .dev.violet { stroke: var(--violet); }
+  .dev .signal { animation: pulseOpacity 2.4s ease-in-out infinite; }
+  .dev .led { fill: var(--green); stroke: none; animation: blink 2.6s ease-in-out infinite; }
+  .dev .led:nth-of-type(2) { animation-delay: 0.5s; }
+  .dev .led:nth-of-type(3) { animation-delay: 1s; }
+  .dev .led:nth-of-type(4) { animation-delay: 1.5s; }
+
+  @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  @keyframes pulseOpacity { 0%, 100% { opacity: 0.25; } 50% { opacity: 0.85; } }
+  @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .dev, .dev .signal, .dev .led { animation: none !important; }
+  }
+
+  .sheet {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 620px;
+    height: fit-content;
+    background: var(--panel);
+    border: 1px solid var(--panelBorder);
+    border-radius: 22px;
+    box-shadow: 0 30px 60px -34px rgba(19,27,46,0.28);
+    padding: 40px 40px 34px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    margin: 0 0 12px;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 2.7rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+
+  p.intro {
+    margin: 0 0 26px;
+    max-width: 48ch;
+    color: var(--inkFaint);
+    font-size: 0.98rem;
+  }
+
+  .terminal {
+    background: var(--termBg);
+    border-radius: 12px;
+    padding: 16px 18px 18px;
+    margin-bottom: 26px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.05);
+  }
+
+  .termHead { display: flex; gap: 6px; margin-bottom: 12px; }
+  .termHead span { width: 9px; height: 9px; border-radius: 50%; display: block; }
+  .termHead .r { background: var(--red); }
+  .termHead .a { background: var(--amber); }
+  .termHead .g { background: var(--green); }
+
+  .termBody {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--termInk);
+    line-height: 1.75;
+  }
+
+  .tline {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0ch;
+    animation-name: type;
+    animation-timing-function: steps(var(--steps));
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+    animation-delay: var(--delay);
+  }
+  .tline.prompt::before { content: '$ '; color: var(--termGreen); }
+  .tline.result { color: var(--termFaint); padding-left: 0; }
+
+  @keyframes type {
+    0% { width: 0ch; }
+    15% { width: var(--full); }
+    82% { width: var(--full); }
+    100% { width: 0ch; }
+  }
+
+  .caret {
+    display: inline-block;
+    width: 7px;
+    height: 14px;
+    background: var(--termGreen);
+    margin-left: 3px;
+    vertical-align: middle;
+    animation: caretBlink 1s step-end infinite;
+  }
+
+  @keyframes caretBlink { 50% { opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tline { animation: none; width: var(--full); }
+    .caret { animation: none; }
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--blue);
+    color: #ffffff;
+    text-decoration: none;
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 12px 20px;
+    border-radius: 100px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 10px 24px -12px rgba(47,111,237,0.65);
+  }
+  .cta:hover, .cta:focus-visible {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 28px -12px rgba(47,111,237,0.75);
+    outline: none;
+  }
+
+  .caption {
+    margin: 30px 0 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
+
+  .tile {
+    background: var(--soft);
+    border-radius: 14px;
+    padding: 16px 14px 14px;
+    transition: transform 0.15s ease;
+  }
+  .tile:hover { transform: translateY(-3px); }
+
+  .tile .n {
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--c);
+    line-height: 1;
+  }
+  .tile .l {
+    margin-top: 6px;
+    font-size: 0.72rem;
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  footer {
+    margin-top: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+  }
+
+  @media (max-width: 560px) {
+    .sheet { padding: 30px 24px 28px; }
+    h1 { font-size: 2.1rem; }
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+  <div class="blob one" aria-hidden="true"></div>
+  <div class="blob two" aria-hidden="true"></div>
+  <div class="field" aria-hidden="true">
+    <svg class="wires" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+      <path id="wireA" class="wire" d="M40,140 C280,60 650,300 960,160" />
+      <path id="wireB" class="wire" d="M30,860 C300,960 700,700 970,900" />
+      <path id="wireC" class="wire" d="M60,520 C240,660 760,360 940,510" />
+      <circle r="3.4" fill="var(--blue)"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#wireA"/></animateMotion></circle>
+      <circle r="3.4" fill="var(--violet)"><animateMotion dur="7.5s" repeatCount="indefinite"><mpath href="#wireB"/></animateMotion></circle>
+      <circle r="3.4" fill="var(--green)"><animateMotion dur="8.5s" repeatCount="indefinite"><mpath href="#wireC"/></animateMotion></circle>
+    </svg>
+    <svg class="dev blue" style="top:6%; left:5%; animation-duration:6.5s;" viewBox="0 0 100 100">
+      <rect x="30" y="55" width="40" height="18" rx="3" />
+      <circle cx="50" cy="64" r="2" fill="var(--blue)" />
+      <path class="signal" d="M38 45 Q50 30 62 45" />
+      <path class="signal" d="M32 50 Q50 22 68 50" style="animation-delay:0.4s;" />
+    </svg>
+    <svg class="dev violet" style="top:14%; right:6%; animation-duration:8s; animation-delay:0.6s;" viewBox="0 0 100 100">
+      <rect x="28" y="30" width="44" height="30" rx="2" />
+      <line x1="30" y1="56" x2="70" y2="56" />
+      <path d="M20 66 L80 66 L74 74 L26 74 Z" />
+    </svg>
+    <svg class="dev blue" style="bottom:9%; left:6%; animation-duration:7.5s; animation-delay:1s;" viewBox="0 0 100 100">
+      <rect x="35" y="18" width="30" height="64" rx="2" />
+      <line x1="35" y1="34" x2="65" y2="34" />
+      <line x1="35" y1="50" x2="65" y2="50" />
+      <line x1="35" y1="66" x2="65" y2="66" />
+      <circle class="led" cx="42" cy="26" r="1.6" />
+      <circle class="led" cx="42" cy="42" r="1.6" />
+      <circle class="led" cx="42" cy="58" r="1.6" />
+      <circle class="led" cx="42" cy="74" r="1.6" />
+    </svg>
+    <svg class="dev violet" style="bottom:7%; right:6%; animation-duration:6.8s; animation-delay:0.3s;" viewBox="0 0 100 100">
+      <rect x="26" y="40" width="48" height="24" rx="2" />
+      <rect x="34" y="24" width="32" height="18" />
+      <rect x="34" y="64" width="32" height="14" />
+      <line x1="60" y1="50" x2="66" y2="50" />
+    </svg>
+  </div>
+  <div class="sheet">
+    <div class="eyebrow">College IT · Service Desk</div>
+    <h1>Uplink</h1>
+    <p class="intro">Every ticket coming through the campus network lands here, dorm Wifi, lab logins, library printers, all of it.</p>
+    <div class="terminal">
+      <div class="termHead"><span class="r"></span><span class="a"></span><span class="g"></span></div>
+      <div class="termBody">
+        <span class="tline prompt" style="--full:34ch; --steps:34; --delay:0s;">systemctl status NetworkManager</span>
+        <span class="tline result" style="--full:34ch; --steps:34; --delay:1.6s;">active (running) since 06:14</span>
+        <span class="tline prompt" style="--full:24ch; --steps:24; --delay:3.3s;">journalctl -u sshd -n 3</span>
+        <span class="tline prompt" style="--full:20ch; --steps:20; --delay:5s;">lpstat -p LIB-PR-02<span class="caret"></span></span>
+      </div>
+    </div>
+    <a class="cta" href="Tickets/tickets.html">Open the queue</a>
+    <div class="caption">Panel snapshot, checked this morning</div>
+    <div class="tiles">
+      <div class="tile" style="--soft: var(--blueSoft); --c: var(--blue);">
+        <div class="n">12</div>
+        <div class="l">Open</div>
+      </div>
+      <div class="tile" style="--soft: var(--amberSoft); --c: var(--amber);">
+        <div class="n">5</div>
+        <div class="l">In Progress</div>
+      </div>
+      <div class="tile" style="--soft: var(--greenSoft); --c: var(--green);">
+        <div class="n">48</div>
+        <div class="l">Resolved</div>
+      </div>
+      <div class="tile" style="--soft: var(--redSoft); --c: var(--red);">
+        <div class="n">2</div>
+        <div class="l">Critical</div>
+      </div>
+    </div>
+    <footer>Uplink panel · desk team checks it each morning</footer>
+  </div>
+</body>
+</html>

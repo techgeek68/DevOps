@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uplink Queue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Manrope:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef2fb;
+    --panel: #ffffff;
+    --panelBorder: #e1e8f7;
+    --ink: #131b2e;
+    --inkFaint: #5f6b87;
+    --blue: #2f6fed;
+    --blueSoft: #e4ecfd;
+    --violet: #7c5cff;
+    --green: #17a367;
+    --greenSoft: #e2f7ee;
+    --amber: #e08e1f;
+    --amberSoft: #fbeed9;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 64px 22px;
+    background:
+      radial-gradient(circle, rgba(47,111,237,0.07) 1px, transparent 1.4px) 0 0 / 28px 28px,
+      var(--bg);
+    font-family: 'Manrope', sans-serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.35;
+    z-index: 0;
+    animation: drift 20s ease-in-out infinite alternate;
+  }
+  .blob.one { width: 360px; height: 360px; background: var(--blue); top: -80px; left: -100px; }
+  .blob.two { width: 320px; height: 320px; background: var(--violet); bottom: -100px; right: -80px; animation-delay: 2s; }
+
+  @keyframes drift { to { transform: translate(30px, 24px); } }
+
+  .field { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+  .field svg.wires { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .wire { fill: none; stroke: var(--blue); stroke-width: 1.4; stroke-dasharray: 6 8; opacity: 0.22; }
+  .dev {
+    position: absolute;
+    width: 72px;
+    height: 72px;
+    fill: none;
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: 0.5;
+    animation: floatY 7s ease-in-out infinite;
+  }
+  .dev.blue { stroke: var(--blue); }
+  .dev.violet { stroke: var(--violet); }
+
+  @keyframes floatY { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob, .dev { animation: none !important; }
+  }
+
+  .sheet {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 620px;
+    height: fit-content;
+    background: var(--panel);
+    border: 1px solid var(--panelBorder);
+    border-radius: 22px;
+    box-shadow: 0 30px 60px -34px rgba(19,27,46,0.28);
+    padding: 40px 40px 34px;
+  }
+
+  .eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    margin: 0 0 24px;
+    font-family: 'Sora', sans-serif;
+    font-weight: 700;
+    font-size: 2.3rem;
+    color: var(--ink);
+  }
+
+  ul.rows { list-style: none; margin: 0 0 6px; padding: 0; }
+
+  li.row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 12px;
+    border-radius: 12px;
+    transition: background-color 0.15s ease;
+  }
+  li.row:hover { background: var(--blueSoft); }
+
+  .icon {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    background: var(--iconBg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .icon svg { width: 18px; height: 18px; fill: none; stroke: var(--iconColor); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .rowid { flex: 0 0 auto; font-family: 'JetBrains Mono', monospace; color: var(--inkFaint); min-width: 56px; font-size: 0.82rem; }
+  .rowsubject { flex: 1 1 auto; font-size: 0.95rem; font-weight: 500; }
+
+  .chip {
+    flex: 0 0 auto;
+    background: var(--chipBg);
+    color: var(--chipColor);
+    padding: 5px 12px;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  a.cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    background: var(--blue);
+    color: #ffffff;
+    text-decoration: none;
+    font-family: 'Sora', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 11px 18px;
+    border-radius: 100px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 10px 24px -12px rgba(47,111,237,0.6);
+  }
+  a.cta:hover, a.cta:focus-visible {
+    transform: translateY(-2px);
+    outline: none;
+  }
+
+  @media (max-width: 560px) {
+    .sheet { padding: 30px 24px 28px; }
+    .rowid { min-width: 44px; font-size: 0.72rem; }
+  }
+</style>
+</head>
+<body>
+  <div class="blob one" aria-hidden="true"></div>
+  <div class="blob two" aria-hidden="true"></div>
+  <div class="field" aria-hidden="true">
+    <svg class="wires" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+      <path id="wireA" class="wire" d="M40,140 C280,60 650,300 960,160" />
+      <path id="wireB" class="wire" d="M30,860 C300,960 700,700 970,900" />
+      <circle r="3.4" fill="var(--blue)"><animateMotion dur="6s" repeatCount="indefinite"><mpath href="#wireA"/></animateMotion></circle>
+      <circle r="3.4" fill="var(--violet)"><animateMotion dur="7.5s" repeatCount="indefinite"><mpath href="#wireB"/></animateMotion></circle>
+    </svg>
+    <svg class="dev blue" style="top:8%; left:5%; animation-duration:6.5s;" viewBox="0 0 100 100">
+      <rect x="30" y="55" width="40" height="18" rx="3" />
+      <circle cx="50" cy="64" r="2" fill="var(--blue)" />
+      <path d="M38 45 Q50 30 62 45" />
+    </svg>
+    <svg class="dev violet" style="bottom:8%; right:6%; animation-duration:6.8s; animation-delay:0.3s;" viewBox="0 0 100 100">
+      <rect x="26" y="40" width="48" height="24" rx="2" />
+      <rect x="34" y="24" width="32" height="18" />
+      <rect x="34" y="64" width="32" height="14" />
+    </svg>
+  </div>
+  <div class="sheet">
+    <div class="eyebrow">College IT · Service Desk</div>
+    <h1>Queue</h1>
+    <ul class="rows">
+      <li class="row">
+        <span class="icon" style="--iconBg: var(--blueSoft); --iconColor: var(--blue);">
+          <svg viewBox="0 0 24 24"><path d="M2 8.5c6-5 14-5 20 0M5.5 12c4-3.5 9-3.5 13 0M9 15.5c2-1.6 4-1.6 6 0"/><circle cx="12" cy="19" r="1.1" fill="var(--blue)" stroke="none"/></svg>
+        </span>
+        <span class="rowid">#1042</span>
+        <span class="rowsubject">Wifi not working</span>
+        <span class="chip" style="--chipBg: var(--blueSoft); --chipColor: var(--blue);">Open</span>
+      </li>
+      <li class="row">
+        <span class="icon" style="--iconBg: var(--amberSoft); --iconColor: var(--amber);">
+          <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.6"/><path d="M8 20h8M12 16v4"/></svg>
+        </span>
+        <span class="rowid">#1041</span>
+        <span class="rowsubject">Linux login problem</span>
+        <span class="chip" style="--chipBg: var(--amberSoft); --chipColor: var(--amber);">In Progress</span>
+      </li>
+      <li class="row">
+        <span class="icon" style="--iconBg: var(--greenSoft); --iconColor: var(--green);">
+          <svg viewBox="0 0 24 24"><rect x="5" y="9" width="14" height="7" rx="1.2"/><path d="M7 9V5h10v4M7 19h10"/></svg>
+        </span>
+        <span class="rowid">#1040</span>
+        <span class="rowsubject">Printer unavailable</span>
+        <span class="chip" style="--chipBg: var(--greenSoft); --chipColor: var(--green);">Resolved</span>
+      </li>
+    </ul>
+    <a class="cta" href="../index.html">Back to the panel</a>
+  </div>
+</body>
+</html>

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>registrar.local</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cutive+Mono&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Karla:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --felt: #1c352c;
+    --paper: #f4ecd8;
+    --rule: #aebfd6;
+    --marginA: #b23a34;
+    --marginB: #d9a29c;
+    --ink: #2c2620;
+    --inkFaint: #7a6f5c;
+    --full: #b23a34;
+    --open: #1f6d4c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 60px 20px;
+    background:
+      radial-gradient(1100px 550px at 50% 0%, rgba(255,255,255,0.05), transparent),
+      var(--felt);
+    font-family: 'Karla', sans-serif;
+    color: var(--ink);
+    display: flex;
+    justify-content: center;
+  }
+
+  .ledger {
+    position: relative;
+    width: 100%;
+    max-width: 660px;
+    height: fit-content;
+    background: var(--paper);
+    box-shadow: 0 26px 50px -28px rgba(0,0,0,0.6);
+    padding: 40px 40px 34px 78px;
+  }
+
+  .holes {
+    position: absolute;
+    top: 30px;
+    bottom: 30px;
+    left: 28px;
+    width: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .holes span {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--felt);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  }
+
+  .margin {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 58px;
+    width: 1px;
+    background: var(--marginA);
+  }
+  .margin::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 5px;
+    width: 1px;
+    background: var(--marginB);
+  }
+
+  .eyebrow {
+    font-family: 'Cutive Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+    margin-bottom: 8px;
+  }
+
+  h1 {
+    margin: 0 0 4px;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-optical-sizing: auto;
+    font-size: 2.1rem;
+    color: var(--ink);
+  }
+
+  .subline {
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--inkFaint);
+    margin-bottom: 28px;
+  }
+
+  .head {
+    display: grid;
+    grid-template-columns: 66px 1fr 90px 108px 110px;
+    gap: 10px;
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--ink);
+  }
+
+  .courses {
+    background: repeating-linear-gradient(
+      var(--paper) 0,
+      var(--paper) 43px,
+      var(--rule) 43px,
+      var(--rule) 44px
+    );
+  }
+
+  .course {
+    display: grid;
+    grid-template-columns: 66px 1fr 90px 108px 110px;
+    align-items: center;
+    gap: 10px;
+    height: 44px;
+  }
+
+  .code {
+    font-family: 'Cutive Mono', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  .title { font-size: 0.9rem; }
+  .title .credits { color: var(--inkFaint); font-size: 0.78rem; }
+
+  .meets {
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--inkFaint);
+  }
+
+  .bubbles { display: flex; gap: 4px; }
+  .bubble {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: 1.4px solid var(--ink);
+  }
+  .bubble.filled { background: var(--ink); }
+  .bubble.filled.full { background: var(--full); border-color: var(--full); }
+
+  .seats {
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.74rem;
+  }
+  .seats.open { color: var(--open); }
+  .seats.full { color: var(--full); font-weight: 700; }
+
+  footer {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px dashed var(--inkFaint);
+    font-family: 'Cutive Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--inkFaint);
+  }
+
+  @media (max-width: 600px) {
+    .ledger { padding: 34px 20px 28px 64px; }
+    .head { display: none; }
+    .course {
+      grid-template-columns: 56px 1fr;
+      grid-template-rows: auto auto auto;
+      row-gap: 4px;
+      height: auto;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .courses { background: none; }
+    .meets, .bubbles, .seats { grid-column: 1 / -1; }
+    .bubbles { order: 3; }
+    .seats { order: 4; }
+  }
+</style>
+</head>
+<body>
+  <div class="ledger">
+    <div class="holes">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="margin"></div>
+    <div class="eyebrow">registrar.local</div>
+    <h1>Course Availability</h1>
+    <div class="subline">Fall term, section 01, checked this morning</div>
+    <div class="head">
+      <span>Code</span>
+      <span>Title</span>
+      <span>Meets</span>
+      <span>Filled</span>
+      <span>Seats</span>
+    </div>
+    <div class="courses">
+      <div class="course">
+        <span class="code">CS 201</span>
+        <span class="title">Data Structures <span class="credits">4 credits</span></span>
+        <span class="meets">MWF 1000</span>
+        <span class="bubbles">
+          <span class="bubble filled"></span><span class="bubble filled"></span><span class="bubble filled"></span>
+          <span class="bubble"></span><span class="bubble"></span>
+        </span>
+        <span class="seats open">12 of 30 open</span>
+      </div>
+      <div class="course">
+        <span class="code">MATH 241</span>
+        <span class="title">Linear Algebra <span class="credits">3 credits</span></span>
+        <span class="meets">TTh 1300</span>
+        <span class="bubbles">
+          <span class="bubble filled"></span><span class="bubble filled"></span><span class="bubble filled"></span><span class="bubble filled"></span>
+          <span class="bubble"></span>
+        </span>
+        <span class="seats open">3 of 25 open</span>
+      </div>
+      <div class="course">
+        <span class="code">ENG 110</span>
+        <span class="title">Composition I <span class="credits">3 credits</span></span>
+        <span class="meets">MWF 0900</span>
+        <span class="bubbles">
+          <span class="bubble filled full"></span><span class="bubble filled full"></span><span class="bubble filled full"></span>
+          <span class="bubble filled full"></span><span class="bubble filled full"></span>
+        </span>
+        <span class="seats full">Full</span>
+      </div>
+      <div class="course">
+        <span class="code">BIO 150</span>
+        <span class="title">Intro to Biology <span class="credits">4 credits</span></span>
+        <span class="meets">MWF 0900</span>
+        <span class="bubbles">
+          <span class="bubble filled"></span><span class="bubble filled"></span>
+          <span class="bubble"></span><span class="bubble"></span><span class="bubble"></span>
+        </span>
+        <span class="seats open">27 of 40 open</span>
+      </div>
+      <div class="course">
+        <span class="code">HIST 105</span>
+        <span class="title">World History <span class="credits">3 credits</span></span>
+        <span class="meets">TTh 1100</span>
+        <span class="bubbles">
+          <span class="bubble filled"></span><span class="bubble filled"></span><span class="bubble filled"></span>
+          <span class="bubble"></span><span class="bubble"></span>
+        </span>
+        <span class="seats open">15 of 30 open</span>
+      </div>
+    </div>
+    <footer>5 courses listed, checked this morning</footer>
+  </div>
+</body>
+</html>
